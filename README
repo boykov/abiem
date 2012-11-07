@@ -1,0 +1,14 @@
+==========================================
+README: BOUNDARY INTEGRAL EQUATIONS IN R^3
+==========================================
+
+3-D Helmholtz BIE program on smooth surfaces
+
+- To build and install this package, you must meet the following
+  requirements.
+
+  + PETSc_ 3.3 or 3.2, built with *shared libraries*
+
+  + Python_ 2.4 to 2.7 and 3.1 to 3.2.
+
+  + PETSc4py_ 3.3
