@@ -1,4 +1,4 @@
-export PETSC_DIR=/home/eab/data/src/petsc-3.3-p4
+export PETSC_DIR = $(shell python defaults.py petsc_dir)
 
 FFLAGS = ${PETSC_FC_INCLUDES}
 
