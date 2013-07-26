@@ -8,8 +8,11 @@ include ${PETSC_DIR}/conf/rules
 export PYTHONPATH := $(PYTHONPATH):$(shell python defaults.py gsie_dir)
 export PYTHONPATH := $(PYTHONPATH):$(shell python defaults.py dotgsie_dir)
 
-test: testcase.py
-	python -m unittest testcase.testEllipsoid$(tn)
+phi.so: phi.f90
+	f2py -m phi --f90flags="-ffree-line-length-none -fopenmp" -c phi.f90
+
+test: testcase.py phi.so
+	python -m unittest testcase$(tn)
 
 clear:
 	rm -f intphi.f90 *.o *.so *.pyc *.tem *.mod
