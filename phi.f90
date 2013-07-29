@@ -1,39 +1,50 @@
 module modphi
-  integer, parameter :: nd = 3
-  integer, parameter :: max_neighbors = 100
-  double precision, dimension(nd) :: axes
+  integer :: max_neighbors
   integer :: numnodes
-
   double precision :: h
+
   double precision, pointer :: node_coordinates(:,:)
   double precision, pointer :: normal_coordinates(:,:)
   double precision, pointer :: nstroke_coordinates(:,:)
-  
+
+  double precision, pointer :: axes(:)
+
   integer, pointer :: node_neighbors2(:,:)
   integer, pointer :: node_neighbors1(:,:)
-  
+
+
 contains
 
-  subroutine init_phi(points,nvectors,hvalue,nneigh1,nneigh2,axesi)
-    double precision, intent(in), target :: points(:,:), nvectors(:,:)
-    integer, intent(in), target :: nneigh1(:,:), nneigh2(:,:)
-    double precision, intent(in) :: axesi(3)
-    double precision, intent(in) :: hvalue
-    
-    node_coordinates   => points
+  subroutine set_node_coordinates(points)
+    double precision, intent(in), target :: points(:,:)
+    node_coordinates => points
+  end subroutine set_node_coordinates
+
+  subroutine set_normal_coordinates(nvectors)
+    double precision, intent(in), target :: nvectors(:,:)
     normal_coordinates => nvectors
-    node_neighbors1    => nneigh1
-    node_neighbors2    => nneigh2
+  end subroutine set_normal_coordinates
 
-    axes(:) = axesi(:)
-    h = hvalue
-    numnodes = size(points,1)
-    call filter_neighbors(2*h,node_neighbors2,numnodes)
-    call filter_neighbors(  h,node_neighbors1,numnodes)
+  subroutine set_nstroke_coordinates(nstroke)
+    double precision, intent(in), target :: nstroke(:,:)
+    nstroke_coordinates => nstroke
+  end subroutine set_nstroke_coordinates
 
-    call normal_vector_stroke(numnodes,node_neighbors1)
-  end subroutine init_phi
-    
+  subroutine set_node_neighbors1(nneigh1)
+    integer, intent(in), target :: nneigh1(:,:)
+    node_neighbors1 => nneigh1
+  end subroutine set_node_neighbors1
+
+  subroutine set_node_neighbors2(nneigh2)
+    integer, intent(in), target :: nneigh2(:,:)
+    node_neighbors2 => nneigh2
+  end subroutine set_node_neighbors2
+
+  subroutine set_axes(axesi)
+    double precision, intent(in), target :: axesi(:)
+    axes => axesi
+  end subroutine set_axes
+
   SUBROUTINE init_random_seed()
     INTEGER :: i, n, clock
     INTEGER, DIMENSION(:), ALLOCATABLE :: seed
@@ -48,7 +59,7 @@ contains
 
     DEALLOCATE(seed)
   END SUBROUTINE init_random_seed
-  
+
   double precision function norm2(v)
     double precision, intent(in), dimension(:) :: v
     norm2 = sum(v(:)*v(:))
@@ -84,7 +95,7 @@ contains
     double precision, intent(in), dimension(:) :: x
     double precision,intent(in) :: h2i
     double precision s,d,tmp
-    double precision, dimension(nd) :: y
+    double precision, dimension(size(x,1)) :: y
     integer j,ki
 
     y(:) = x(:)
@@ -112,7 +123,7 @@ contains
   double precision function testphijac()
     integer i,j
     double precision s,si, h2i
-    double precision, dimension(nd) :: a
+    double precision, dimension(3) :: a
     h2i = h ** 2
 
     s = 0.
@@ -136,7 +147,7 @@ contains
 
   subroutine normal_vector_stroke(numnodesi,neighbors)
     integer, intent(in),dimension(:,:) :: neighbors
-    double precision, dimension(nd) :: tmpVector
+    double precision, dimension(size(normal_coordinates,2)) :: tmpVector
     double precision, dimension(:), allocatable :: VSa
     integer, dimension(:), allocatable :: mask
 
@@ -145,8 +156,6 @@ contains
     integer i,numnodesi
 
     integer ind, count, icand, ncands
-
-    allocate(nstroke_coordinates(numnodesi,nd))
 
     tmpVector(:) = 0.
 
@@ -195,7 +204,7 @@ contains
 
   double precision function dpair(i,j)
     integer, intent(in) :: i,j
-    double precision, dimension(nd) :: y
+    double precision, dimension(size(node_coordinates,2)) :: y
 
     y(:) = node_coordinates(i,:) - node_coordinates(j,:)
 

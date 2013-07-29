@@ -7,6 +7,8 @@
 __author__ = "Evgeny Boykov. <artscan@list.ru>"
 
 from numpy import *
+import random
+import math
 
 def center_points(points):
     c = zeros((3))
@@ -14,3 +16,17 @@ def center_points(points):
     c[1] = sum(points[:,1])
     c[2] = sum(points[:,2])
     return sum(abs(c))
+
+def test_phi(axes):
+    a = [random.random(), random.random(), random.random()]
+    a[0] = 2*a[0] - 0.5
+    a[1] = 2*(a[1] - 0.5)*math.sqrt(1 - a[0]**2)
+    a[2] = math.copysign(1.0, a[3] - 0.5)*math.sqrt(1 - a[0]**2 - a[1]**2)
+
+    a[0] = a[0] * axes[0]
+    a[1] = a[1] * axes[1]
+    a[2] = a[2] * axes[2]
+
+    return a
+    
+    

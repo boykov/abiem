@@ -10,6 +10,7 @@ import unittest
 from ellipsoid import ellipsoid
 from numpy import *
 from utilities import *
+from phi import modphi as phi
 
 class testBIE(unittest.TestCase):
     def setUp(self):
@@ -23,11 +24,26 @@ class testBIE(unittest.TestCase):
         self.assertAlmostEqual(center_points(e.points), 1.0e-11, places = 10)
 
     def testPhi(self):
-        from phi import modphi as phi
         self.e = ellipsoid(self.list_axes, self.number_points)
-        # TODO add nneigh1, nneigh2
-        shp = self.e.points.shape[0]
-        nneigh1 = zeros((shp,100), order = 'Fortran')
-        nneigh2 = zeros((shp,100), order = 'Fortran')
-        phi.init_phi(self.e.points, self.e.normalvectors, self.e.get_h(), nneigh1, nneigh2, self.list_axes)
-        self.assertAlmostEqual(phi.testphijac(), shp, places = 12)
+        
+        numnodes = self.e.points.shape[0]
+        node_neighbors1 = zeros((numnodes,100), dtype = int32, order = 'Fortran')
+        node_neighbors2 = zeros((numnodes,100), dtype = int32, order = 'Fortran')
+        nstroke_coordinates = zeros((numnodes,3), order = 'Fortran')
+        
+        phi.max_neighbors = 100
+        phi.h = self.e.get_h()
+        phi.numnodes = numnodes
+        
+        phi.set_node_coordinates(self.e.points)
+        phi.set_normal_coordinates(self.e.normalvectors)
+        phi.set_nstroke_coordinates(nstroke_coordinates)
+        phi.set_node_neighbors1(node_neighbors1)
+        phi.set_node_neighbors2(node_neighbors2)
+        phi.set_axes(self.list_axes)
+        
+        phi.filter_neighbors(2*phi.h, node_neighbors2, phi.numnodes)
+        phi.filter_neighbors(  phi.h, node_neighbors1, phi.numnodes)
+        phi.normal_vector_stroke(phi.numnodes, node_neighbors1)
+        
+        self.assertAlmostEqual(phi.testphijac(), numnodes, places = 12)
