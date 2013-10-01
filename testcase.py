@@ -45,5 +45,5 @@ class testBIE(unittest.TestCase):
         phi.filter_neighbors(2*phi.h, node_neighbors2, phi.numnodes)
         phi.filter_neighbors(  phi.h, node_neighbors1, phi.numnodes)
         phi.normal_vector_stroke(phi.numnodes, node_neighbors1)
-        
-        self.assertAlmostEqual(phi.testphijac(), numnodes, places = 12)
+
+        self.assertAlmostEqual(phi.test_phi(gen_points(numnodes,self.list_axes)), numnodes, places = 12)

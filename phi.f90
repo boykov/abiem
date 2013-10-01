@@ -120,30 +120,22 @@ contains
     if (d .ne. 0) phi = tmp / d
   end function phi
 
-  double precision function testphijac()
+  double precision function test_phi(a)
+    double precision, intent(in), target :: a(:,:)
     integer i,j
     double precision s,si, h2i
-    double precision, dimension(3) :: a
     h2i = h ** 2
 
     s = 0.
     do j=1,numnodes
-       call init_random_seed()
-       call random_number(a)
-       a(1)=2*(a(1)-0.5)
-       a(2)=2*(a(2)-0.5)*dsqrt(1-a(1)**2)
-       a(3)=sign(1.0D0,a(3)-0.5)*dsqrt(1-a(1)**2-a(2)**2)
-       a(1)=a(1)*axes(1)
-       a(2)=a(2)*axes(2)
-       a(3)=a(3)*axes(3)
        si = 0.
        do i=1,numnodes
-          si = si + phi(a(:)-node_coordinates(i,:),i,h2i)
+          si = si + phi(a(j,:)-node_coordinates(i,:),i,h2i)
        end do
        s = s + si
     end do
-    testphijac = s
-  end function testphijac
+    test_phi = s
+  end function test_phi
 
   subroutine normal_vector_stroke(numnodesi,neighbors)
     integer, intent(in),dimension(:,:) :: neighbors
