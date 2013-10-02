@@ -49,9 +49,8 @@ contains
     integer, intent(in) :: ip,nt
     interface
        function f(x,i)
-         use params
          integer, intent(in) :: i
-         double precision, intent(in), dimension(nd) :: x
+         double precision, intent(in), dimension(:) :: x
          double precision :: f
        end function f
     end interface

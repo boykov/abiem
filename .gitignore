@@ -2,5 +2,6 @@
 *.so
 *.mod
 *.o
+*.dat
 
 /TAGS

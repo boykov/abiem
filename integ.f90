@@ -1,22 +1,11 @@
 module modinteg
   use params
-  integer :: max_neighbors
-  integer :: numnodes
-  double precision :: h
+  use modphi, only : phi
 
-  double precision, pointer :: node_coordinates(:,:)
-  double precision, pointer :: normal_coordinates(:,:)
-  double precision, pointer :: nstroke_coordinates(:,:)
-
-  ! double precision, pointer :: axes(:)
-
-  integer, pointer :: node_neighbors2(:,:)
-  integer, pointer :: node_neighbors1(:,:)
-
-  double precision, dimension(:), allocatable   :: intphi_over
-  double precision :: area
+contains  
   
-contains
+  include 'set_params.f90'
+  
   double precision function calcarea()
     use omp_lib
     use modint, only : integrate, folding, foldingarr
@@ -39,8 +28,8 @@ contains
 
   double precision function f(x,i)
     integer, intent(in) :: i
-    double precision, intent(in), dimension(3) :: x
-    f = 1 ! phi(x,i,h**2)
+    double precision, intent(in), dimension(:) :: x
+    f = phi(x,i,h**2)
   end function f
   
 end module modinteg
