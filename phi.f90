@@ -1,50 +1,9 @@
 module modphi
-  integer :: max_neighbors
-  integer :: numnodes
-  double precision :: h
-
-  double precision, pointer :: node_coordinates(:,:)
-  double precision, pointer :: normal_coordinates(:,:)
-  double precision, pointer :: nstroke_coordinates(:,:)
-
-  double precision, pointer :: axes(:)
-
-  integer, pointer :: node_neighbors2(:,:)
-  integer, pointer :: node_neighbors1(:,:)
-
-
+  use params
 contains
-
-  subroutine set_node_coordinates(points)
-    double precision, intent(in), target :: points(:,:)
-    node_coordinates => points
-  end subroutine set_node_coordinates
-
-  subroutine set_normal_coordinates(nvectors)
-    double precision, intent(in), target :: nvectors(:,:)
-    normal_coordinates => nvectors
-  end subroutine set_normal_coordinates
-
-  subroutine set_nstroke_coordinates(nstroke)
-    double precision, intent(in), target :: nstroke(:,:)
-    nstroke_coordinates => nstroke
-  end subroutine set_nstroke_coordinates
-
-  subroutine set_node_neighbors1(nneigh1)
-    integer, intent(in), target :: nneigh1(:,:)
-    node_neighbors1 => nneigh1
-  end subroutine set_node_neighbors1
-
-  subroutine set_node_neighbors2(nneigh2)
-    integer, intent(in), target :: nneigh2(:,:)
-    node_neighbors2 => nneigh2
-  end subroutine set_node_neighbors2
-
-  subroutine set_axes(axesi)
-    double precision, intent(in), target :: axesi(:)
-    axes => axesi
-  end subroutine set_axes
-
+  
+  include 'set_params.f90'
+  
   double precision function norm2(v)
     double precision, intent(in), dimension(:) :: v
     norm2 = sum(v(:)*v(:))
