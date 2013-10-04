@@ -7,6 +7,7 @@ include ${PETSC_DIR}/conf/rules
 
 export PYTHONPATH := $(PYTHONPATH):$(shell python defaults.py gsie_dir)
 export PYTHONPATH := $(PYTHONPATH):$(shell python defaults.py dotgsie_dir)
+export PYTHONPATH := $(PYTHONPATH):$(shell python defaults.py petsc4py_dir)
 
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"

@@ -14,6 +14,11 @@ from utilities import *
 from phi import modphi as phi
 from integ import modinteg as integ
 
+import sys,os
+import petsc4py
+from petsc4py import PETSc
+
+
 class testBIE(unittest.TestCase):
     def setUp(self):
         pass
