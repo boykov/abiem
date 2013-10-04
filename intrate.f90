@@ -1,6 +1,17 @@
 module modint
     use params
 contains
+  double precision function asqrt(x)
+    double precision, intent(in) :: x
+    asqrt = dsqrt(abs(x))
+  end function asqrt
+
+  integer function dn(n,m)
+    integer :: n,m
+    dn = 0
+    if (n .eq. m) dn = 1
+  end function dn
+
   subroutine integrate(n,z,ip,nt)
     
     integer, intent(in) :: ip,nt
@@ -101,5 +112,6 @@ contains
     foldingarr = gtmp
 
   end function foldingarr
+  
 end module modint
 

@@ -7,7 +7,7 @@ module params
   double precision :: h
   double precision :: h2
 
-  double precision :: area
+  double precision, pointer :: area(:)
 
   double precision, pointer :: axes(:)
 
@@ -24,16 +24,4 @@ module params
   double complex, pointer   :: jacobian(:,:,:)
   double precision, pointer :: nodes(:,:,:,:)
 
-contains
-
-  double precision function asqrt(x)
-    double precision, intent(in) :: x
-    asqrt = dsqrt(abs(x))
-  end function asqrt
-
-  integer function dn(n,m)
-    integer :: n,m
-    dn = 0
-    if (n .eq. m) dn = 1
-  end function dn
 end module params

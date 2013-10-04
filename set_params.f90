@@ -1,3 +1,8 @@
+subroutine set_area(val)
+  double precision, intent(in), target :: val(:)
+  area => val
+end subroutine set_area
+
 subroutine set_nd(val)
   integer, intent(in) :: val
   nd = val

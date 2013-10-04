@@ -19,12 +19,19 @@ class testBIE(unittest.TestCase):
         pass
 
     def scenario(self):
-        self.e = ellipsoid(self.data.axes, self.data.numpoints)
-        self.data.setupquad()
-        self.numnodes = self.e.points.shape[0]
+        self.h = zeros((1), order = 'Fortran')
+        self.h2 = zeros((1), order = 'Fortran')
+        self.PI = zeros((1), order = 'Fortran')
+
+        self.nd = zeros((1), dtype = int32, order = 'Fortran')
+        self.Nz = zeros((1), dtype = int32, order = 'Fortran')
+        self.max_neighbors = zeros((1), dtype = int32, order = 'Fortran')
+        # self.numnodes = zeros((1), dtype = int32, order = 'Fortran')
 
         self.node_neighbors1 = zeros((self.numnodes,100), dtype = int32, order = 'Fortran')
         self.node_neighbors2 = zeros((self.numnodes,100), dtype = int32, order = 'Fortran')
+        self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
+        self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
         self.nstroke_coordinates = zeros((self.numnodes,3), order = 'Fortran')
         self.intphi_over = zeros((self.numnodes), order = 'Fortran')
 
@@ -36,6 +43,15 @@ class testBIE(unittest.TestCase):
         self.centres[:] = self.data.quadphi_over[:,0]
         self.C[:] = self.data.quadphi_over[:,1]
 
+        self.area = zeros((1), order = 'Fortran')
+
+        self.h[0] = self.e.get_h()
+        self.max_neighbors[0] = 100
+        self.PI[0] = 3.14159265358979324
+        self.nd[0] = 3
+        self.node_coordinates[:,:] = self.e.points[:,:]
+        self.normal_coordinates[:,:] = self.e.normalvectors[:,:]
+        
     def setObj(self,obj):
         obj.set_nd(3)
         obj.set_pi(3.14159265358979324)
@@ -50,6 +66,21 @@ class testBIE(unittest.TestCase):
         obj.set_node_neighbors2(self.node_neighbors2)
         obj.set_axes(self.data.axes)
         
+        obj.set_intphi_over(self.intphi_over)
+        obj.set_h2(self.e.get_h()*self.e.get_h())
+        obj.set_nz(self.data.orderquad)
+
+        obj.set_centres(self.centres)
+        obj.set_c(self.C)
+        obj.set_jacobian(self.jacobian)
+        obj.set_nodes(self.nodes)
+
+        obj.set_area(self.area)
+
+    def setEllipsoid(self):
+        self.e = ellipsoid(self.data.axes, self.data.numpoints)
+        self.numnodes = self.e.points.shape[0]
+
     def setPhi(self):
         self.setObj(phi)    
 
@@ -60,24 +91,19 @@ class testBIE(unittest.TestCase):
     def setInteg(self):
         self.setObj(integ)    
 
-        integ.set_intphi_over(self.intphi_over)
-        integ.set_h2(self.e.get_h()*self.e.get_h())
-        integ.set_nz(self.data.orderquad)
-
-        integ.set_centres(self.centres)
-        integ.set_c(self.C)
-        integ.set_jacobian(self.jacobian)
-        integ.set_nodes(self.nodes)
-
     def testEllipsoid(self):
         self.data = DataElement(400)
         self.data.orderquad = 20
+        self.data.setupquad()
+        self.setEllipsoid()
         self.scenario()
         self.assertAlmostEqual(center_points(self.e.points), 1.0e-11, places = 10)
 
     def testPhi(self):
         self.data = DataElement(400)
         self.data.orderquad = 20
+        self.data.setupquad()
+        self.setEllipsoid()
         self.scenario()
         self.setPhi()
         self.assertAlmostEqual(phi.test_phi(gen_points(self.numnodes,self.data.axes)), self.numnodes, places = 12)
@@ -85,7 +111,11 @@ class testBIE(unittest.TestCase):
     def testInteg(self):
         self.data = DataElement(400)
         self.data.orderquad = 20
+        self.data.setupquad()
+        self.setEllipsoid()
         self.scenario()
         self.setPhi()
         self.setInteg()
-        self.assertAlmostEqual(integ.calcarea(),6.971610618375645,places = 6)
+        integ.calcomp()
+        self.area[0] = sum(self.intphi_over)
+        self.assertAlmostEqual(self.area[0],6.971610618375645,places = 6)
