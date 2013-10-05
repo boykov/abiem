@@ -12,7 +12,6 @@ from dataelement import *
 from numpy import *
 from utilities import *
 from phi import modphi as phi
-from integ import modinteg as integ
 
 class params():
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
@@ -59,6 +58,8 @@ class params():
         obj.set_max_neighbors(self.max_neighbors)
         obj.set_h(self.h)
         obj.set_numnodes(self.numnodes)
+
+        obj.set_axes(self.axes)
 
         obj.set_node_coordinates(self.node_coordinates)
         obj.set_normal_coordinates(self.normal_coordinates)
