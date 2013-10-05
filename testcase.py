@@ -81,6 +81,8 @@ class params():
         obj.set_h(self.h)
         obj.set_numnodes(self.numnodes)
 
+        obj.set_axes(self.axes)
+
         obj.set_node_coordinates(self.node_coordinates)
         obj.set_normal_coordinates(self.normal_coordinates)
         obj.set_nstroke_coordinates(self.nstroke_coordinates)
@@ -89,7 +91,6 @@ class params():
 
     def setObjInteg(self, obj):
         self.setObjPhi(obj)
-        obj.set_axes(self.axes)
 
         obj.set_intphi_over(self.intphi_over)
         obj.set_h2(self.h2)
@@ -104,19 +105,24 @@ class params():
 
 class testBIE(unittest.TestCase):
     def setUp(self):
-        self.P = params(400)
-        self.P.initQuad(20)
+        pass
 
     def testEllipsoid(self):
+        self.P = params(400)
+        self.P.initQuad(20)
         self.P.initEllipsoid()
         self.assertAlmostEqual(center_points(self.P.node_coordinates), 1.0e-11, places = 10)
 
     def testPhi(self):
+        self.P = params(400)
+        self.P.initQuad(20)
         self.P.initEllipsoid()
         self.P.initPhi()
         self.assertAlmostEqual(phi.test_phi(gen_points(self.P.numnodes,self.P.axes)), self.P.numnodes, places = 12)
 
     def testInteg(self):
+        self.P = params(400)
+        self.P.initQuad(20)
         self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()
