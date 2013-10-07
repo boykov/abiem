@@ -5,3 +5,7 @@
 *.dat
 
 /TAGS
+/jacobian.out
+/beta.f90
+/jacobian.f90
+/x.f90

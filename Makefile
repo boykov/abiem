@@ -18,7 +18,13 @@ params.o: params.f90
 phi.o: phi.f90 params.o
 	$(gf) -c params.o phi.f90
 
-intrate.o: intrate.f90 params.o
+jacobian.out:
+	maxima -b /home/eab/git/difwave/gsie/jacobian.max > /dev/null
+
+dbsym: jacobian.out
+	python dbsym.py
+
+intrate.o: intrate.f90 params.o dbsym
 	$(gf) -c params.o intrate.f90
 
 libintphi.so: intphi.f90
@@ -34,5 +40,4 @@ test: testcase.py phi.so integ.so
 	python -m unittest testcase$(tn)
 
 clear:
-	rm -f *.o *.so *.pyc *.tem *.mod
-
+	rm -f *.o *.so *.pyc *.tem *.mod beta.f90 x.f90 jacobian.f90 jacobian.out

@@ -29,12 +29,12 @@ class params():
         pass
 
     def initQuad(self, orderquad):
-        self.data = DataElement(1)
-        self.data.orderquad = orderquad
-        self.data.setupquad()
-        self.Nz = self.data.orderquad
+        data = DataElement(1)
+        data.orderquad = orderquad
+        data.setupquad()
+        self.Nz = data.orderquad
         self.quadphi_over = zeros((self.Nz,2),order = 'Fortran')
-        self.quadphi_over[:,:] = self.data.quadphi_over[:,:]
+        self.quadphi_over[:,:] = data.quadphi_over[:,:]
 
     def initEllipsoid(self):
         self.e = ellipsoid(self.axes, self.numpoints)
