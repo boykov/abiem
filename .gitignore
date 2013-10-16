@@ -6,6 +6,9 @@
 
 /TAGS
 /jacobian.out
-/beta.f90
-/jacobian.f90
-/x.f90
+/dbsym/beta.f90
+/dbsym/jacobian.f90
+/dbsym/x.f90
+/dbsym/jacobian.out
+/dbsym/singular.out
+/dbsym/dirichlet-helmholtz.out

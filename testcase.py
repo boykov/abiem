@@ -13,6 +13,7 @@ from numpy import *
 from utilities import *
 from phi import modphi as phi
 from integ import modinteg as integ
+from dbsym import dbsym
 
 import sys,os
 import petsc4py

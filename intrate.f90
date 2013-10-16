@@ -1,19 +1,9 @@
 module modint
     use params
 contains
-  double precision function asqrt(x)
-    double precision, intent(in) :: x
-    asqrt = dsqrt(abs(x))
-  end function asqrt
-
-  integer function dn(n,m)
-    integer :: n,m
-    dn = 0
-    if (n .eq. m) dn = 1
-  end function dn
 
   subroutine integrate(n,z,ip,nt)
-    
+    use dbsym
     integer, intent(in) :: ip,nt
     double precision, intent(in), dimension(nd) :: n
     double precision, intent(in), dimension(nd) :: z
@@ -34,8 +24,7 @@ contains
     
     do m=1,nd
        do l=1,nd
-          bt(m,l) = &
-               include 'beta.f90'
+          bt(m,l) = beta(m,k,l,n,axes)
        end do
     end do
 
@@ -45,14 +34,11 @@ contains
        do ik=1,Nk
           ph = (2.D0*PI/Nk)*ik
           do i=1,3
-             x(i) = &
-                  include 'x.f90'
+             x(i) = fx(i,bt,axes,h2,rh,ph,z)
              nodes(nthread,iz,ik,i) = x(i)
           end do
 
-          jac = dsqrt (&
-               include 'jacobian.f90'
-          )
+          jac = dsqrt(fjacobian(bt,axes,h2,rh,ph,z))
           jacobian(nthread,iz,ik) = 2*(PI/Nk)*C(iz) * jac
 
        end do
