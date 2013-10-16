@@ -24,12 +24,12 @@ class params():
         pass
 
     def initQuad(self, orderquad):
-        self.data = DataElement(1)
-        self.data.orderquad = orderquad
-        self.data.setupquad()
-        self.Nz = self.data.orderquad
+        data = DataElement(1)
+        data.orderquad = orderquad
+        data.setupquad()
+        self.Nz = data.orderquad
         self.quadphi_over = zeros((self.Nz,2),order = 'Fortran')
-        self.quadphi_over[:,:] = self.data.quadphi_over[:,:]
+        self.quadphi_over[:,:] = data.quadphi_over[:,:]
 
     def initEllipsoid(self):
         self.e = ellipsoid(self.axes, self.numpoints)
@@ -69,14 +69,17 @@ class params():
 
 class testBIE(unittest.TestCase):
     def setUp(self):
-        self.P = params(400)
-        self.P.initQuad(20)
+        pass
 
     def testEllipsoid(self):
+        self.P = params(400)
+        self.P.initQuad(20)
         self.P.initEllipsoid()
         self.assertAlmostEqual(center_points(self.P.node_coordinates), 1.0e-11, places = 10)
 
     def testPhi(self):
+        self.P = params(400)
+        self.P.initQuad(20)
         self.P.initEllipsoid()
         self.P.initPhi()
         self.assertAlmostEqual(phi.test_phi(gen_points(self.P.numnodes,self.P.axes)), self.P.numnodes, places = 12)

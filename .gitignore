@@ -2,5 +2,13 @@
 *.so
 *.mod
 *.o
+*.dat
 
 /TAGS
+/jacobian.out
+/dbsym/beta.f90
+/dbsym/jacobian.f90
+/dbsym/x.f90
+/dbsym/jacobian.out
+/dbsym/singular.out
+/dbsym/dirichlet-helmholtz.out
