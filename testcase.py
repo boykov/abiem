@@ -69,17 +69,13 @@ class params():
 
 class testBIE(unittest.TestCase):
     def setUp(self):
-        pass
-
-    def testEllipsoid(self):
-        self.P = params(400)
-        self.P.initQuad(20)
-        self.P.initEllipsoid()
-        self.assertAlmostEqual(center_points(self.P.node_coordinates), 1.0e-11, places = 10)
-
-    def testPhi(self):
         self.P = params(400)
         self.P.initQuad(20)
         self.P.initEllipsoid()
         self.P.initPhi()
+
+    def testEllipsoid(self):
+        self.assertAlmostEqual(center_points(self.P.node_coordinates), 1.0e-11, places = 10)
+
+    def testPhi(self):
         self.assertAlmostEqual(phi.test_phi(gen_points(self.P.numnodes,self.P.axes)), self.P.numnodes, places = 12)
