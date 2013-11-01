@@ -106,7 +106,7 @@ class params():
 
 class testBIE(unittest.TestCase):
     def setUp(self):
-        self.P = params(400)
+        self.P = params(100)
         self.P.initQuad(20)
         self.P.initEllipsoid()
         self.P.initPhi()
@@ -122,4 +122,4 @@ class testBIE(unittest.TestCase):
     def testInteg(self):
         integ.calcomp()
         self.P.area[0] = sum(self.P.intphi_over)
-        self.assertAlmostEqual(self.P.area[0],6.971610618375645,places = 6)
+        self.assertAlmostEqual(self.P.area[0],6.971610618375645,places = 4)
