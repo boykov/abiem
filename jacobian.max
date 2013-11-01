@@ -1,0 +1,84 @@
+/* jacobian.max */
+
+load("vect");
+load("f90");
+
+δ(m,n) := kron_delta(m,n);
+
+scalefactors([x[1],x[2],x[3]]);
+
+eq : ratsimp(sum((sum((β(i,m)*y_[m]),m,1,3)+z[i]/a[i])^2,i,1,3)-sum((z[i]/a[i])^2.0,i,1,3))=0;
+
+a2 : sum(β(i,3)^2,i,1,3);
+a1 : sum(2*β(i,3)*(sum((β(i,m)*y_[m]),m,1,2)+z[i]/a[i]),i,1,3);
+a0 : ratsimp(sum((sum((β(i,m)*y_[m]),m,1,2)+z[i]/a[i])^2,i,1,3)-sum((z[i]/a[i])^2,i,1,3));
+
+/* eq : a2*y_[3]^2 + a1*y_[3] + a0 = 0; */
+
+y[3](y1,y2) := subst([
+    y_[1]=y1,
+    y_[2]=y2],
+     2*a0/(-a1 - sqrt(a1^2 - 4*a2*a0))
+    );
+
+nv : [n[1],n[2],n[3]];
+
+/* Что здесь означает ek? */
+ek : [e[1],e[2],e[3]];
+
+r(xv) := sqrt(abs(xv . xv));
+
+ej[1] : express((ek - (nv * (nv . ek)))/r(ek - (nv * (nv . ek))));
+ej[2] : express((nv ~ ej[1]));
+ej[3] : express(nv);
+
+
+/* В ej[j] в качестве e_k надо подставлять не любой вектор, а тот, */
+/* который удовлетворяет условию */
+/* |n_j . e_k| = min(|n_j . e_m|,m,1,3) */
+
+χ(i,v) := subst([
+  e[1]=δ(i,1),
+  e[2]=δ(i,2),
+  e[3]=δ(i,3)]
+  ,v);
+
+/* правильно, во втором вызове χ использовать k-ый */
+/* β(i,j) := express((χ(i,ek) . χ(k,ej[j]))/a[i]); */
+βv(i,j) := express(( χ(k,ej[j])[i])/a[i]);
+
+B(m,l) := sum(sum(βv(i,j)*δ(i,m)*δ(j,l),i,1,3),j,1,3);
+
+fρ : sqrt(h2)*((1+ρ)/2.0); /* Это замена сдвига: ρ \in (-1,1), fρ \in (0,h) */
+
+xx[1] : subst([
+  y1=fρ*cos(φ),
+  y2=fρ*sin(φ)],
+  (β(1,1)*a[1]*(y1))+(β(1,2)*a[1]*(y2))+(β(1,3)*a[1]*y[3](y1,y2)));
+
+
+xx[2] : subst([
+  y1=fρ*cos(φ),
+  y2=fρ*sin(φ)],
+  (β(2,1)*a[2]*(y1))+(β(2,2)*a[2]*(y2))+(β(2,3)*a[2]*y[3](y1,y2)));
+
+
+xx[3] : subst([
+  y1=fρ*cos(φ),
+  y2=fρ*sin(φ)],
+  (β(3,1)*a[3]*(y1))+(β(3,2)*a[3]*(y2))+(β(3,3)*a[3]*y[3](y1,y2)));
+
+x(s) := δ(1,s)*xx[1] + δ(2,s)*xx[2] + δ(3,s)*xx[3]; /* Нотация Айверсона */
+
+dρ(i) := diff(x(i),ρ);
+dφ(i) := diff(x(i),φ);
+
+/* http://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D0%B2%D0%B5%D1%80%D1%85%D0%BD%D0%BE%D1%81%D1%82%D0%BD%D1%8B%D0%B5_%D0%B8%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D0%BB%D1%8B */
+
+E : sum(dρ(i)^2,i,1,3);
+F : sum(dφ(i)^2,i,1,3);
+G : sum(dρ(i)*dφ(i),i,1,3);
+
+Jacobian : (E*F - G^2);
+
+with_stdout("jacobian.out",f90(Jacobian),f90(x(i)),f90(B(m,l)));

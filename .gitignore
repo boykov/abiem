@@ -1,8 +1,8 @@
-*.out
-*.mod
-*.o
-*.so
+*
 
-/beta.f90
-/x.f90
-/jacobian.f90
+!dbsym.py
+!dbsym.f90
+!toms_mod.f90
+!singular.max
+!jacobian.max
+!dirichlet-helmholtz.max
