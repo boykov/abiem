@@ -38,7 +38,7 @@ phi.so: libphi.so
 	test -s phi.so || $(f2) -m phi -L. -lphi -c phi.pyf phi.f90
 
 libinteg.so: integ.f90 params.o intrate.o libphi.so
-	$(gf) -shared integ.f90 -o libinteg.so
+	$(gf) -shared dbsym/toms_mod.f90 integ.f90 -o libinteg.so
 
 integ.so: integ.f90 intrate.o params.o phi.o libinteg.so
 	test -s integ.so || f2py -m integ --overwrite-signature -h integ.pyf integ.f90
