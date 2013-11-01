@@ -12,17 +12,17 @@ jacobian.out: jacobian.max
 singular.out: singular.max
 	maxima -b singular.max > /dev/null
 
-jacobian.gen:
+beta.f90: singular.out jacobian.out dirichlet-helmholtz.out
 	python dbsym.py
 
-dbsym.o: dbsym.f90
+dbsym.o: dbsym.f90 beta.f90
 	$(gf) -c toms_mod.f90 dbsym.f90
 
-dbsym.so: dbsym.f90
+dbsym.so: dbsym.f90 beta.f90
 	$(f2) -m dbsym -c toms_mod.f90 dbsym.f90
 
-test: dbsym.so dbsym.o
+test: beta.f90 dbsym.so dbsym.o
 	echo ok
 
 clear:
-	rm -f *.o *.so *.mod beta.f90 x.f90 jacobian.f90 jacobian.out
+	rm -f `git ls-files -o`
