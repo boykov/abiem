@@ -1,0 +1,8 @@
+*.out
+*.mod
+*.o
+*.so
+
+/beta.f90
+/x.f90
+/jacobian.f90
