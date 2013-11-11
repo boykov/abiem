@@ -44,7 +44,10 @@ integ.so: integ.f90 intrate.o params.o phi.o libinteg.so
 	test -s integ.so || f2py -m integ --overwrite-signature -h integ.pyf integ.f90
 	test -s integ.so || $(f2) -m integ -lgomp -L. -linteg -c integ.pyf params.o dbsym/dbsym.o intrate.o phi.o integ.f90 
 
-test: testcase.py phi.so dbsym/dbsym.so integ.so
+test:
+	@make testcase tn=.testBIEsmall > /dev/null
+
+testcase: testcase.py phi.so dbsym/dbsym.so integ.so
 	python -m unittest testcase$(tn)
 
 clear:
