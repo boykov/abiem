@@ -27,9 +27,6 @@ dbsym/dbsym.o:
 dbsym/dbsym.so:
 	cd dbsym && make dbsym.so
 
-intrate.o: dbsym/dbsym.o intrate.f90
-	$(gf) -c -I$(shell python defaults.py dbsym_dir) intrate.f90
-
 libphi.so: phi.f90 params.o set_params.f90
 	$(gf) -shared params.o phi.f90 -o libphi.so
 
@@ -37,12 +34,12 @@ phi.so: libphi.so
 	test -s phi.so || f2py -m phi --overwrite-signature -h phi.pyf phi.f90
 	test -s phi.so || $(f2) -m phi -L. -lphi -c phi.pyf phi.f90
 
-libinteg.so: integ.f90 params.o intrate.o libphi.so
-	$(gf) -shared dbsym/toms_mod.f90 integ.f90 -o libinteg.so
+libinteg.so: dbsym/dbsym.o integ.f90 params.o libphi.so
+	$(gf) -shared -I$(shell python defaults.py dbsym_dir) dbsym/toms_mod.f90 integ.f90 -o libinteg.so
 
-integ.so: integ.f90 intrate.o params.o phi.o libinteg.so
+integ.so: integ.f90 params.o phi.o libinteg.so
 	test -s integ.so || f2py -m integ --overwrite-signature -h integ.pyf integ.f90
-	test -s integ.so || $(f2) -m integ -lgomp -L. -linteg -c integ.pyf params.o dbsym/dbsym.o intrate.o phi.o integ.f90 
+	test -s integ.so || $(f2) -m integ -lgomp -I$(shell python defaults.py dbsym_dir) -L. -linteg -c integ.pyf params.o dbsym/dbsym.o phi.o integ.f90 
 
 test:
 	@make testcase tn=.testBIEsmall > /dev/null
