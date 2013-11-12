@@ -10,14 +10,15 @@ import unittest
 from ellipsoid import ellipsoid
 from dataelement import *
 from numpy import *
+import cmath
+import math
 from utilities import *
 from phi import modphi as phi
 from integ import modinteg as integ
 from dbsym import dbsym
 
 import sys,os
-import petsc4py
-from petsc4py import PETSc
+import slaeahmed
 
 class params():
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
@@ -27,15 +28,29 @@ class params():
         self.axes = zeros((3), order = 'Fortran')
         self.numpoints = numpoints
         self.axes[:] = [float(0.75),float(1.),float(0.5)]
+        self.k = 0
+        self.data = DataElement(1)
+        self.data.magic = 0.380
         pass
 
+    def initAHMED(self):
+        """
+        """
+        self.eps = 1e-6
+        self.eta = 0.8
+        self.bmin = 15
+        self.rankmax = 1000
+        slaeahmed.set_Hmatrix(self.eps,
+                              self.eta,
+                              self.bmin,
+                              self.rankmax)
+
     def initQuad(self, orderquad):
-        data = DataElement(1)
-        data.orderquad = orderquad
-        data.setupquad()
-        self.Nz = data.orderquad
+        self.data.orderquad = orderquad
+        self.data.setupquad()
+        self.Nz = self.data.orderquad
         self.quadphi_over = zeros((self.Nz,2),order = 'Fortran')
-        self.quadphi_over[:,:] = data.quadphi_over[:,:]
+        self.quadphi_over[:,:] = self.data.quadphi_over[:,:]
 
     def initEllipsoid(self):
         self.e = ellipsoid(self.axes, self.numpoints)
@@ -104,6 +119,15 @@ class params():
 
         obj.set_area(self.area)
 
+    def vectorb(self,i):
+        return self.intf[i]
+
+    def matrixa(self,i,j):
+        return integ.matrixa(i+1,j+1)
+
+    def approximateu(self,x):
+        return integ.approximateu(x)
+
 class testBIE(object):
     @classmethod
     def setUpClass(self):
@@ -112,7 +136,26 @@ class testBIE(object):
         self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()
-        pass
+        integ.calcomp()
+
+        self.P.initAHMED()
+        self.P.sigma = zeros((self.P.numnodes), order = 'Fortran')
+        self.P.sigma[:] = map(self.P.data.fsigma,self.P.intphi_over)[:]
+        integ.set_sigma(self.P.sigma)
+        self.P.intf = zeros((self.P.numnodes), dtype = complex, order = 'Fortran')
+        self.P.q_ahmed = zeros((self.P.numnodes), dtype = complex, order = 'Fortran')
+        integ.set_k(self.P.k)
+        self.P.intf[:] = multiply(
+            map(lambda x:
+                cmath.exp(complex(0,1)*self.P.k*x[2]),
+                self.P.node_coordinates[:]),
+            self.P.intphi_over)
+        slaeahmed.set_points(self.P.node_coordinates)
+        slaeahmed.set_vectorb(self.P.vectorb)
+        slaeahmed.set_kernel(integ.matrixa)
+        slaeahmed.solve_slae()
+        slaeahmed.get_q(self.P.q_ahmed)
+        integ.set_q(self.P.q_ahmed)
 
     def testEllipsoid(self):
         self.assertAlmostEqual(
@@ -128,17 +171,25 @@ class testBIE(object):
             places = 12)
 
     def testInteg(self):
-        integ.calcomp()
         self.P.area[0] = sum(self.P.intphi_over)
         self.assertAlmostEqual(
             self.P.area[0],
             6.971610618375645,
             places = self.integ_places)
 
+    def testSLAE(self):
+        self.assertAlmostEqual(
+            self.P.data.criteria(self.P.axes,self.P.approximateu,self.P.data.exactu),
+            self.slae_tol, places = self.slae_places)
+
 class testBIEsmall(testBIE, unittest.TestCase):
-    numpoints = 100
+    numpoints = 200
     integ_places = 4
+    slae_tol = 0.003
+    slae_places = 3
 
 class testBIEmedium(testBIE, unittest.TestCase):
-    numpoints = 400
+    numpoints = 6400
     integ_places = 6
+    slae_tol = 0.001
+    slae_places = 3

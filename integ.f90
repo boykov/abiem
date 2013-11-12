@@ -5,6 +5,53 @@ contains
   
   include 'set_params.f90'
 
+  double complex function approximateu(x)
+    use omp_lib
+    use dbsym
+    double precision, intent(in), dimension(:) :: x
+    integer :: i
+    double complex, dimension(:), allocatable :: s
+
+    allocate(s(numnodes))
+
+    call OMP_SET_NUM_THREADS(4)
+
+
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(v)
+    do i=1,numnodes
+       s(i) = intphi_over(i)*q(i)*Amn(x,node_coordinates(i,:),k)
+    end do
+    !$OMP END PARALLEL DO
+
+    approximateu = sum(s(:))
+
+    deallocate(s)
+  end function approximateu
+
+  double complex function matrixA(i,j)
+    use omp_lib
+    use dbsym
+    integer, intent(in) :: i,j
+    double precision :: sigm
+    double precision, dimension(nd) :: x,y
+
+    sigm = sigmaij(i,j)
+    x = node_coordinates(i,:)
+    y = node_coordinates(j,:)
+
+    if (i .eq. j) then
+       matrixA = (intphi_over(i)**2)*limA(sigm,k)
+    else
+       matrixA = intphi_over(i)*intphi_over(j)*Amn(x,y,k)
+    end if
+  end function matrixA
+
+  double precision function sigmaij(i,j)
+    integer, intent(in) :: i,j
+    sigmaij = dsqrt(sigma(i)**2 + sigma(j)**2)
+  end function sigmaij
+
   subroutine inomp(i,nt)
     integer, intent(in) :: i, nt
     call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)

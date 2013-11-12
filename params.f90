@@ -24,4 +24,8 @@ module params
   double complex, pointer   :: jacobian(:,:,:)
   double precision, pointer :: nodes(:,:,:,:)
 
+  double complex :: k
+  double precision, pointer   :: sigma(:)
+  double complex, pointer     :: q(:)
+
 end module params

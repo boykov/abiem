@@ -92,3 +92,18 @@ subroutine set_nodes(nodesi)
   double precision, intent(in), target :: nodesi(:,:,:,:)
   nodes => nodesi
 end subroutine set_nodes
+
+subroutine set_sigma(values)
+  double precision, intent(in), target :: values(:)
+  sigma => values
+end subroutine set_sigma
+
+subroutine set_q(values)
+  double complex, intent(in), target :: values(:)
+  q => values
+end subroutine set_q
+
+subroutine set_k(val)
+  double complex, intent(in) :: val
+  k = val
+end subroutine set_k

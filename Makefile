@@ -9,6 +9,7 @@ export PYTHONPATH := $(shell python defaults.py dbsym_dir):$(PYTHONPATH)
 export PYTHONPATH := $(shell python defaults.py gsie_dir):$(PYTHONPATH)
 export PYTHONPATH := $(shell python defaults.py dotgsie_dir):$(PYTHONPATH)
 export PYTHONPATH := $(shell python defaults.py petsc4py_dir):$(PYTHONPATH)
+export PYTHONPATH := $(shell python defaults.py ahmed_dir):$(PYTHONPATH)
 
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
@@ -34,7 +35,7 @@ phi.so: libphi.so
 	test -s phi.so || f2py -m phi --overwrite-signature -h phi.pyf phi.f90
 	test -s phi.so || $(f2) -m phi -L. -lphi -c phi.pyf phi.f90
 
-libinteg.so: dbsym/dbsym.o integ.f90 params.o libphi.so
+libinteg.so: dbsym/dbsym.o integ.f90 params.o set_params.f90 libphi.so
 	$(gf) -shared -I$(shell python defaults.py dbsym_dir) dbsym/toms_mod.f90 integ.f90 -o libinteg.so
 
 integ.so: integ.f90 params.o phi.o libinteg.so
@@ -42,7 +43,7 @@ integ.so: integ.f90 params.o phi.o libinteg.so
 	test -s integ.so || $(f2) -m integ -lgomp -I$(shell python defaults.py dbsym_dir) -L. -linteg -c integ.pyf params.o dbsym/dbsym.o phi.o integ.f90 
 
 test:
-	@make testcase tn=.testBIEsmall > /dev/null
+	@make testcase tn=.testBIEsmall
 
 testcase: testcase.py phi.so dbsym/dbsym.so integ.so
 	python -m unittest testcase$(tn)
