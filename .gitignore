@@ -6,5 +6,6 @@
 *.dat
 
 /TAGS
+/jacobian.out
 /dbsym/*
 /dbsym

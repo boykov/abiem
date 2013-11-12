@@ -12,6 +12,12 @@ from dataelement import *
 from numpy import *
 from utilities import *
 from phi import modphi as phi
+from integ import modinteg as integ
+from dbsym import dbsym
+
+import sys,os
+import petsc4py
+from petsc4py import PETSc
 
 class params():
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
@@ -52,6 +58,23 @@ class params():
         phi.filter_neighbors(  self.h, self.node_neighbors1, self.numnodes)
         phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
 
+
+    def initInteg(self):
+        self.intphi_over = zeros((self.numnodes), order = 'Fortran')
+
+        self.centres = zeros((self.Nz), order = 'Fortran')
+        self.C = zeros((self.Nz), order = 'Fortran')
+        self.jacobian = zeros((4,self.Nz,4*self.Nz), dtype = complex, order = 'Fortran')
+        self.nodes = zeros((4,self.Nz,4*self.Nz,3), order = 'Fortran')
+
+        self.centres[:] = self.quadphi_over[:,0]
+        self.C[:] = self.quadphi_over[:,1]
+
+        self.area = zeros((1), order = 'Fortran')
+
+        self.setObjInteg(integ)
+
+
     def setObjPhi(self,obj):
         obj.set_nd(self.nd)
         obj.set_pi(self.PI)
@@ -67,15 +90,55 @@ class params():
         obj.set_node_neighbors1(self.node_neighbors1)
         obj.set_node_neighbors2(self.node_neighbors2)
 
-class testBIE(unittest.TestCase):
-    def setUp(self):
-        self.P = params(400)
+    def setObjInteg(self, obj):
+        self.setObjPhi(obj)
+
+        obj.set_intphi_over(self.intphi_over)
+        obj.set_h2(self.h2)
+        obj.set_nz(self.Nz)
+
+        obj.set_centres(self.centres)
+        obj.set_c(self.C)
+        obj.set_jacobian(self.jacobian)
+        obj.set_nodes(self.nodes)
+
+        obj.set_area(self.area)
+
+class testBIE(object):
+    @classmethod
+    def setUpClass(self):
+        self.P = params(self.numpoints)
         self.P.initQuad(20)
         self.P.initEllipsoid()
         self.P.initPhi()
+        self.P.initInteg()
+        pass
 
     def testEllipsoid(self):
-        self.assertAlmostEqual(center_points(self.P.node_coordinates), 1.0e-11, places = 10)
+        self.assertAlmostEqual(
+            center_points(self.P.node_coordinates),
+            1.0e-11,
+            places = 10)
 
     def testPhi(self):
-        self.assertAlmostEqual(phi.test_phi(gen_points(self.P.numnodes,self.P.axes)), self.P.numnodes, places = 12)
+        self.assertAlmostEqual(
+            phi.test_phi(
+                gen_points(self.P.numnodes,self.P.axes)),
+            self.P.numnodes,
+            places = 12)
+
+    def testInteg(self):
+        integ.calcomp()
+        self.P.area[0] = sum(self.P.intphi_over)
+        self.assertAlmostEqual(
+            self.P.area[0],
+            6.971610618375645,
+            places = self.integ_places)
+
+class testBIEsmall(testBIE, unittest.TestCase):
+    numpoints = 100
+    integ_places = 4
+
+class testBIEmedium(testBIE, unittest.TestCase):
+    numpoints = 400
+    integ_places = 6
