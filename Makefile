@@ -40,7 +40,7 @@ libinteg.so: dbsym/dbsym.o integ.f90 params.o set_params.f90 libphi.so
 
 integ.so: integ.f90 params.o phi.o libinteg.so
 	test -s integ.so || f2py -m integ --overwrite-signature -h integ.pyf integ.f90
-	test -s integ.so || $(f2) -m integ -lgomp -I$(shell python defaults.py dbsym_dir) -L. -linteg -c integ.pyf params.o dbsym/dbsym.o phi.o integ.f90 
+	test -s integ.so || $(f2) -m integ -lgomp -I$(shell python defaults.py dbsym_dir) -L. -linteg -c integ.pyf params.o dbsym/dbsym.o phi.o cover.f90
 
 test:
 	@make testcase tn=.testBIEsmall
