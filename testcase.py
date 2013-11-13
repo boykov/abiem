@@ -30,7 +30,7 @@ class params():
         self.axes[:] = [float(0.75),float(1.),float(0.5)]
         self.k = 0
         self.data = DataElement(1)
-        self.data.magic = 0.380
+        self.data.magic = 0.410
         pass
 
     def initAHMED(self):
@@ -187,11 +187,29 @@ class testBIE(object):
 class testBIEsmall(testBIE, unittest.TestCase):
     numpoints = 200
     integ_places = 4
-    slae_tol = 0.003
-    slae_places = 3
+    slae_tol = 0.0003
+    slae_places = 4
 
 class testBIEmedium(testBIE, unittest.TestCase):
-    numpoints = 6400
+    numpoints = 3200
     integ_places = 6
-    slae_tol = 0.001
-    slae_places = 3
+    slae_tol = 0.00019
+    slae_places = 5
+
+class testBIEbig(testBIE, unittest.TestCase):
+    numpoints = 12800
+    integ_places = 6
+    slae_tol = 0.00009
+    slae_places = 5
+
+class testBIEhuge(testBIE, unittest.TestCase):
+    numpoints = 25600
+    integ_places = 6
+    slae_tol = 0.00006
+    slae_places = 5
+
+class testBIEgig(testBIE, unittest.TestCase):
+    numpoints = 51200
+    integ_places = 6
+    slae_tol = 0.00004
+    slae_places = 5

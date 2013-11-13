@@ -43,7 +43,12 @@ integ.so: integ.f90 params.o phi.o libinteg.so
 	test -s integ.so || $(f2) -m integ -lgomp -I$(shell python defaults.py dbsym_dir) -L. -linteg -c integ.pyf params.o dbsym/dbsym.o phi.o cover.f90
 
 test:
-	@make testcase tn=.testBIEsmall
+	rm -f libinteg.so
+	make testcase tn=.testBIEsmall
+
+test2:
+	rm -f libinteg.so
+	@make testcase tn=.testBIEmedium
 
 testcase: testcase.py phi.so dbsym/dbsym.so integ.so
 	python -m unittest testcase$(tn)
