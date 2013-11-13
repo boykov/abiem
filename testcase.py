@@ -150,7 +150,9 @@ class testBIE(object):
                 cmath.exp(complex(0,1)*self.P.k*x[2]),
                 self.P.node_coordinates[:]),
             self.P.intphi_over)
-        slaeahmed.set_points(self.P.node_coordinates)
+        self.points = zeros((self.P.numnodes,3)) # C order !!!
+        self.points[:,:] = self.P.node_coordinates[:,:]
+        slaeahmed.set_points(self.points)
         slaeahmed.set_vectorb(self.P.vectorb)
         slaeahmed.set_kernel(integ.matrixa)
         slaeahmed.solve_slae()
