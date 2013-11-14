@@ -15,8 +15,14 @@ singular.out: singular.max
 beta.f90: singular.out jacobian.out dirichlet-helmholtz.out
 	python dbsym.py
 
-dbsym.o: dbsym.f90 beta.f90
-	$(gf) -c toms_mod.f90 dbsym.f90
+toms_mod.o: toms_mod.f90
+	$(gf) -c toms_mod.f90
+
+fast_dbsym.o: fast_dbsym.f90
+	$(gf) -c fast_dbsym.f90
+
+dbsym.o: dbsym.f90 beta.f90 toms_mod.o fast_dbsym.o
+	$(gf) -c dbsym.f90
 
 dbsym.so: dbsym.f90 beta.f90
 	$(f2) -m dbsym -c toms_mod.f90 dbsym.f90
