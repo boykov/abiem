@@ -47,6 +47,14 @@ contains
     end if
   end function matrixA
 
+  double complex function vectorb(i)
+    use dbsym
+    integer, intent(in) :: i
+
+    vectorb = cdexp((0,1)*k*node_coordinates(i,3))*intphi_over(i)
+
+  end function vectorb
+
   double precision function sigmaij(i,j)
     integer, intent(in) :: i,j
     sigmaij = dsqrt(sigma(i)**2 + sigma(j)**2)

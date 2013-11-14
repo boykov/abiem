@@ -25,7 +25,7 @@ class params():
         self.max_neighbors = 100
         self.PI = 3.14159265358979324
         self.nd = 3
-        self.axes = zeros((3), order = 'Fortran')
+        self.axes = zeros((3))
         self.numpoints = numpoints
         self.axes[:] = [float(0.75),float(1.),float(0.5)]
         self.k = 0
@@ -40,10 +40,20 @@ class params():
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
+        self.points = zeros((self.numnodes,3)) # C order !!!
+        self.points[:,:] = self.node_coordinates[:,:]
+        self.q_ahmed = zeros((self.numnodes), dtype = complex)
+
         slaeahmed.set_Hmatrix(self.eps,
                               self.eta,
                               self.bmin,
                               self.rankmax)
+
+        slaeahmed.set_points(self.points)
+        slaeahmed.set_vectorb(integ.vectorb)
+        slaeahmed.set_kernel(integ.matrixa)
+        slaeahmed.solve_slae()
+        slaeahmed.get_q(self.q_ahmed)
 
     def initQuad(self, orderquad):
         self.data.orderquad = orderquad
@@ -75,20 +85,25 @@ class params():
 
 
     def initInteg(self):
-        self.intphi_over = zeros((self.numnodes), order = 'Fortran')
+        self.intphi_over = zeros((self.numnodes))
 
-        self.centres = zeros((self.Nz), order = 'Fortran')
-        self.C = zeros((self.Nz), order = 'Fortran')
+        self.centres = zeros((self.Nz))
+        self.C = zeros((self.Nz))
         self.jacobian = zeros((4,self.Nz,4*self.Nz), dtype = complex, order = 'Fortran')
         self.nodes = zeros((4,self.Nz,4*self.Nz,3), order = 'Fortran')
 
         self.centres[:] = self.quadphi_over[:,0]
         self.C[:] = self.quadphi_over[:,1]
 
-        self.area = zeros((1), order = 'Fortran')
+        self.area = zeros((1))
 
         self.setObjInteg(integ)
+        integ.calcomp()
 
+        self.sigma = zeros((self.numnodes))
+        self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
+        integ.set_sigma(self.sigma)
+        integ.set_k(self.k)
 
     def setObjPhi(self,obj):
         obj.set_nd(self.nd)
@@ -119,15 +134,6 @@ class params():
 
         obj.set_area(self.area)
 
-    def vectorb(self,i):
-        return self.intf[i]
-
-    def matrixa(self,i,j):
-        return integ.matrixa(i+1,j+1)
-
-    def approximateu(self,x):
-        return integ.approximateu(x)
-
 class testBIE(object):
     @classmethod
     def setUpClass(self):
@@ -136,27 +142,7 @@ class testBIE(object):
         self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()
-        integ.calcomp()
-
         self.P.initAHMED()
-        self.P.sigma = zeros((self.P.numnodes), order = 'Fortran')
-        self.P.sigma[:] = map(self.P.data.fsigma,self.P.intphi_over)[:]
-        integ.set_sigma(self.P.sigma)
-        self.P.intf = zeros((self.P.numnodes), dtype = complex, order = 'Fortran')
-        self.P.q_ahmed = zeros((self.P.numnodes), dtype = complex, order = 'Fortran')
-        integ.set_k(self.P.k)
-        self.P.intf[:] = multiply(
-            map(lambda x:
-                cmath.exp(complex(0,1)*self.P.k*x[2]),
-                self.P.node_coordinates[:]),
-            self.P.intphi_over)
-        self.points = zeros((self.P.numnodes,3)) # C order !!!
-        self.points[:,:] = self.P.node_coordinates[:,:]
-        slaeahmed.set_points(self.points)
-        slaeahmed.set_vectorb(self.P.vectorb)
-        slaeahmed.set_kernel(integ.matrixa)
-        slaeahmed.solve_slae()
-        slaeahmed.get_q(self.P.q_ahmed)
         integ.set_q(self.P.q_ahmed)
 
     def testEllipsoid(self):
@@ -181,7 +167,7 @@ class testBIE(object):
 
     def testSLAE(self):
         self.assertAlmostEqual(
-            self.P.data.criteria(self.P.axes,self.P.approximateu,self.P.data.exactu),
+            self.P.data.criteria(self.P.axes,integ.approximateu,self.P.data.exactu),
             self.slae_tol, places = self.slae_places)
 
 class testBIEsmall(testBIE, unittest.TestCase):
@@ -198,7 +184,7 @@ class testBIEmedium(testBIE, unittest.TestCase):
 
 class testBIEbig(testBIE, unittest.TestCase):
     numpoints = 12800
-    integ_places = 6
+    integ_places = 7
     slae_tol = 0.00009
     slae_places = 5
 
@@ -213,3 +199,7 @@ class testBIEgig(testBIE, unittest.TestCase):
     integ_places = 6
     slae_tol = 0.00004
     slae_places = 5
+
+class testFOO(unittest.TestCase):
+    def testFoo(self):
+        self.assertAlmostEqual(6.9716106130103963, 6.971610618375645, places = 7)
