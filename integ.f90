@@ -49,9 +49,10 @@ contains
 
   double complex function vectorb(i)
     use dbsym
+    use fast_dbsym
     integer, intent(in) :: i
 
-    vectorb = cdexp((0,1)*k*node_coordinates(i,3))*intphi_over(i)
+    vectorb = cdexp((0,1)*k*node_coordinates(i,3))*intphi_over(i) + 0 * foo()
 
   end function vectorb
 
