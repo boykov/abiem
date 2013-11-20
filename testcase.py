@@ -37,7 +37,9 @@ class params():
     def initAHMED(self):
         """
         """
-        self.eps = 1e-6
+        self.eps_matgen = 1e-4
+        self.eps_aggl = self.eps_matgen
+        self.eps_gmres = self.eps_matgen*0.01
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
@@ -45,7 +47,9 @@ class params():
         self.points[:,:] = self.node_coordinates[:,:]
         self.q_ahmed = zeros((self.numnodes), dtype = complex)
 
-        slaeahmed.set_Hmatrix(self.eps,
+        slaeahmed.set_Hmatrix(self.eps_matgen,
+                              self.eps_aggl,
+                              self.eps_gmres,
                               self.eta,
                               self.bmin,
                               self.rankmax)
