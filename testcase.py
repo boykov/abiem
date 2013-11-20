@@ -28,22 +28,27 @@ class params():
         self.nd = 3
         self.axes = zeros((3))
         self.numpoints = numpoints
-        self.axes[:] = [float(0.75),float(1.),float(0.5)]
+        self.axes[:] = axes[:]
         self.k = 0
         self.data = DataElement(numpoints)
         self.data.magic = 0.410
         self.name_matrixa = 'integ.matrixa'
-        pass
-
-    def initAHMED(self):
-        """
-        """
+        self.name_approximateu = 'integ.approximateu'
+        self.integ_places = 4
+        self.slae_tol = 0.0
+        self.slae_places = 0
+        self.orderquad = 20
         self.eps_matgen = 1e-4
         self.eps_aggl = self.eps_matgen
         self.eps_gmres = self.eps_matgen*0.01
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
+        pass
+
+    def initAHMED(self):
+        """
+        """
         self.points = zeros((self.numnodes,3)) # C order !!!
         self.points[:,:] = self.node_coordinates[:,:]
         self.q_ahmed = zeros((self.numnodes), dtype = complex)
@@ -79,9 +84,12 @@ class params():
         self.normal_coordinates[:,:] = self.e.normalvectors[:,:]
 
     def initPhi(self):
-        self.node_neighbors1 = zeros((self.numnodes,100), dtype = int32, order = 'Fortran')
-        self.node_neighbors2 = zeros((self.numnodes,100), dtype = int32, order = 'Fortran')
-        self.nstroke_coordinates = zeros((self.numnodes,3), order = 'Fortran')
+        self.node_neighbors1 = zeros(
+            (self.numnodes,self.max_neighbors), dtype = int32, order = 'Fortran')
+        self.node_neighbors2 = zeros(
+            (self.numnodes,self.max_neighbors), dtype = int32, order = 'Fortran')
+        self.nstroke_coordinates = zeros(
+            (self.numnodes,3), order = 'Fortran')
 
         self.setObjPhi(phi)
 
@@ -114,7 +122,6 @@ class params():
             return intphi_over_tmp
 
         self.setObjInteg(integ)
-        # integ.calcomp()
         self.intphi_over[:] = wrapCalcIntphi(self.axes,
                                              self.node_coordinates,
                                              self.data.orderquad)[:]
@@ -154,19 +161,14 @@ class params():
         obj.set_area(self.area)
 
 class testBIE(object):
-    name_approximateu = 'integ.approximateu'
-    name_matrixa = 'integ.matrixa'
-    k_value = 0
     @classmethod
     def setUpClass(self):
-        self.P = params(self.numpoints)
-        self.P.k = self.k_value
-        self.P.data.k = self.P.k
-        self.P.initQuad(20)
+        self.P = self.tmpP
+        self.P.data.k = self.P.k # TODO cleanup
+        self.P.initQuad(self.P.orderquad)
         self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()
-        self.P.name_matrixa = self.name_matrixa
         self.P.initAHMED()
         integ.set_q(self.P.q_ahmed)
 
@@ -188,60 +190,58 @@ class testBIE(object):
         self.assertAlmostEqual(
             self.P.area[0],
             6.971610618375645,
-            places = self.integ_places)
+            places = self.P.integ_places)
 
     def testSLAE(self):
         self.assertAlmostEqual(
             self.P.data.criteria(self.P.axes,
-                                 eval(self.name_approximateu),
+                                 eval(self.P.name_approximateu),
                                  self.P.data.exactu),
-            self.slae_tol, places = self.slae_places)
+            self.P.slae_tol, places = self.P.slae_places)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
-    numpoints = 800
-    k_value = 6
-    name_approximateu = 'integ.approximateu_sigm'
-    name_matrixa = 'integ.matrixa_sigm'
-    integ_places = 4
-    slae_tol = 0.02
-    slae_places = 3
+    tmpP = params(800)
+    tmpP.k = 6
+    tmpP.name_approximateu = 'integ.approximateu_sigm'
+    tmpP.name_matrixa = 'integ.matrixa_sigm'
+    tmpP.slae_tol = 0.02
+    tmpP.slae_places = 3
 
 class testBIEtest(testBIE, unittest.TestCase):
-    numpoints = 800
-    k_value = 6
-    integ_places = 4
-    slae_tol = 0.02
-    slae_places = 3
+    tmpP = params(800)
+    tmpP.k = 6
+    tmpP.slae_tol = 0.02
+    tmpP.slae_places = 3
 
 class testBIEsmall(testBIE, unittest.TestCase):
-    numpoints = 200
-    integ_places = 4
-    slae_tol = 0.003
-    slae_places = 3
+    tmpP = params(200)
+    tmpP.k = 0
+    tmpP.slae_tol = 0.003
+    tmpP.slae_places = 3
 
 class testBIEmedium(testBIE, unittest.TestCase):
-    numpoints = 3200
-    integ_places = 6
-    slae_tol = 0.0002
-    slae_places = 4
+    tmpP = params(3200)
+    tmpP.integ_places = 6
+    tmpP.slae_tol = 0.0002
+    tmpP.slae_places = 4
 
 class testBIEbig(testBIE, unittest.TestCase):
-    numpoints = 12800
-    integ_places = 7
-    slae_tol = 0.00008
-    slae_places = 5
+    tmpP = params(12800)
+    tmpP.integ_places = 7
+    tmpP.slae_tol = 0.00008
+    tmpP.slae_places = 5
 
 class testBIEhuge(testBIE, unittest.TestCase):
-    numpoints = 25600
-    integ_places = 6
-    slae_tol = 0.00006
-    slae_places = 5
+    tmpP = params(25600)
+    tmpP.integ_places = 6
+    tmpP.slae_tol = 0.00006
+    tmpP.slae_places = 5
 
 class testBIEgig(testBIE, unittest.TestCase):
-    numpoints = 51200
-    integ_places = 6
-    slae_tol = 0.00004
-    slae_places = 5
+    tmpP = params(51200)
+    tmpP.integ_places = 6
+    tmpP.slae_tol = 0.00004
+    tmpP.slae_places = 5
 
 class testFOO(unittest.TestCase):
     def testFoo(self):
