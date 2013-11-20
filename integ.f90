@@ -5,6 +5,11 @@ contains
   
   include 'set_params.f90'
 
+  double precision function test_fast()
+    use fast_dbsym
+    test_fast = foo2()
+  end function test_fast
+
   double complex function approximateu(x)
     use omp_lib
     use dbsym
@@ -49,10 +54,9 @@ contains
 
   double complex function vectorb(i)
     use dbsym
-    use fast_dbsym
     integer, intent(in) :: i
 
-    vectorb = cdexp((0,1)*k*node_coordinates(i,3))*intphi_over(i) + 0 * foo()
+    vectorb = cdexp((0,1)*k*node_coordinates(i,3))*intphi_over(i)
 
   end function vectorb
 
