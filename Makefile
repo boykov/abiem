@@ -22,10 +22,13 @@ params.o: params.f90
 phi.o: phi.f90 params.o
 	$(gf) -c phi.f90
 
-dbsym/dbsym.o:
+dbsym/dbsym.o: dbsym/dbsym.f90
 	cd dbsym && make dbsym.o
 
-dbsym/dbsym.so:
+dbsym/fast_dbsym.o: dbsym/fast_dbsym.f90
+	cd dbsym && make fast_dbsym.o
+
+dbsym/dbsym.so: dbsym/dbsym.f90
 	cd dbsym && make dbsym.so
 
 libphi.so: phi.f90 params.o set_params.f90
@@ -35,7 +38,7 @@ phi.so: libphi.so
 	test -s phi.so || f2py -m phi --overwrite-signature -h phi.pyf phi.f90
 	test -s phi.so || $(f2) -m phi -L. -lphi -c phi.pyf phi.f90
 
-libinteg.so: dbsym/dbsym.o integ.f90 params.o set_params.f90 libphi.so
+libinteg.so: dbsym/dbsym.o dbsym/fast_dbsym.o integ.f90 params.o set_params.f90 libphi.so
 	$(gf) -shared -I$(shell python defaults.py dbsym_dir) dbsym/dbsym.o dbsym/toms_mod.o dbsym/fast_dbsym.o params.o phi.o integ.f90 -o libinteg.so
 
 integ.so: integ.f90 params.o phi.o libinteg.so
