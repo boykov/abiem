@@ -107,3 +107,8 @@ subroutine set_k(val)
   double complex, intent(in) :: val
   k = val
 end subroutine set_k
+
+subroutine set_gauss(values)
+  double complex, intent(in), target :: values(:)
+  gauss => values
+end subroutine set_gauss

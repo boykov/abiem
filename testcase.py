@@ -33,6 +33,7 @@ class params():
         self.data = DataElement(numpoints)
         self.data.magic = 0.410
         self.name_matrixa = 'integ.matrixa'
+        self.name_vectorb = 'integ.vectorb'
         self.name_approximateu = 'integ.approximateu'
         self.integ_places = 4
         self.slae_tol = 0.0
@@ -61,7 +62,7 @@ class params():
                               self.rankmax)
 
         slaeahmed.set_points(self.points)
-        slaeahmed.set_vectorb(integ.vectorb)
+        slaeahmed.set_vectorb(eval(self.name_vectorb))
         slaeahmed.set_kernel(eval(self.name_matrixa))
         slaeahmed.solve_slae()
         slaeahmed.get_q(self.q_ahmed)
@@ -130,6 +131,10 @@ class params():
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
         integ.set_sigma(self.sigma)
         integ.set_k(self.k)
+
+        self.gauss = zeros((self.numnodes), dtype = complex)
+        integ.set_gauss(self.gauss)
+        integ.setgauss()
 
     def setObjPhi(self,obj):
         obj.set_nd(self.nd)
@@ -211,6 +216,14 @@ class testBIEtest(testBIE, unittest.TestCase):
     tmpP = params(800)
     tmpP.k = 6
     tmpP.slae_tol = 0.02
+    tmpP.slae_places = 3
+
+class testBIEsmallNG(testBIE, unittest.TestCase):
+    tmpP = params(200)
+    tmpP.name_matrixa = 'integ.matrixa2'
+    tmpP.name_vectorb = 'integ.vectorb2'
+    tmpP.k = 0.1
+    tmpP.slae_tol = 0.009
     tmpP.slae_places = 3
 
 class testBIEsmall(testBIE, unittest.TestCase):

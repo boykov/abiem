@@ -10,6 +10,49 @@ contains
     test_fast = foo2()
   end function test_fast
 
+  double complex function matrixA2(i,j)
+    use dbsym
+    integer, intent(in) :: i,j
+    integer :: l
+    double precision :: sigm, nstar, s
+    double precision, dimension(3) :: x,y
+
+    nstar = sum(normal_coordinates(i,:)*(node_coordinates(i,:)-node_coordinates(j,:))*intphi_over(j))
+
+    sigm = sigmaij(i,j)
+    x = node_coordinates(i,:)
+    y = node_coordinates(j,:)
+
+    if (i .eq. j) then
+       matrixA2 = (gauss(j))*(intphi_over(i))
+    else
+       ! print *, Bmn(x,y,k)
+       matrixA2 = intphi_over(i)*nstar*Bmn(x,y,k)
+    end if
+  end function matrixA2
+
+  subroutine setgauss()
+    use dbsym
+    integer :: l,j
+    double precision :: sigm, nstar, s
+    double precision, dimension(3) :: x,y
+
+    do j=1,numnodes
+       s = 0.0
+       s2 = 0.0
+       do l=1,numnodes
+          if (l .ne. j) then
+             nstar = sum(normal_coordinates(l,:)*(node_coordinates(l,:)-node_coordinates(j,:))*intphi_over(l))
+             sigm = sigmaij(l,j)
+             x = node_coordinates(l,:)
+             y = node_coordinates(j,:)
+             s = s + nstar/(4*PI*norm(node_coordinates(l,:)-node_coordinates(j,:))**3)
+          end if
+       end do
+       gauss(j) = s
+    end do
+  end subroutine setgauss
+
   double complex function approximateu(x)
     use omp_lib
     use dbsym
@@ -104,6 +147,14 @@ contains
     vectorb = cdexp((0,1)*k*node_coordinates(i,3))*intphi_over(i)
 
   end function vectorb
+
+  double complex function vectorb2(i)
+    use dbsym
+    integer, intent(in) :: i
+
+    vectorb2 = (0,1)*k*normal_coordinates(i,3)*cdexp((0,1)*k*node_coordinates(i,3))*intphi_over(i)
+
+  end function vectorb2
 
   double precision function sigmaij(i,j)
     integer, intent(in) :: i,j
