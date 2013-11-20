@@ -19,6 +19,7 @@ from dbsym import dbsym
 
 import sys,os
 import slaeahmed
+from memo import memoize
 
 class params():
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
@@ -102,8 +103,21 @@ class params():
 
         self.area = zeros((1))
 
+        @memoize
+        def wrapCalcIntphi(axes,points,orderquad):
+            """
+            """
+            print "First calling memoized function"
+            intphi_over_tmp = zeros((self.numnodes))
+            integ.calcomp()
+            intphi_over_tmp[:] = self.intphi_over[:]
+            return intphi_over_tmp
+
         self.setObjInteg(integ)
-        integ.calcomp()
+        # integ.calcomp()
+        self.intphi_over[:] = wrapCalcIntphi(self.axes,
+                                             self.node_coordinates,
+                                             self.data.orderquad)[:]
 
         self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
