@@ -29,7 +29,7 @@ class params():
         self.numpoints = numpoints
         self.axes[:] = [float(0.75),float(1.),float(0.5)]
         self.k = 0
-        self.data = DataElement(1)
+        self.data = DataElement(numpoints)
         self.data.magic = 0.410
         pass
 
