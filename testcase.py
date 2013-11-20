@@ -31,6 +31,7 @@ class params():
         self.k = 0
         self.data = DataElement(numpoints)
         self.data.magic = 0.410
+        self.name_matrixa = 'integ.matrixa'
         pass
 
     def initAHMED(self):
@@ -51,7 +52,7 @@ class params():
 
         slaeahmed.set_points(self.points)
         slaeahmed.set_vectorb(integ.vectorb)
-        slaeahmed.set_kernel(integ.matrixa)
+        slaeahmed.set_kernel(eval(self.name_matrixa))
         slaeahmed.solve_slae()
         slaeahmed.get_q(self.q_ahmed)
 
@@ -135,13 +136,19 @@ class params():
         obj.set_area(self.area)
 
 class testBIE(object):
+    name_approximateu = 'integ.approximateu'
+    name_matrixa = 'integ.matrixa'
+    k_value = 0
     @classmethod
     def setUpClass(self):
         self.P = params(self.numpoints)
+        self.P.k = self.k_value
+        self.P.data.k = self.P.k
         self.P.initQuad(20)
         self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()
+        self.P.name_matrixa = self.name_matrixa
         self.P.initAHMED()
         integ.set_q(self.P.q_ahmed)
 
@@ -167,25 +174,43 @@ class testBIE(object):
 
     def testSLAE(self):
         self.assertAlmostEqual(
-            self.P.data.criteria(self.P.axes,integ.approximateu,self.P.data.exactu),
+            self.P.data.criteria(self.P.axes,
+                                 eval(self.name_approximateu),
+                                 self.P.data.exactu),
             self.slae_tol, places = self.slae_places)
+
+class testBIEtest_sigm(testBIE, unittest.TestCase):
+    numpoints = 800
+    k_value = 6
+    name_approximateu = 'integ.approximateu_sigm'
+    name_matrixa = 'integ.matrixa_sigm'
+    integ_places = 4
+    slae_tol = 0.02
+    slae_places = 3
+
+class testBIEtest(testBIE, unittest.TestCase):
+    numpoints = 800
+    k_value = 6
+    integ_places = 4
+    slae_tol = 0.02
+    slae_places = 3
 
 class testBIEsmall(testBIE, unittest.TestCase):
     numpoints = 200
     integ_places = 4
-    slae_tol = 0.0003
-    slae_places = 4
+    slae_tol = 0.003
+    slae_places = 3
 
 class testBIEmedium(testBIE, unittest.TestCase):
     numpoints = 3200
     integ_places = 6
-    slae_tol = 0.00019
-    slae_places = 5
+    slae_tol = 0.0002
+    slae_places = 4
 
 class testBIEbig(testBIE, unittest.TestCase):
     numpoints = 12800
     integ_places = 7
-    slae_tol = 0.00009
+    slae_tol = 0.00008
     slae_places = 5
 
 class testBIEhuge(testBIE, unittest.TestCase):

@@ -52,6 +52,51 @@ contains
     end if
   end function matrixA
 
+  double complex function approximateu_sigm(x)
+    use omp_lib
+    use dbsym
+    double precision, intent(in), dimension(:) :: x
+    double precision :: sigm
+    integer :: i
+    double complex, dimension(:), allocatable :: s
+
+    allocate(s(numnodes))
+
+    call OMP_SET_NUM_THREADS(4)
+
+
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(v)
+    do i=1,numnodes
+       sigm = sigma(i)
+       s(i) = intphi_over(i)*q(i)*A(x,node_coordinates(i,:),sigm,k)
+    end do
+    !$OMP END PARALLEL DO
+
+    approximateu_sigm = sum(s(:))
+
+    deallocate(s)
+  end function approximateu_sigm
+
+  double complex function matrixA_sigm(i,j)
+    use omp_lib
+    use dbsym
+
+    integer, intent(in) :: i,j
+    double precision :: sigm
+    double precision, dimension(nd) :: x,y
+
+    sigm = sigmaij(i,j)
+    x = node_coordinates(i,:)
+    y = node_coordinates(j,:)
+
+    if (i .eq. j) then
+       matrixA_sigm = (intphi_over(i)**2)*limA(sigm,k)
+    else
+       matrixA_sigm = intphi_over(i)*intphi_over(j)*A(x,y,sigm,k)
+    end if
+  end function matrixA_sigm
+
   double complex function vectorb(i)
     use dbsym
     integer, intent(in) :: i
