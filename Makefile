@@ -21,14 +21,14 @@ toms_mod.o: toms_mod.f90
 fast_dbsym.o: fast_dbsym.f90
 	$(gf) -c fast_dbsym.f90
 
-dbsym.o: dbsym.f90 beta.f90 toms_mod.o fast_dbsym.o
+dbsym.o: dbsym.f90 beta.f90 toms_mod.o
 	$(gf) -c dbsym.f90
 
 dbsym.so: dbsym.f90 beta.f90
 	$(f2) -m dbsym -c toms_mod.f90 dbsym.f90
 
 test: beta.f90 dbsym.so dbsym.o
-	echo ok
+	cd .. && make test
 
 clear:
 	rm -f `git ls-files -o`
