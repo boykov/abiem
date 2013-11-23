@@ -20,6 +20,18 @@ beta.write(ar[2])
 x.write(ar[1])
 jacobian.write(ar[0])
 
+jacobian_out = open("jacobian2.out").read()
+
+beta = open("beta2.f90", 'w')
+x = open("x2.f90", 'w')
+jacobian = open("jacobian2.f90", 'w')
+
+ar = strtr(strtr(jacobian_out,onestring),f90replace).split("\n")
+
+beta.write(ar[2])
+x.write(ar[1])
+jacobian.write(ar[0])
+
 dirichlet_helmholtz_out = open("dirichlet-helmholtz.out").read()
 
 Amn = open("Amn.f90", 'w')

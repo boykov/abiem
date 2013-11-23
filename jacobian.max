@@ -81,4 +81,61 @@ G : sum(dρ(i)*dφ(i),i,1,3);
 
 Jacobian : (E*F - G^2);
 
+y_num[3](y1,y2) := subst([
+  y_[1]=y1,
+  y_[2]=y2],
+  2*a0
+  );
+
+y_den[3](y1,y2) := subst([
+  y_[1]=y1,
+  y_[2]=y2],
+  (-a1 - sqrt(a1^2 - 4*a2*a0))
+  );
+
+y3 : ratsimp(subst([
+    y1=fρ*cos(φ),
+    y2=fρ*sin(φ)],
+    y_num[3](y1,y2))/fρ)/
+subst([
+  y1=fρ*cos(φ),
+  y2=fρ*sin(φ)],
+  y_den[3](y1,y2));
+
+xx_fρ[1] : subst([
+  y1=cos(φ),
+  y2=sin(φ)],
+  (β(1,1)*a[1]*(y1))+(β(1,2)*a[1]*(y2))+(β(1,3)*a[1]*y3));
+
+
+xx_fρ[2] : subst([
+  y1=cos(φ),
+  y2=sin(φ)],
+  (β(2,1)*a[2]*(y1))+(β(2,2)*a[2]*(y2))+(β(2,3)*a[2]*y3));
+
+
+xx_fρ[3] : subst([
+  y1=cos(φ),
+  y2=sin(φ)],
+  (β(3,1)*a[3]*(y1))+(β(3,2)*a[3]*(y2))+(β(3,3)*a[3]*y3));
+
+R_fρ : sqrt(xx_fρ[1]^2 + xx_fρ[2]^2 + xx_fρ[3]^2);
+R : sqrt(xx[1]^2 + xx[2]^2 + xx[3]^2);
+
+x_fρ(s) := δ(1,s)*xx_fρ[1] + δ(2,s)*xx_fρ[2] + δ(3,s)*xx_fρ[3];
+
+dφ_fρ(i) := diff(x_fρ(i),φ);
+
+Jacobian2 : (E*F - G^2)/R^2;
+
+E : sum(dρ(i)^2,i,1,3);
+F : sum(dφ_fρ(i)^2,i,1,3);
+G : sum(dρ(i)*dφ_fρ(i),i,1,3);
+
+Jacobian2 : (E*F - G^2)/R_fρ^2;
+
+Jacobian : (h2/4)*(E*F - G^2);
+
 with_stdout("jacobian.out",f90(Jacobian),f90(x(i)),f90(B(m,l)));
+
+with_stdout("jacobian2.out",f90(Jacobian2),f90(x(i)),f90(B(m,l)));
