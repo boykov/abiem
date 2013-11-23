@@ -8,6 +8,16 @@ __author__ = "Evgeny Boykov. <artscan@list.ru>"
 
 from max2f90 import *
 
+singular_out = open("singular.out").read()
+
+singular = open("singular.f90", 'w')
+singular2 = open("singular2.f90", 'w')
+
+ar = strtr(strtr(singular_out,onestring),f90replace).split("\n")
+
+singular2.write(ar[1])
+singular.write(ar[0])
+
 jacobian_out = open("jacobian.out").read()
 
 beta = open("beta.f90", 'w')

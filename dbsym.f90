@@ -10,6 +10,15 @@ module dbsym
      end function ifjacobian
   end interface
   procedure (ifjacobian), pointer :: ptr_jacobian => null ()
+  abstract interface
+     function ifsingular(axes,p,rh,ph,ispole,k)
+       double complex :: ifsingular
+       double precision, intent(in) :: axes(:), p(:)
+       double precision, intent(in) :: rh, ph, ispole
+       double complex, intent(in) :: k
+     end function ifsingular
+  end interface
+  procedure (ifsingular), pointer :: ptr_singular => null ()
 contains
   pure double precision function norm2(v)
     double precision, intent(in) :: v(:)
@@ -90,6 +99,22 @@ contains
     fx = &
          include 'x.f90'
   end function fx
+
+  pure double complex function fsingular(axes,p,rh,ph,ispole,k)
+    double precision, intent(in) :: axes(:), p(:)
+    double precision, intent(in) :: rh, ph, ispole
+    double complex, intent(in) :: k
+    fsingular = &
+         include 'singular.f90'
+  end function fsingular
+
+  pure double complex function fsingular2(axes,p,rh,ph,ispole,k)
+    double precision, intent(in) :: axes(:), p(:)
+    double precision, intent(in) :: rh, ph, ispole
+    double complex, intent(in) :: k
+    fsingular2 = &
+         include 'singular2.f90'
+  end function fsingular2
 
   pure double precision function fjacobian(bt,axes,h2,rh,ph,z)
     double precision, intent(in) :: bt(:,:)
