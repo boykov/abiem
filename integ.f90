@@ -162,7 +162,10 @@ contains
   end function sigmaij
 
   subroutine inomp(i,nt)
+    use dbsym
     integer, intent(in) :: i, nt
+
+    ptr_jacobian => fjacobian
     call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
     intphi_over(i) = folding(i,f,nt)
   end subroutine inomp
@@ -224,7 +227,7 @@ contains
              nodes(nthread,iz,ik,i) = x(i)
           end do
 
-          jac = dsqrt(fjacobian(bt,axes,h2,rh,ph,z))
+          jac = dsqrt(ptr_jacobian(bt,axes,h2,rh,ph,z))
           jacobian(nthread,iz,ik) = 2*(PI/Nk)*C(iz) * jac
 
        end do
@@ -233,6 +236,7 @@ contains
   end subroutine integrate
 
   double precision function folding(ip,f,nt)
+    use dbsym
     integer, intent(in) :: ip,nt
     interface
        function f(x,i)
@@ -252,7 +256,7 @@ contains
     do iz=1,Nz
        do ik=1,Nk
           tmp = f(nodes(nthread,iz,ik,:),ip)
-          gtmp = gtmp + real(jacobian(nthread,iz,ik))*tmp
+          gtmp = gtmp + realpart(jacobian(nthread,iz,ik))*tmp
        end do
     end do
     folding = gtmp
