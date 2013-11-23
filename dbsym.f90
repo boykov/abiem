@@ -1,6 +1,15 @@
 module dbsym
   implicit double precision (a-h, o-z)
   double precision, parameter :: PI = 3.14159265358979324D0
+  abstract interface
+     function ifjacobian (bt,axes,h2,rh,ph,z)
+       double precision :: ifjacobian
+       double precision, intent(in) :: bt(:,:)
+       double precision, intent(in) :: z(:), axes(:)
+       double precision, intent(in) :: h2, rh, ph
+     end function ifjacobian
+  end interface
+  procedure (ifjacobian), pointer :: ptr_jacobian => null ()
 contains
   pure double precision function norm2(v)
     double precision, intent(in) :: v(:)
@@ -89,6 +98,14 @@ contains
     fjacobian = &
          include 'jacobian.f90'
   end function fjacobian
+
+  pure double precision function fjacobian2(bt,axes,h2,rh,ph,z)
+    double precision, intent(in) :: bt(:,:)
+    double precision, intent(in) :: z(:), axes(:)
+    double precision, intent(in) :: h2, rh, ph
+    fjacobian2 = &
+         include 'jacobian2.f90'
+  end function fjacobian2
 
   double complex function Amn(x,y,k)
     double precision, intent(in) :: x(:),y(:)
