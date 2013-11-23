@@ -129,6 +129,9 @@ class params():
         self.intphi_over[:] = wrapCalcIntphi(self.axes,
                                              self.node_coordinates,
                                              self.data.orderquad)[:]
+        self.centres[:] = self.quadphi_under[:,0]
+        self.C[:] = self.quadphi_under[:,1]
+        integ.calcomp2()
 
         self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
@@ -232,7 +235,15 @@ class testBIEsmallNG(testBIE, unittest.TestCase):
 
 class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
-    tmpP.k = 0
+    tmpP.integ_places = 5
+    tmpP.slae_tol = 0.003
+    tmpP.slae_places = 3
+
+class testBIEsmall3(testBIE, unittest.TestCase):
+    tmpP = params(200)
+    tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.orderquad = 20
+    tmpP.integ_places = 5
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3
 

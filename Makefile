@@ -53,7 +53,7 @@ test2:
 	rm -f libinteg.so
 	@make testcase tn=.testBIEmedium
 
-testcase: testcase.py phi.so dbsym/dbsym.so integ.so
+testcase: testcase.py phi.so integ.so
 	python -m unittest testcase$(tn)
 
 clear:

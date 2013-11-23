@@ -95,6 +95,24 @@ contains
     end if
   end function matrixA
 
+  double complex function matrixA3(i,j)
+    use omp_lib
+    use dbsym
+    integer, intent(in) :: i,j
+    double precision :: sigm
+    double precision, dimension(nd) :: x,y
+
+    sigm = sigmaij(i,j)
+    x = node_coordinates(i,:)
+    y = node_coordinates(j,:)
+
+    if (i .eq. j) then
+       matrixA3 = intphi_over(i)*intphi_under(i)/(4*PI)
+    else
+       matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k)
+    end if
+  end function matrixA3
+
   double complex function approximateu_sigm(x)
     use omp_lib
     use dbsym
