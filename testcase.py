@@ -73,6 +73,8 @@ class params():
         self.Nz = self.data.orderquad
         self.quadphi_over = zeros((self.Nz,2),order = 'Fortran')
         self.quadphi_over[:,:] = self.data.quadphi_over[:,:]
+        self.quadphi_under = zeros((self.Nz,2),order = 'Fortran')
+        self.quadphi_under[:,:] = self.data.quadphi_under[:,:]
 
     def initEllipsoid(self):
         self.e = ellipsoid(self.axes, self.numpoints)
@@ -101,6 +103,7 @@ class params():
 
     def initInteg(self):
         self.intphi_over = zeros((self.numnodes))
+        self.intphi_under = zeros((self.numnodes))
 
         self.centres = zeros((self.Nz))
         self.C = zeros((self.Nz))
@@ -155,6 +158,7 @@ class params():
         self.setObjPhi(obj)
 
         obj.set_intphi_over(self.intphi_over)
+        obj.set_intphi_under(self.intphi_under)
         obj.set_h2(self.h2)
         obj.set_nz(self.Nz)
 

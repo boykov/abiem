@@ -15,6 +15,7 @@ module params
   double precision, pointer :: normal_coordinates(:,:)
   double precision, pointer :: nstroke_coordinates(:,:)
   double precision, pointer :: intphi_over(:)
+  double precision, pointer :: intphi_under(:)
 
   integer, pointer :: node_neighbors2(:,:)
   integer, pointer :: node_neighbors1(:,:)

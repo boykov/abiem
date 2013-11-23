@@ -68,6 +68,11 @@ subroutine set_intphi_over(values)
   intphi_over => values
 end subroutine set_intphi_over
 
+subroutine set_intphi_under(values)
+  double precision, intent(in), target :: values(:)
+  intphi_under => values
+end subroutine set_intphi_under
+
 subroutine set_axes(axesi)
   double precision, intent(in), target :: axesi(:)
   axes => axesi

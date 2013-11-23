@@ -170,11 +170,44 @@ contains
     intphi_over(i) = folding(i,f,nt)
   end subroutine inomp
 
+  subroutine inomp2(i,nt)
+    use dbsym
+    integer, intent(in) :: i, nt
+    double complex :: zero
+
+    zero = 0
+    ptr_jacobian => fjacobian2
+    call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+    intphi_under(i) = folding(i,f,nt)
+  end subroutine inomp2
+
+  double precision function f2(x,i)
+    use dbsym
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(:) :: x
+    f2 = phi(x,i,h**2)/norm(x)
+  end function f2
+
   double precision function f(x,i)
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
     f = phi(x,i,h**2) + 0
   end function f
+
+  subroutine calcomp2()
+    use omp_lib
+    integer i, nt
+
+    call OMP_SET_NUM_THREADS(4)
+
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call inomp2(i,nt)
+    end do
+    !$OMP END PARALLEL DO
+  end subroutine calcomp2
 
   subroutine calcomp()
     use omp_lib
