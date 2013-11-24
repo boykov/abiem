@@ -1,5 +1,3 @@
-export PYTHONPATH := /home/eab/git/difwave/gsie/:$(PYTHONPATH)
-
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
 
