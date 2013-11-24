@@ -114,6 +114,6 @@ subroutine set_k(val)
 end subroutine set_k
 
 subroutine set_gauss(values)
-  double complex, intent(in), target :: values(:)
+  double complex, intent(in), target :: values(:,:)
   gauss => values
 end subroutine set_gauss

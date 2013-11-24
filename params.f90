@@ -29,5 +29,5 @@ module params
   double precision, pointer   :: sigma(:)
   double complex, pointer     :: q(:)
 
-  double complex, pointer     :: gauss(:)
+  double complex, pointer     :: gauss(:,:)
 end module params

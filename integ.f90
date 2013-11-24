@@ -24,7 +24,7 @@ contains
     y = node_coordinates(j,:)
 
     if (i .eq. j) then
-       matrixA2 = (gauss(j))*(intphi_over(i))
+       matrixA2 = (gauss(j,1))*(intphi_over(i))
     else
        ! print *, Bmn(x,y,k)
        matrixA2 = intphi_over(i)*nstar*Bmn(x,y,k)
@@ -49,7 +49,7 @@ contains
              s = s + nstar/(4*PI*norm(node_coordinates(l,:)-node_coordinates(j,:))**3)
           end if
        end do
-       gauss(j) = s
+       gauss(j,1) = s
     end do
   end subroutine setgauss
 

@@ -137,7 +137,7 @@ class params():
         integ.set_sigma(self.sigma)
         integ.set_k(self.k)
 
-        self.gauss = zeros((self.numnodes), dtype = complex)
+        self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
         integ.set_gauss(self.gauss)
         integ.setgauss()
 
