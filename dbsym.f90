@@ -116,6 +116,14 @@ contains
          include 'singular2.f90'
   end function fsingular2
 
+  pure double complex function fsingular3(axes,p,rh,ph,ispole,k)
+    double precision, intent(in) :: axes(:), p(:)
+    double precision, intent(in) :: rh, ph, ispole
+    double complex, intent(in) :: k
+    fsingular3 = &
+         include 'singular3.f90'
+  end function fsingular3
+
   pure double precision function fjacobian(bt,axes,h2,rh,ph,z)
     double precision, intent(in) :: bt(:,:)
     double precision, intent(in) :: z(:), axes(:)

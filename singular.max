@@ -192,8 +192,9 @@ subst([
   ],
   expr2(φ,Θ)[i]*dΘ));
 
-res : [Jacobian(1), Jacobian(2)];
+res : [Jacobian(1), Jacobian(2), Jacobian(7)];
 
 with_stdout("singular.out",
   f90(res[1]),
-  f90(res[2]));
+  f90(res[2]),
+  f90(res[3]));

@@ -12,9 +12,11 @@ singular_out = open("singular.out").read()
 
 singular = open("singular.f90", 'w')
 singular2 = open("singular2.f90", 'w')
+singular3 = open("singular3.f90", 'w')
 
 ar = strtr(strtr(singular_out,onestring),f90replace).split("\n")
 
+singular3.write(ar[2])
 singular2.write(ar[1])
 singular.write(ar[0])
 
