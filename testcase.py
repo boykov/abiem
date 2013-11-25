@@ -130,9 +130,6 @@ class params():
         self.intphi_over[:] = wrapCalcIntphi(self.axes,
                                              self.node_coordinates,
                                              self.data.orderquad)[:]
-        self.centres[:] = self.quadphi_under[:,0]
-        self.C[:] = self.quadphi_under[:,1]
-        integ.calcomp2()
 
         self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
