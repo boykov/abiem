@@ -74,6 +74,8 @@ class params():
         self.quadphi_over[:,:] = self.data.quadphi_over[:,:]
         self.quadphi_under = zeros((self.Nz,2),order = 'Fortran')
         self.quadphi_under[:,:] = self.data.quadphi_under[:,:]
+        self.quadsingular = zeros((self.Nz,2),order = 'Fortran')
+        self.quadsingular[:,:] = self.data.quadsingular[:,:]
 
     def initEllipsoid(self):
         self.e = ellipsoid(self.axes, self.numpoints)
@@ -140,6 +142,10 @@ class params():
         self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
         integ.set_gauss(self.gauss)
         integ.setgauss()
+
+        self.centres[:] = self.quadsingular[:,0]
+        self.C[:] = self.quadsingular[:,1]
+        integ.calcsing()
 
     def setObjPhi(self,obj):
         obj.set_nd(self.nd)
@@ -243,7 +249,7 @@ class testBIEsmall3(testBIE, unittest.TestCase):
     tmpP.name_matrixa = 'integ.matrixa3'
     tmpP.orderquad = 20
     tmpP.integ_places = 5
-    tmpP.slae_tol = 0.003
+    tmpP.slae_tol = 0.006
     tmpP.slae_places = 3
 
 class testBIEmedium(testBIE, unittest.TestCase):

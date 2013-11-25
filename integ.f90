@@ -36,10 +36,12 @@ contains
     integer :: l,j
     double precision :: sigm, nstar, s
     double precision, dimension(3) :: x,y
+    double complex :: s2, s3
 
     do j=1,numnodes
        s = 0.0
        s2 = 0.0
+       s3 = 0.0
        do l=1,numnodes
           if (l .ne. j) then
              nstar = sum(normal_coordinates(l,:)*(node_coordinates(l,:)-node_coordinates(j,:))*intphi_over(l))
@@ -47,9 +49,11 @@ contains
              x = node_coordinates(l,:)
              y = node_coordinates(j,:)
              s = s + nstar/(4*PI*norm(node_coordinates(l,:)-node_coordinates(j,:))**3)
+             s3 = s3 + intphi_over(l)*cdexp((0,1)*k*norm(node_coordinates(l,:)-node_coordinates(j,:)))/(4*PI*norm(node_coordinates(l,:)-node_coordinates(j,:)))
           end if
        end do
        gauss(j,1) = s
+       gauss(j,3) = s3
     end do
   end subroutine setgauss
 
@@ -107,7 +111,7 @@ contains
     y = node_coordinates(j,:)
 
     if (i .eq. j) then
-       matrixA3 = intphi_over(i)*intphi_under(i)/(4*PI)
+       matrixA3 = intphi_over(i)*(gauss(i,4) - gauss(i,3))
     else
        matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k)
     end if
@@ -178,6 +182,75 @@ contains
     integer, intent(in) :: i,j
     sigmaij = dsqrt(sigma(i)**2 + sigma(j)**2)
   end function sigmaij
+
+
+  double precision function calcsing()
+    use omp_lib
+    use dbsym
+    integer i, nt,iz,ik
+
+    call OMP_SET_NUM_THREADS(4)
+
+    ptr_singular => fsingular3
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call singrate(node_coordinates(i,:),node_coordinates(i,:),i,k,nt)
+       gauss(i,4) = sum(jacobian(nt + 1,:,:))
+    end do
+    !$OMP END PARALLEL DO
+  end function calcsing
+
+subroutine singrate(n,z,ip,k,nt)
+  use dbsym
+  integer, intent(in) :: ip,nt
+  double precision, intent(in) :: n(:)
+  double precision, intent(in) :: z(:)
+  double complex, intent(in) :: k
+
+  double precision rh,ph
+
+  double precision, dimension(nd) :: x, y, p
+  double precision, dimension(nd,nd) :: bt
+
+  integer i,nthread
+
+  integer Nk, iz, ik
+  double complex jac
+  double precision q, ispole
+  nthread = nt + 1
+  Nk = 4*Nz
+
+  p(1) = z(1)
+  p(2) = z(2)
+  p(3) = z(3)
+
+  ! DONE ugly, 0.5 is value for ellipsoid (*,*,0.5) only
+  ispole = 1.0
+  if ((p(1)**2 + p(2)**2 .le. 1.0E-12) .and. ((p(3) - axes(3)) .le. 1.0E-12)) then
+     p(3) = -axes(3)
+     ispole = 0.0
+  end if
+
+  do iz=1,Nz
+     rh = centres(iz)
+
+     do ik=1,Nk
+        ph = (2.D0*PI/Nk)*ik
+        ! TODO formula (x,y,z)(rh,ph)
+        ! do i=1,3
+        !    x(i) = (x)s
+        !    nodes(nthread,iz,ik,i) = x(i)
+        ! end do
+
+        jac =  ptr_singular(axes,p,rh,ph,ispole,k)
+        jacobian(nthread,iz,ik) = 2*(PI/Nk)*C(iz) * jac
+     end do
+  end do
+
+  return
+end subroutine singrate
 
   subroutine inomp(i,nt)
     use dbsym
