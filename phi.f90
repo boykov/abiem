@@ -15,36 +15,36 @@ contains
     norm = dsqrt(norm2(v))
   end function norm
 
-  integer function deltah(v,h2)
+  integer function deltah(v,hval2)
     double precision, intent(in), dimension(:) :: v
-    double precision :: h2
+    double precision :: hval2
     deltah = 0
-    if (norm2(v) .le. h2) deltah = 1
+    if (norm2(v) .le. hval2) deltah = 1
   end function deltah
 
-  double precision function varphi(v,h2)
+  double precision function varphi(v,hval2)
 
     double precision, dimension(:) :: v
-    double precision :: h2
+    double precision :: hval2
 
-    if (deltah(v,h2) .eq. 0) then
+    if (deltah(v,hval2) .eq. 0) then
        varphi = 0
     else
-       varphi = (1 - norm2(v)/h2)**3
+       varphi = (1 - norm2(v)/hval2)**3
     end if
   end function varphi
 
-  double precision function phi(x,i,h2i)
+  double precision function phi(x,i,hval2i)
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
-    double precision,intent(in) :: h2i
+    double precision,intent(in) :: hval2i
     double precision s,d,tmp
     double precision, dimension(size(x,1)) :: y
     integer j,ki
 
     y(:) = x(:)
 
-    tmp = varphi(y,h2i)
+    tmp = varphi(y,hval2i)
 
     if (tmp .eq. 0) then
        phi = 0
@@ -56,8 +56,8 @@ contains
        ki = node_neighbors2(i,j)
        if (ki .eq. 0) exit ! bad style!
        y(:) = x(:) + node_coordinates(i,:) - node_coordinates(ki,:) ! bad style!
-       ! if (deltah(y,h2i) .eq. 0) cycle
-       d = d + varphi(y,h2i)
+       ! if (deltah(y,hval2i) .eq. 0) cycle
+       d = d + varphi(y,hval2i)
     end do
 
     phi = 0
@@ -67,14 +67,14 @@ contains
   double precision function test_phi(a)
     double precision, intent(in), target :: a(:,:)
     integer i,j
-    double precision s,si, h2i
-    h2i = h ** 2
+    double precision s,si, hval2i
+    hval2i = hval ** 2
 
     s = 0.
     do j=1,numnodes
        si = 0.
        do i=1,numnodes
-          si = si + phi(a(j,:)-node_coordinates(i,:),i,h2i)
+          si = si + phi(a(j,:)-node_coordinates(i,:),i,hval2i)
        end do
        s = s + si
     end do

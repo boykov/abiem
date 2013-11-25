@@ -3,10 +3,10 @@ subroutine set_area(val)
   area => val
 end subroutine set_area
 
-subroutine set_nd(val)
+subroutine set_dim_3d(val)
   integer, intent(in) :: val
-  nd = val
-end subroutine set_nd
+  dim_3d = val
+end subroutine set_dim_3d
 
 subroutine set_pi(val)
   double precision, intent(in) :: val
@@ -23,97 +23,97 @@ subroutine set_numnodes(val)
   numnodes = val
 end subroutine set_numnodes
 
-subroutine set_h(val)
+subroutine set_hval(val)
   double precision, intent(in) :: val
-  h = val
-end subroutine set_h
+  hval = val
+end subroutine set_hval
 
-subroutine set_h2(h)
-  double precision, intent(in) :: h
-  h2 = h
-end subroutine set_h2
+subroutine set_hval2(val)
+  double precision, intent(in) :: val
+  hval2 = val
+end subroutine set_hval2
 
-subroutine set_nz(n)
-  integer, intent(in) :: n
-  Nz = n
-end subroutine set_nz
+subroutine set_dim_quad(val)
+  integer, intent(in) :: val
+  dim_quad = val
+end subroutine set_dim_quad
 
-subroutine set_node_coordinates(points)
-  double precision, intent(in), target :: points(:,:)
-  node_coordinates => points
+subroutine set_node_coordinates(val)
+  double precision, intent(in), target :: val(:,:)
+  node_coordinates => val
 end subroutine set_node_coordinates
 
-subroutine set_normal_coordinates(nvectors)
-  double precision, intent(in), target :: nvectors(:,:)
-  normal_coordinates => nvectors
+subroutine set_normal_coordinates(val)
+  double precision, intent(in), target :: val(:,:)
+  normal_coordinates => val
 end subroutine set_normal_coordinates
 
-subroutine set_nstroke_coordinates(nstroke)
-  double precision, intent(in), target :: nstroke(:,:)
-  nstroke_coordinates => nstroke
+subroutine set_nstroke_coordinates(val)
+  double precision, intent(in), target :: val(:,:)
+  nstroke_coordinates => val
 end subroutine set_nstroke_coordinates
 
-subroutine set_node_neighbors1(nneigh1)
-  integer, intent(in), target :: nneigh1(:,:)
-  node_neighbors1 => nneigh1
+subroutine set_node_neighbors1(val)
+  integer, intent(in), target :: val(:,:)
+  node_neighbors1 => val
 end subroutine set_node_neighbors1
 
-subroutine set_node_neighbors2(nneigh2)
-  integer, intent(in), target :: nneigh2(:,:)
-  node_neighbors2 => nneigh2
+subroutine set_node_neighbors2(val)
+  integer, intent(in), target :: val(:,:)
+  node_neighbors2 => val
 end subroutine set_node_neighbors2
 
-subroutine set_intphi_over(values)
-  double precision, intent(in), target :: values(:)
-  intphi_over => values
+subroutine set_intphi_over(val)
+  double precision, intent(in), target :: val(:)
+  intphi_over => val
 end subroutine set_intphi_over
 
-subroutine set_intphi_under(values)
-  double precision, intent(in), target :: values(:)
-  intphi_under => values
+subroutine set_intphi_under(val)
+  double precision, intent(in), target :: val(:)
+  intphi_under => val
 end subroutine set_intphi_under
 
-subroutine set_axes(axesi)
-  double precision, intent(in), target :: axesi(:)
-  axes => axesi
+subroutine set_axes(val)
+  double precision, intent(in), target :: val(:)
+  axes => val
 end subroutine set_axes
 
-subroutine set_centres(centresi)
-  double precision, intent(in), target :: centresi(:)
-  centres => centresi
+subroutine set_centres(val)
+  double precision, intent(in), target :: val(:)
+  centres => val
 end subroutine set_centres
 
-subroutine set_c(Ci)
-  double precision, intent(in), target :: Ci(:)
-  C => Ci
-end subroutine set_c
+subroutine set_weights(val)
+  double precision, intent(in), target :: val(:)
+  weights => val
+end subroutine set_weights
 
-subroutine set_jacobian(jacobiani)
-  double complex, intent(in), target :: jacobiani(:,:,:)
-  jacobian => jacobiani
+subroutine set_jacobian(val)
+  double complex, intent(in), target :: val(:,:,:)
+  jacobian => val
 end subroutine set_jacobian
 
-subroutine set_nodes(nodesi)
-  double precision, intent(in), target :: nodesi(:,:,:,:)
-  nodes => nodesi
+subroutine set_nodes(val)
+  double precision, intent(in), target :: val(:,:,:,:)
+  nodes => val
 end subroutine set_nodes
 
-subroutine set_sigma(values)
-  double precision, intent(in), target :: values(:)
-  sigma => values
+subroutine set_sigma(val)
+  double precision, intent(in), target :: val(:)
+  sigma => val
 end subroutine set_sigma
 
-subroutine set_q(values)
-  double complex, intent(in), target :: values(:)
-  q => values
-end subroutine set_q
+subroutine set_q_density(val)
+  double complex, intent(in), target :: val(:)
+  q_density => val
+end subroutine set_q_density
 
-subroutine set_k(val)
+subroutine set_k_wave(val)
   double complex, intent(in) :: val
-  k = val
-end subroutine set_k
+  k_wave = val
+end subroutine set_k_wave
 
-subroutine set_gauss(values)
-  double complex, intent(in), target :: values(:,:)
-  gauss => values
+subroutine set_gauss(val)
+  double complex, intent(in), target :: val(:,:)
+  gauss => val
 end subroutine set_gauss
