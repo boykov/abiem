@@ -44,7 +44,7 @@ class params():
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
-        pass
+        self.flagMemo = True
 
     def initAHMED(self):
         """
@@ -101,6 +101,19 @@ class params():
         phi.filter_neighbors(  self.hval, self.node_neighbors1, self.numnodes)
         phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
 
+    def withWrapMemo(self,largs, body, larrs, flagMemo):
+        @memoize
+        def withWrapMemoInternal(largs,body):
+            print body + ' is saved to memo'
+            eval(body)
+            return larrs
+        if flagMemo:
+            print body + ' uses memo'
+            return withWrapMemoInternal(largs,body)
+        else:
+            print body + ' does not use memo'
+            eval(body)
+            return larrs
 
     def initInteg(self):
         self.intphi_over = zeros((self.numnodes))
@@ -116,20 +129,13 @@ class params():
 
         self.area = zeros((1))
 
-        @memoize
-        def wrapCalcIntphi(axes,points,orderquad):
-            """
-            """
-            print "First calling memoized function"
-            intphi_over_tmp = zeros((self.numnodes))
-            integ.calcomp()
-            intphi_over_tmp[:] = self.intphi_over[:]
-            return intphi_over_tmp
-
         self.setObjInteg(integ)
-        self.intphi_over[:] = wrapCalcIntphi(self.axes,
-                                             self.node_coordinates,
-                                             self.data.orderquad)[:]
+        [self.intphi_over[:]] = self.withWrapMemo([self.axes,
+                                                   self.node_coordinates,
+                                                   self.dim_quad],
+                                                  'integ.calcomp()',
+                                                  [self.intphi_over[:]],
+                                                  self.flagMemo)
 
         self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
@@ -142,7 +148,13 @@ class params():
 
         self.centres[:] = self.quadsingular[:,0]
         self.weights[:] = self.quadsingular[:,1]
-        integ.calcsing()
+        [self.gauss[:,3]] = self.withWrapMemo([self.axes,
+                                               self.node_coordinates,
+                                               self.dim_quad,
+                                               self.k_wave],
+                                              'integ.calcsing()',
+                                              [self.gauss[:,3]],
+                                              self.flagMemo)
 
     def setObjPhi(self,obj):
         obj.set_dim_3d(self.dim_3d)

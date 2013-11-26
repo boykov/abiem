@@ -2,7 +2,7 @@ module modinteg
   use params
   use modphi, only : phi
 contains  
-  
+
   include 'set_params.f90'
 
   double precision function test_fast()
@@ -202,55 +202,55 @@ contains
     !$OMP END PARALLEL DO
   end function calcsing
 
-subroutine singrate(n,z,ip,k_wave,nt)
-  use dbsym
-  integer, intent(in) :: ip,nt
-  double precision, intent(in) :: n(:)
-  double precision, intent(in) :: z(:)
-  double complex, intent(in) :: k_wave
+  subroutine singrate(n,z,ip,k_wave,nt)
+    use dbsym
+    integer, intent(in) :: ip,nt
+    double precision, intent(in) :: n(:)
+    double precision, intent(in) :: z(:)
+    double complex, intent(in) :: k_wave
 
-  double precision rh,ph
+    double precision rh,ph
 
-  double precision, dimension(dim_3d) :: x, y, p
-  double precision, dimension(dim_3d,dim_3d) :: bt
+    double precision, dimension(dim_3d) :: x, y, p
+    double precision, dimension(dim_3d,dim_3d) :: bt
 
-  integer i,nthread
+    integer i,nthread
 
-  integer Nk, iz, ik
-  double complex jac
-  double precision q, ispole
-  nthread = nt + 1
-  Nk = 4*dim_quad
+    integer Nk, iz, ik
+    double complex jac
+    double precision q, ispole
+    nthread = nt + 1
+    Nk = 4*dim_quad
 
-  p(1) = z(1)
-  p(2) = z(2)
-  p(3) = z(3)
+    p(1) = z(1)
+    p(2) = z(2)
+    p(3) = z(3)
 
-  ! DONE ugly, 0.5 is value for ellipsoid (*,*,0.5) only
-  ispole = 1.0
-  if ((p(1)**2 + p(2)**2 .le. 1.0E-12) .and. ((p(3) - axes(3)) .le. 1.0E-12)) then
-     p(3) = -axes(3)
-     ispole = 0.0
-  end if
+    ! DONE ugly, 0.5 is value for ellipsoid (*,*,0.5) only
+    ispole = 1.0
+    if ((p(1)**2 + p(2)**2 .le. 1.0E-12) .and. ((p(3) - axes(3)) .le. 1.0E-12)) then
+       p(3) = -axes(3)
+       ispole = 0.0
+    end if
 
-  do iz=1,dim_quad
-     rh = centres(iz)
+    do iz=1,dim_quad
+       rh = centres(iz)
 
-     do ik=1,Nk
-        ph = (2.D0*PI/Nk)*ik
-        ! TODO formula (x,y,z)(rh,ph)
-        ! do i=1,3
-        !    x(i) = (x)s
-        !    nodes(nthread,iz,ik,i) = x(i)
-        ! end do
+       do ik=1,Nk
+          ph = (2.D0*PI/Nk)*ik
+          ! TODO formula (x,y,z)(rh,ph)
+          ! do i=1,3
+          !    x(i) = (x)s
+          !    nodes(nthread,iz,ik,i) = x(i)
+          ! end do
 
-        jac =  ptr_singular(axes,p,rh,ph,ispole,k_wave)
-        jacobian(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
-     end do
-  end do
+          jac =  ptr_singular(axes,p,rh,ph,ispole,k_wave)
+          jacobian(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
+       end do
+    end do
 
-  return
-end subroutine singrate
+    return
+  end subroutine singrate
 
   double precision function f2(x,i)
     use dbsym
@@ -319,7 +319,7 @@ end subroutine singrate
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
-  
+
   subroutine integrate(n,z,ip,nt)
     use dbsym
     integer, intent(in) :: ip,nt
