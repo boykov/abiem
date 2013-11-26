@@ -13,3 +13,13 @@ print "φ(r)/r - sum =", sum(self.P.intphi_under[:])/(4*math.pi) - self.P.gauss[
 self.centres[:] = self.quadphi_under[:,0]
 self.C[:] = self.quadphi_under[:,1]
 integ.calcomp2()
+
+self.centres[:] = self.quadphi_over[:,0]
+self.weights[:] = self.quadphi_over[:,1]
+integ.calcomp3()
+
+def testUnder(self):
+    print (self.P.intphi_under[0] + sum(self.P.gauss[:,5]))/(4*math.pi)
+    print self.P.gauss[0,3]
+    print self.P.gauss[0,3] - sum(self.P.gauss[:,5])/(4*math.pi)
+    print (self.P.intphi_under[0])/(4*math.pi)

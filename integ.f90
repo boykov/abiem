@@ -252,31 +252,11 @@ subroutine singrate(n,z,ip,k_wave,nt)
   return
 end subroutine singrate
 
-  subroutine inomp(i,nt)
-    use dbsym
-    integer, intent(in) :: i, nt
-
-    ptr_jacobian => fjacobian
-    call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-    intphi_over(i) = folding(i,f,nt)
-  end subroutine inomp
-
-  subroutine inomp2(i,nt)
-    use dbsym
-    integer, intent(in) :: i, nt
-    double complex :: zero
-
-    zero = 0
-    ptr_jacobian => fjacobian2
-    call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-    intphi_under(i) = folding(i,f,nt)
-  end subroutine inomp2
-
   double precision function f2(x,i)
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
-    f2 = phi(x,i,hval**2)/norm(x)
+    f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(1,:))
   end function f2
 
   double precision function f(x,i)
@@ -287,30 +267,55 @@ end subroutine singrate
 
   subroutine calcomp2()
     use omp_lib
+    use dbsym
     integer i, nt
 
     call OMP_SET_NUM_THREADS(4)
 
+    ptr_jacobian => fjacobian2
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call inomp2(i,nt)
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+       intphi_under(i) = folding(i,f,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp2
 
-  subroutine calcomp()
+  subroutine calcomp3()
     use omp_lib
+    use dbsym
     integer i, nt
 
     call OMP_SET_NUM_THREADS(4)
 
+    ptr_jacobian => fjacobian
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call inomp(i,nt)
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+       gauss(i,6) = folding(i,f2,nt)
+    end do
+    !$OMP END PARALLEL DO
+    gauss(1,6) = 0.0
+  end subroutine calcomp3
+
+  subroutine calcomp()
+    use omp_lib
+    use dbsym
+    integer i, nt
+
+    call OMP_SET_NUM_THREADS(4)
+
+    ptr_jacobian => fjacobian
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+       intphi_over(i) = folding(i,f,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
