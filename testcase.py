@@ -227,6 +227,11 @@ class testBIEtest(testBIE, unittest.TestCase):
     tmpP.slae_tol = 0.02
     tmpP.slae_places = 3
 
+class testBIEinteg(testBIE, unittest.TestCase):
+    tmpP = params(200)
+    tmpP.orderquad = 160
+    tmpP.integ_places = 9
+
 class testBIEsmallNG(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.name_matrixa = 'integ.matrixa2'
