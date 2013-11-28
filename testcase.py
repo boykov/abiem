@@ -278,6 +278,13 @@ class testBIEbig(testBIE, unittest.TestCase):
     tmpP.slae_tol = 0.00008
     tmpP.slae_places = 5
 
+class testBIEhuge3(testBIE, unittest.TestCase):
+    tmpP = params(25600)
+    tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.integ_places = 6
+    tmpP.slae_tol = 0.00007
+    tmpP.slae_places = 5
+
 class testBIEhuge(testBIE, unittest.TestCase):
     tmpP = params(25600)
     tmpP.integ_places = 6
