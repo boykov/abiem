@@ -1,7 +1,8 @@
 dbsym_dir = $(shell python defaults.py dbsym_dir)
 ahmed_dir = $(shell python defaults.py ahmed_dir)
+sql_dir   = $(shell python defaults.py sql_dir)
 
-export PYTHONPATH := $(ahmed_dir):$(dbsym_dir):$(PYTHONPATH)
+export PYTHONPATH := $(sql_dir):$(ahmed_dir):$(dbsym_dir):$(PYTHONPATH)
 
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
@@ -42,11 +43,17 @@ test:
 	make testcase tn=.testBIEsmall
 
 test2:
+	make testsql
+
+test3:
 	rm -f libinteg.so
 	@make testcase tn=.testBIEmedium
 
 testcase: testcase.py phi.so integ.so
 	python -m unittest testcase$(tn)
+
+testsql: testsql.py
+	python -m unittest testsql
 
 clear:
 	rm -f *.o *.so *.pyc *.tem *.mod *.pyf

@@ -21,6 +21,7 @@ import slaeahmed
 from memo import memoize
 
 import logging
+from testsql import *
 
 class params():
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
@@ -78,6 +79,29 @@ class params():
         self.quadphi_under[:,:] = self.data.quadphi_under[:,:]
         self.quadsingular = zeros((self.dim_quad,2),order = 'Fortran')
         self.quadsingular[:,:] = self.data.quadsingular[:,:]
+
+
+    def initEllipsoid2(self):
+        session = create_session(Base)
+        ell = session.query(EllipsoidWITH).filter_by(numpoints=self.numpoints, axes = self.axes).first()
+        if not ell:
+            ell = EllipsoidWITH(numpoints = self.numpoints,
+                                axe1 = self.axes[0],
+                                axe2 = self.axes[1],
+                                axe3 = self.axes[2])
+            ell.setup()
+            session.add(ell)
+            session.commit()
+            self.e = ell.e
+
+        self.numnodes = ell.numnodes
+        self.hval = ell.hval
+        self.hval2 = self.hval * self.hval
+        self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
+        self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
+        self.node_coordinates[:,:] = ell.node_coordinates[:,:]
+        self.normal_coordinates[:,:] = ell.normal_coordinates[:,:]
+        session.close()
 
     def initEllipsoid(self):
         self.e = ellipsoid(self.axes, self.numpoints)
@@ -195,7 +219,7 @@ class testBIE(object):
         self.P = self.tmpP
         self.P.data.k = self.P.k_wave # TODO cleanup
         self.P.initQuad(self.P.orderquad)
-        self.P.initEllipsoid()
+        self.P.initEllipsoid2()
         self.P.initPhi()
         self.P.initInteg()
         self.P.initAHMED()
