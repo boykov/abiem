@@ -1,35 +1,35 @@
 module modinteg
   use params
   use modphi, only : phi
-contains  
+contains
 
   include 'set_params.f90'
+  include 'kernels.f90'
+
+  double precision function f2(x,i)
+    use dbsym
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(:) :: x
+    f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(1,:))
+  end function f2
+
+  double precision function f(x,i)
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(:) :: x
+    f = phi(x,i,hval**2)
+  end function f
 
   double precision function test_fast()
     use fast_dbsym
     test_fast = foo2()
   end function test_fast
 
-  double complex function matrixA2(i,j)
-    use dbsym
-    integer, intent(in) :: i,j
-    integer :: l
-    double precision :: sigm, nstar, s
-    double precision, dimension(3) :: x,y
-
-    nstar = sum(normal_coordinates(i,:)*(node_coordinates(i,:)-node_coordinates(j,:))*intphi_over(j))
-
-    sigm = sigmaij(i,j)
-    x = node_coordinates(i,:)
-    y = node_coordinates(j,:)
-
-    if (i .eq. j) then
-       matrixA2 = (gauss(j,1))*(intphi_over(i))
-    else
-       ! print *, Bmn(x,y,k_wave)
-       matrixA2 = intphi_over(i)*nstar*Bmn(x,y,k_wave)
-    end if
-  end function matrixA2
+!                 _
+!        ___  ___| |_
+!       / __|/ _ \ __|
+!       \__ \  __/ |_
+!       |___/\___|\__|
+!
 
   subroutine setgauss()
     use dbsym
@@ -57,133 +57,6 @@ contains
     end do
   end subroutine setgauss
 
-  double complex function approximateu(x)
-    use omp_lib
-    use dbsym
-    double precision, intent(in), dimension(:) :: x
-    integer :: i
-    double complex, dimension(:), allocatable :: s
-
-    allocate(s(numnodes))
-
-    call OMP_SET_NUM_THREADS(4)
-
-
-    !$OMP PARALLEL DO &
-    !$OMP DEFAULT(SHARED) PRIVATE(v)
-    do i=1,numnodes
-       s(i) = intphi_over(i)*q_density(i)*Amn(x,node_coordinates(i,:),k_wave)
-    end do
-    !$OMP END PARALLEL DO
-
-    approximateu = sum(s(:))
-
-    deallocate(s)
-  end function approximateu
-
-  double complex function matrixA(i,j)
-    use omp_lib
-    use dbsym
-    integer, intent(in) :: i,j
-    double precision :: sigm
-    double precision, dimension(dim_3d) :: x,y
-
-    sigm = sigmaij(i,j)
-    x = node_coordinates(i,:)
-    y = node_coordinates(j,:)
-
-    if (i .eq. j) then
-       matrixA = (intphi_over(i)**2)*limA(sigm,k_wave)
-    else
-       matrixA = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
-    end if
-  end function matrixA
-
-  double complex function matrixA3(i,j)
-    use omp_lib
-    use dbsym
-    integer, intent(in) :: i,j
-    double precision :: sigm
-    double precision, dimension(dim_3d) :: x,y
-
-    sigm = sigmaij(i,j)
-    x = node_coordinates(i,:)
-    y = node_coordinates(j,:)
-
-    if (i .eq. j) then
-       matrixA3 = intphi_over(i)*(gauss(i,4) - gauss(i,3))
-    else
-       matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
-    end if
-  end function matrixA3
-
-  double complex function approximateu_sigm(x)
-    use omp_lib
-    use dbsym
-    double precision, intent(in), dimension(:) :: x
-    double precision :: sigm
-    integer :: i
-    double complex, dimension(:), allocatable :: s
-
-    allocate(s(numnodes))
-
-    call OMP_SET_NUM_THREADS(4)
-
-
-    !$OMP PARALLEL DO &
-    !$OMP DEFAULT(SHARED) PRIVATE(v)
-    do i=1,numnodes
-       sigm = sigma(i)
-       s(i) = intphi_over(i)*q_density(i)*A(x,node_coordinates(i,:),sigm,k_wave)
-    end do
-    !$OMP END PARALLEL DO
-
-    approximateu_sigm = sum(s(:))
-
-    deallocate(s)
-  end function approximateu_sigm
-
-  double complex function matrixA_sigm(i,j)
-    use omp_lib
-    use dbsym
-
-    integer, intent(in) :: i,j
-    double precision :: sigm
-    double precision, dimension(dim_3d) :: x,y
-
-    sigm = sigmaij(i,j)
-    x = node_coordinates(i,:)
-    y = node_coordinates(j,:)
-
-    if (i .eq. j) then
-       matrixA_sigm = (intphi_over(i)**2)*limA(sigm,k_wave)
-    else
-       matrixA_sigm = intphi_over(i)*intphi_over(j)*A(x,y,sigm,k_wave)
-    end if
-  end function matrixA_sigm
-
-  double complex function vectorb(i)
-    use dbsym
-    integer, intent(in) :: i
-
-    vectorb = cdexp((0,1)*k_wave*node_coordinates(i,3))*intphi_over(i)
-
-  end function vectorb
-
-  double complex function vectorb2(i)
-    use dbsym
-    integer, intent(in) :: i
-
-    vectorb2 = (0,1)*k_wave*normal_coordinates(i,3)*cdexp((0,1)*k_wave*node_coordinates(i,3))*intphi_over(i)
-
-  end function vectorb2
-
-  double precision function sigmaij(i,j)
-    integer, intent(in) :: i,j
-    sigmaij = dsqrt(sigma(i)**2 + sigma(j)**2)
-  end function sigmaij
-
-
   double precision function calcsing()
     use omp_lib
     use dbsym
@@ -201,6 +74,68 @@ contains
     end do
     !$OMP END PARALLEL DO
   end function calcsing
+
+  subroutine calcomp()
+    use omp_lib
+    use dbsym
+    integer i, nt
+
+    call OMP_SET_NUM_THREADS(4)
+
+    ptr_jacobian => fjacobian
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+       intphi_over(i) = folding(i,f,nt)
+    end do
+    !$OMP END PARALLEL DO
+  end subroutine calcomp
+
+  subroutine calcomp2()
+    use omp_lib
+    use dbsym
+    integer i, nt
+
+    call OMP_SET_NUM_THREADS(4)
+
+    ptr_jacobian => fjacobian2
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+       intphi_under(i) = folding(i,f,nt)
+    end do
+    !$OMP END PARALLEL DO
+  end subroutine calcomp2
+
+  subroutine calcomp3()
+    use omp_lib
+    use dbsym
+    integer i, nt
+
+    call OMP_SET_NUM_THREADS(4)
+
+    ptr_jacobian => fjacobian
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+       gauss(i,6) = folding(i,f2,nt)
+    end do
+    !$OMP END PARALLEL DO
+    gauss(1,6) = 0.0
+  end subroutine calcomp3
+
+!       _       _
+!      (_)_ __ | |_ ___  __ _
+!      | | '_ \| __/ _ \/ _` |
+!      | | | | | ||  __/ (_| |
+!      |_|_| |_|\__\___|\__, |
+!                       |___/
 
   subroutine singrate(n,z,ip,k_wave,nt)
     use dbsym
@@ -251,74 +186,6 @@ contains
 
     return
   end subroutine singrate
-
-  double precision function f2(x,i)
-    use dbsym
-    integer, intent(in) :: i
-    double precision, intent(in), dimension(:) :: x
-    f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(1,:))
-  end function f2
-
-  double precision function f(x,i)
-    integer, intent(in) :: i
-    double precision, intent(in), dimension(:) :: x
-    f = phi(x,i,hval**2) + 0
-  end function f
-
-  subroutine calcomp2()
-    use omp_lib
-    use dbsym
-    integer i, nt
-
-    call OMP_SET_NUM_THREADS(4)
-
-    ptr_jacobian => fjacobian2
-    !$OMP PARALLEL DO &
-    !$OMP DEFAULT(SHARED) PRIVATE(nt)
-    do i=1,numnodes
-       nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       intphi_under(i) = folding(i,f,nt)
-    end do
-    !$OMP END PARALLEL DO
-  end subroutine calcomp2
-
-  subroutine calcomp3()
-    use omp_lib
-    use dbsym
-    integer i, nt
-
-    call OMP_SET_NUM_THREADS(4)
-
-    ptr_jacobian => fjacobian
-    !$OMP PARALLEL DO &
-    !$OMP DEFAULT(SHARED) PRIVATE(nt)
-    do i=1,numnodes
-       nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       gauss(i,6) = folding(i,f2,nt)
-    end do
-    !$OMP END PARALLEL DO
-    gauss(1,6) = 0.0
-  end subroutine calcomp3
-
-  subroutine calcomp()
-    use omp_lib
-    use dbsym
-    integer i, nt
-
-    call OMP_SET_NUM_THREADS(4)
-
-    ptr_jacobian => fjacobian
-    !$OMP PARALLEL DO &
-    !$OMP DEFAULT(SHARED) PRIVATE(nt)
-    do i=1,numnodes
-       nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       intphi_over(i) = folding(i,f,nt)
-    end do
-    !$OMP END PARALLEL DO
-  end subroutine calcomp
 
   subroutine integrate(n,z,ip,nt)
     use dbsym
