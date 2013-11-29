@@ -20,6 +20,8 @@ import sys,os
 import slaeahmed
 from memo import memoize
 
+import logging
+
 class params():
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
         self.max_neighbors = 100
@@ -104,14 +106,14 @@ class params():
     def withWrapMemo(self,largs, body, larrs, flagMemo):
         @memoize
         def withWrapMemoInternal(largs,body):
-            print body + ' is saved to memo'
+            logging.info(body + ' is saved to memo')
             eval(body)
             return larrs
         if flagMemo:
-            print body + ' uses memo'
+            logging.info(body + ' uses memo')
             return withWrapMemoInternal(largs,body)
         else:
-            print body + ' does not use memo'
+            logging.info(body + ' does not use memo')
             eval(body)
             return larrs
 
@@ -189,6 +191,7 @@ class params():
 class testBIE(object):
     @classmethod
     def setUpClass(self):
+        logging.basicConfig(level=logging.DEBUG)
         self.P = self.tmpP
         self.P.data.k = self.P.k_wave # TODO cleanup
         self.P.initQuad(self.P.orderquad)
