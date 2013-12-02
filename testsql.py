@@ -18,7 +18,7 @@ class PhiWITH(Base):
     __tablename__ = 'phi'
 
     id = Column(Integer, primary_key=True)
-    ellipsoid_id = Column(Integer, ForeignKey('ellipsoid.id'))
+    points_id = Column(Integer, ForeignKey('points.id'))
     test_phi = Column(Numeric(36, 12))
 
     def setup(self):
@@ -27,22 +27,30 @@ class PhiWITH(Base):
 class EllipsoidWITH(Base):
     __tablename__ = 'ellipsoid'
 
-    id = Column(types.Integer, primary_key=True)
-    numpoints = Column(types.Integer, unique=True)
+    id = Column(Integer, primary_key=True)
     axe1 = Column(Numeric(36, 16))
     axe2 = Column(Numeric(36, 16))
     axe3 = Column(Numeric(36, 16))
-    timestamp = Column(types.DateTime, default = datetime.datetime.now)
     axes = Column(SqliteArray)
-    numnodes = Column(types.Integer, unique=True)
-    node_coordinates = Column(SqliteArray)
-    normal_coordinates = Column(SqliteArray)
-    hval = Column(Numeric(36, 16))
 
     def setup(self):
         axes = zeros((3))
         axes[:] = [float(self.axe1),float(self.axe2),float(self.axe3)]
         self.axes = axes
+
+class PointsWITH(Base):
+    __tablename__ = 'points'
+
+    id = Column(types.Integer, primary_key=True)
+    surface_id = Column(Integer, ForeignKey('ellipsoid.id'))
+    numpoints = Column(types.Integer, unique=True)
+    timestamp = Column(types.DateTime, default = datetime.datetime.now)
+    numnodes = Column(types.Integer, unique=True)
+    node_coordinates = Column(SqliteArray)
+    normal_coordinates = Column(SqliteArray)
+    hval = Column(Numeric(36, 16))
+
+    def setup(self, axes):
         self.e = ellipsoid(axes, int(D(self.numpoints)))
         self.hval = self.e.get_h()
         self.numnodes = self.e.points.shape[0]
@@ -65,22 +73,30 @@ class Test(unittest.TestCase):
         session = create_session(Base)
 
         try:
-            ell = session.query(EllipsoidWITH).filter_by(numpoints=200).first()
+            ell  = session.query(EllipsoidWITH).filter_by(axe1=0.75).first()
             if not ell:
-                ell = EllipsoidWITH(numpoints=200, axe1=0.75, axe2 = 1.0, axe3 = 0.5)
+                ell = EllipsoidWITH(axe1=0.75, axe2 = 1.0, axe3 = 0.5)
                 ell.setup()
                 session.add(ell)
                 session.commit()
 
-            ell2 = session.query(EllipsoidWITH).filter_by(numpoints='200').first()
-            self.assertEquals(ell, ell2)
+            pnts = session.query(PointsWITH).filter_by(numpoints=200).first()
+            if not pnts:
+                pnts = PointsWITH(numpoints=200, surface_id = ell.id)
+                pnts.setup(ell.axes)
+                session.add(pnts)
+                session.commit()
 
-            phi = session.query(PhiWITH).filter_by(ellipsoid_id=ell.id).first()
+            pnts2 = session.query(PointsWITH).filter_by(numpoints='200').first()
+            self.assertEquals(pnts, pnts2)
+
+            phi = session.query(PhiWITH).filter_by(points_id=pnts.id).first()
             if not phi:
-                phi = PhiWITH(ellipsoid_id = ell.id)
+                phi = PhiWITH(points_id = pnts.id)
                 phi.setup()
                 session.add(phi)
                 session.commit()
+
             phi2 = session.query(PhiWITH).filter_by(test_phi='182').first()
             self.assertEquals(phi, phi2)
         finally:

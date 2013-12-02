@@ -83,24 +83,30 @@ class params():
 
     def initEllipsoid2(self):
         session = create_session(Base)
-        ell = session.query(EllipsoidWITH).filter_by(numpoints=self.numpoints, axes = self.axes).first()
+        ell = session.query(EllipsoidWITH).filter_by(axes = self.axes).first()
         if not ell:
-            ell = EllipsoidWITH(numpoints = self.numpoints,
-                                axe1 = self.axes[0],
+            ell = EllipsoidWITH(axe1 = self.axes[0],
                                 axe2 = self.axes[1],
                                 axe3 = self.axes[2])
             ell.setup()
             session.add(ell)
             session.commit()
-            self.e = ell.e
 
-        self.numnodes = ell.numnodes
-        self.hval = ell.hval
+        pnts = session.query(PointsWITH).filter_by(numpoints=self.numpoints).first()
+        if not pnts:
+            pnts = PointsWITH(numpoints = self.numpoints, surface_id = ell.id)
+            pnts.setup(ell.axes)
+            session.add(pnts)
+            session.commit()
+            self.e = pnts.e
+
+        self.numnodes = pnts.numnodes
+        self.hval = pnts.hval
         self.hval2 = self.hval * self.hval
         self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
         self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
-        self.node_coordinates[:,:] = ell.node_coordinates[:,:]
-        self.normal_coordinates[:,:] = ell.normal_coordinates[:,:]
+        self.node_coordinates[:,:] = pnts.node_coordinates[:,:]
+        self.normal_coordinates[:,:] = pnts.normal_coordinates[:,:]
         session.close()
 
     def initEllipsoid(self):
