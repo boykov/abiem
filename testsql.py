@@ -49,6 +49,7 @@ class PointsWITH(Base):
     node_coordinates = Column(SqliteArray)
     normal_coordinates = Column(SqliteArray)
     hval = Column(Numeric(36, 16))
+    nstroke_coordinates = Column(SqliteArray)
 
     def setup(self, axes):
         self.e = ellipsoid(axes, int(D(self.numpoints)))

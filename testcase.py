@@ -24,7 +24,11 @@ import logging
 from testsql import *
 
 class params():
+    def __del__(self):
+        self.session.close()
+
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
+        self.session = create_session(Base)
         self.max_neighbors = 100
         self.PI = 3.14159265358979324
         self.dim_3d = 3
@@ -81,43 +85,35 @@ class params():
         self.quadsingular[:,:] = self.data.quadsingular[:,:]
 
 
-    def initEllipsoid2(self):
-        session = create_session(Base)
-        ell = session.query(EllipsoidWITH).filter_by(axes = self.axes).first()
-        if not ell:
-            ell = EllipsoidWITH(axe1 = self.axes[0],
-                                axe2 = self.axes[1],
-                                axe3 = self.axes[2])
-            ell.setup()
-            session.add(ell)
-            session.commit()
-
-        pnts = session.query(PointsWITH).filter_by(numpoints=self.numpoints).first()
-        if not pnts:
-            pnts = PointsWITH(numpoints = self.numpoints, surface_id = ell.id)
-            pnts.setup(ell.axes)
-            session.add(pnts)
-            session.commit()
-            self.e = pnts.e
-
-        self.numnodes = pnts.numnodes
-        self.hval = pnts.hval
-        self.hval2 = self.hval * self.hval
-        self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
-        self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
-        self.node_coordinates[:,:] = pnts.node_coordinates[:,:]
-        self.normal_coordinates[:,:] = pnts.normal_coordinates[:,:]
-        session.close()
-
     def initEllipsoid(self):
-        self.e = ellipsoid(self.axes, self.numpoints)
-        self.numnodes = self.e.points.shape[0]
-        self.hval = self.e.get_h()
+        self.ell = self.session.query(EllipsoidWITH).filter_by(axes = self.axes).first()
+        if not self.ell:
+            self.ell = EllipsoidWITH(axe1 = self.axes[0],
+                                     axe2 = self.axes[1],
+                                     axe3 = self.axes[2],
+                                     axes = self.axes)
+            self.session.add(self.ell)
+            self.session.commit()
+
+        self.pnts = self.session.query(PointsWITH).filter_by(numpoints=self.numpoints).first()
+        if not self.pnts:
+            self.e = ellipsoid(self.axes, self.numpoints)
+            self.pnts = PointsWITH(numpoints = self.numpoints,
+                              surface_id = self.ell.id,
+                              hval = self.e.get_h(),
+                              numnodes = self.e.points.shape[0],
+                              node_coordinates = self.e.points[:,:],
+                              normal_coordinates = self.e.normalvectors[:,:])
+            self.session.add(self.pnts)
+            self.session.commit()
+
+        self.numnodes = self.pnts.numnodes
+        self.hval = self.pnts.hval
         self.hval2 = self.hval * self.hval
         self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
         self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
-        self.node_coordinates[:,:] = self.e.points[:,:]
-        self.normal_coordinates[:,:] = self.e.normalvectors[:,:]
+        self.node_coordinates[:,:] = self.pnts.node_coordinates[:,:]
+        self.normal_coordinates[:,:] = self.pnts.normal_coordinates[:,:]
 
     def initPhi(self):
         self.node_neighbors1 = zeros(
@@ -131,7 +127,12 @@ class params():
 
         phi.filter_neighbors(2*self.hval, self.node_neighbors2, self.numnodes)
         phi.filter_neighbors(  self.hval, self.node_neighbors1, self.numnodes)
-        phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
+
+        if not self.pnts.nstroke_coordinates:
+            phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
+            self.pnts.nstroke_coordinates = self.nstroke_coordinates[:,:]
+        else:
+            self.nstroke_coordinates[:,:] = self.pnts.nstroke_coordinates[:,:]
 
     def withWrapMemo(self,largs, body, larrs, flagMemo):
         @memoize
@@ -225,7 +226,7 @@ class testBIE(object):
         self.P = self.tmpP
         self.P.data.k = self.P.k_wave # TODO cleanup
         self.P.initQuad(self.P.orderquad)
-        self.P.initEllipsoid2()
+        self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()
         self.P.initAHMED()
