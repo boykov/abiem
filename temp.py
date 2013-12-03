@@ -23,3 +23,32 @@ def testUnder(self):
     print self.P.gauss[0,3]
     print self.P.gauss[0,3] - sum(self.P.gauss[:,5])/(4*math.pi)
     print (self.P.intphi_under[0])/(4*math.pi)
+
+[self.intphi_over[:]] = self.withWrapMemo([self.axes,
+                                           self.node_coordinates,
+                                           self.dim_quad],
+                                          'integ.calcomp()',
+                                          [self.intphi_over[:]],
+                                          self.flagMemo)
+
+[self.gauss[:,3]] = self.withWrapMemo([self.axes,
+                                       self.node_coordinates,
+                                       self.dim_quad,
+                                       self.k_wave],
+                                      'integ.calcsing()',
+                                      [self.gauss[:,3]],
+                                      self.flagMemo)
+
+def withWrapMemo(self,largs, body, larrs, flagMemo):
+    @memoize
+    def withWrapMemoInternal(largs,body):
+        logging.info(body + ' is saved to memo')
+        eval(body)
+        return larrs
+    if flagMemo:
+        logging.info(body + ' uses memo')
+        return withWrapMemoInternal(largs,body)
+    else:
+        logging.info(body + ' does not use memo')
+        eval(body)
+        return larrs

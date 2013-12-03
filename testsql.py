@@ -58,6 +58,21 @@ class PointsWITH(Base):
         self.node_coordinates = self.e.points[:,:]
         self.normal_coordinates = self.e.normalvectors[:,:]
 
+class IntegWITH(Base):
+    __tablename__ = 'integ'
+    id = Column(types.Integer, primary_key = True)
+    points_id = Column(types.Integer, ForeignKey('points.id'))
+    dim_quad = Column(types.Integer)
+    intphi_over = Column(SqliteArray)
+
+class SingularWITH(Base):
+    __tablename__ = 'singular'
+    id = Column(types.Integer, primary_key = True)
+    points_id = Column(types.Integer, ForeignKey('points.id'))
+    dim_quad = Column(types.Integer)
+    k_wave = Column(Numeric(36,16))
+    fsingular3 = Column(SqliteArray)
+
 def create_session(Base):
     engine = create_engine('sqlite:///ddd.db',
                            echo=False, 

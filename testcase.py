@@ -86,34 +86,35 @@ class params():
 
 
     def initEllipsoid(self):
-        self.ell = self.session.query(EllipsoidWITH).filter_by(axes = self.axes).first()
-        if not self.ell:
-            self.ell = EllipsoidWITH(axe1 = self.axes[0],
-                                     axe2 = self.axes[1],
-                                     axe3 = self.axes[2],
-                                     axes = self.axes)
-            self.session.add(self.ell)
-            self.session.commit()
+        self.withWrapSql("self.ell_sql",
+                         "EllipsoidWITH",
+                         EllipsoidWITH,
+                         "",
+                         "axes = self.axes",
+                         """axe1 = self.axes[0],
+                            axe2 = self.axes[1],
+                            axe3 = self.axes[2],
+                            axes = self.axes""")
 
-        self.pnts = self.session.query(PointsWITH).filter_by(numpoints=self.numpoints).first()
-        if not self.pnts:
-            self.e = ellipsoid(self.axes, self.numpoints)
-            self.pnts = PointsWITH(numpoints = self.numpoints,
-                              surface_id = self.ell.id,
-                              hval = self.e.get_h(),
-                              numnodes = self.e.points.shape[0],
-                              node_coordinates = self.e.points[:,:],
-                              normal_coordinates = self.e.normalvectors[:,:])
-            self.session.add(self.pnts)
-            self.session.commit()
+        self.withWrapSql("self.pnts_sql",
+                         "PointsWITH",
+                         PointsWITH,
+                         "self.e = ellipsoid(self.axes, self.numpoints)",
+                         "numpoints = self.numpoints",
+                         """numpoints = self.numpoints,
+                            surface_id = self.ell_sql.id,
+                            hval = self.e.get_h(),
+                            numnodes = self.e.points.shape[0],
+                            node_coordinates = self.e.points[:,:],
+                            normal_coordinates = self.e.normalvectors[:,:]""")
 
-        self.numnodes = self.pnts.numnodes
-        self.hval = self.pnts.hval
+        self.numnodes = self.pnts_sql.numnodes
+        self.hval = self.pnts_sql.hval
         self.hval2 = self.hval * self.hval
         self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
         self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
-        self.node_coordinates[:,:] = self.pnts.node_coordinates[:,:]
-        self.normal_coordinates[:,:] = self.pnts.normal_coordinates[:,:]
+        self.node_coordinates[:,:] = self.pnts_sql.node_coordinates[:,:]
+        self.normal_coordinates[:,:] = self.pnts_sql.normal_coordinates[:,:]
 
     def initPhi(self):
         self.node_neighbors1 = zeros(
@@ -128,25 +129,25 @@ class params():
         phi.filter_neighbors(2*self.hval, self.node_neighbors2, self.numnodes)
         phi.filter_neighbors(  self.hval, self.node_neighbors1, self.numnodes)
 
-        if not self.pnts.nstroke_coordinates:
+        if not self.pnts_sql.nstroke_coordinates.all():
             phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
-            self.pnts.nstroke_coordinates = self.nstroke_coordinates[:,:]
-        else:
-            self.nstroke_coordinates[:,:] = self.pnts.nstroke_coordinates[:,:]
+            self.pnts_sql.nstroke_coordinates = self.nstroke_coordinates[:,:]
 
-    def withWrapMemo(self,largs, body, larrs, flagMemo):
-        @memoize
-        def withWrapMemoInternal(largs,body):
-            logging.info(body + ' is saved to memo')
-            eval(body)
-            return larrs
-        if flagMemo:
-            logging.info(body + ' uses memo')
-            return withWrapMemoInternal(largs,body)
-        else:
-            logging.info(body + ' does not use memo')
-            eval(body)
-            return larrs
+        self.nstroke_coordinates[:,:] = self.pnts_sql.nstroke_coordinates[:,:]
+
+    def withWrapSql(self, tblname, classname, classval, body, largs_search, largs_class):
+        expr = tblname + ' = self.session.query(' + classname + ').filter_by(' + largs_search + ').first()'
+        exec(expr, {'self' : self,
+                    classname : classval})
+        expr = """if not %s:
+                      %s
+                      %s = %s(%s)
+                      self.session.add(%s)
+                      self.session.commit()""" % (tblname, body, tblname, classname, largs_class, tblname)
+        exec(expr, {'self' : self,
+                    'integ' : integ,
+                    'ellipsoid' : ellipsoid,
+                    classname : classval})
 
     def initInteg(self):
         self.intphi_over = zeros((self.numnodes))
@@ -163,12 +164,16 @@ class params():
         self.area = zeros((1))
 
         self.setObjInteg(integ)
-        [self.intphi_over[:]] = self.withWrapMemo([self.axes,
-                                                   self.node_coordinates,
-                                                   self.dim_quad],
-                                                  'integ.calcomp()',
-                                                  [self.intphi_over[:]],
-                                                  self.flagMemo)
+        self.withWrapSql("self.integ_sql",
+                         "IntegWITH",
+                         IntegWITH,
+                         "integ.calcomp()",
+                         """dim_quad = self.dim_quad,
+                            points_id = self.pnts_sql.id""",
+                         """dim_quad = self.dim_quad,
+                            points_id = self.pnts_sql.id,
+                            intphi_over = self.intphi_over[:]""")
+        self.intphi_over[:] = self.integ_sql.intphi_over[:]
 
         self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
@@ -181,13 +186,19 @@ class params():
 
         self.centres[:] = self.quadsingular[:,0]
         self.weights[:] = self.quadsingular[:,1]
-        [self.gauss[:,3]] = self.withWrapMemo([self.axes,
-                                               self.node_coordinates,
-                                               self.dim_quad,
-                                               self.k_wave],
-                                              'integ.calcsing()',
-                                              [self.gauss[:,3]],
-                                              self.flagMemo)
+
+        self.withWrapSql("self.snglr_sql",
+                         "SingularWITH",
+                         SingularWITH,
+                         "integ.calcsing()",
+                         """dim_quad = self.dim_quad,
+                            k_wave = self.k_wave,
+                            points_id = self.pnts_sql.id""",
+                         """dim_quad = self.dim_quad,
+                            k_wave = self.k_wave,
+                            points_id = self.pnts_sql.id,
+                            fsingular3 = self.gauss[:,3]""")
+        self.gauss[:,3] = self.snglr_sql.fsingular3[:]
 
     def setObjPhi(self,obj):
         obj.set_dim_3d(self.dim_3d)
