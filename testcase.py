@@ -136,14 +136,21 @@ class params():
         self.nstroke_coordinates[:,:] = self.pnts_sql.nstroke_coordinates[:,:]
 
     def withWrapSql(self, tblname, classname, classval, body, largs_search, largs_class):
-        expr = tblname + ' = self.session.query(' + classname + ').filter_by(' + largs_search + ').first()'
+        expr = '%s = self.session.query(%s).filter_by(%s).first()' % (tblname,
+                                                                      classname,
+                                                                      largs_search)
         exec(expr, {'self' : self,
                     classname : classval})
         expr = """if not %s:
                       %s
                       %s = %s(%s)
                       self.session.add(%s)
-                      self.session.commit()""" % (tblname, body, tblname, classname, largs_class, tblname)
+                      self.session.commit()""" % (tblname,
+                                                  body,
+                                                  tblname,
+                                                  classname,
+                                                  largs_class,
+                                                  tblname)
         exec(expr, {'self' : self,
                     'integ' : integ,
                     'ellipsoid' : ellipsoid,
