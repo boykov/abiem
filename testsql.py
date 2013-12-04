@@ -58,6 +58,29 @@ class SingularWITH(Base):
     k_wave = Column(Numeric(36,16))
     fsingular3 = Column(SqliteArray)
 
+class GaussWITH(Base):
+    __tablename__ = 'gauss'
+    id = Column(types.Integer, primary_key = True)
+    integ_id = Column(types.Integer, ForeignKey('integ.id'))
+    k_wave = Column(Numeric(36,16))
+    gauss1 = Column(SqliteArray)
+    gauss3 = Column(SqliteArray)
+
+class AhmedWITH(Base):
+    __tablename__ = 'ahmed'
+    id = Column(types.Integer, primary_key = True)
+    integ_id = Column(types.Integer, ForeignKey('integ.id'))
+    singular_id = Column(types.Integer, ForeignKey('singular.id'))
+    name_vectorb = Column(types.String(80))
+    name_matrixa = Column(types.String(80))
+    eps_matgen = Column(Numeric(36, 16))
+    eps_aggl = Column(Numeric(36, 16))
+    eps_gmres = Column(Numeric(36, 16))
+    eta = Column(Numeric(36, 16))
+    bmin  = Column(types.Integer)
+    rankmax = Column(types.Integer)
+    q_ahmed = Column(SqliteArray)
+
 def create_session(Base):
     engine = create_engine('sqlite:///ddd.db',
                            echo=False, 

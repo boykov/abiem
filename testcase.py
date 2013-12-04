@@ -189,7 +189,18 @@ class params():
 
         self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
         integ.set_gauss(self.gauss)
-        integ.setgauss()
+        self.withWrapSql("self.gauss_sql",
+                         "GaussWITH",
+                         GaussWITH,
+                         "integ.setgauss()",
+                         """k_wave = self.k_wave,
+                            integ_id = self.integ_sql.id""",
+                         """k_wave = self.k_wave,
+                            integ_id = self.integ_sql.id,
+                            gauss1 = self.gauss[:,0],
+                            gauss3 = self.gauss[:,2]""")
+        self.gauss[:,0] = self.gauss_sql.gauss1
+        self.gauss[:,2] = self.gauss_sql.gauss3
 
         self.centres[:] = self.quadsingular[:,0]
         self.weights[:] = self.quadsingular[:,1]
