@@ -10,8 +10,20 @@ jacobian.out: jacobian.max
 singular.out: singular.max
 	maxima -b singular.max > /dev/null
 
-beta.f90: singular.out jacobian.out dirichlet-helmholtz.out
-	python dbsym.py
+xx_rho1.f90: jacobian.out
+	python dbsym.py xx_rhopy
+
+beta.f90: jacobian.out
+	python dbsym.py jacobianpy
+
+beta2.f90: jacobian.out
+	python dbsym.py jacobian2py
+
+singular.f90: singular.out
+	python dbsym.py singularpy
+
+Amn.f90: dirichlet-helmholtz.out
+	python dbsym.py dirichlet_helmholtzpy
 
 toms_mod.o: toms_mod.f90
 	$(gf) -c toms_mod.f90
@@ -19,7 +31,7 @@ toms_mod.o: toms_mod.f90
 fast_dbsym.o: fast_dbsym.f90
 	$(gf) -c fast_dbsym.f90
 
-dbsym.o: dbsym.f90 beta.f90 toms_mod.o
+dbsym.o: dbsym.f90 beta.f90 beta2.f90 singular.f90 Amn.f90 xx_rho1.f90 toms_mod.o
 	$(gf) -c dbsym.f90
 
 dbsym.so: dbsym.f90 beta.f90

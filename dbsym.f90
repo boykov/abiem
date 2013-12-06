@@ -84,6 +84,23 @@ contains
     if (n .eq. m) dn = 1
   end function dn
 
+  pure double precision function fxx_rho(i,bt,axes,h2,rh,ph,z)
+    integer, intent(in) :: i
+    double precision, intent(in) :: bt(:,:)
+    double precision, intent(in) :: z(:), axes(:)
+    double precision, intent(in) :: h2, rh, ph
+    if (i .eq. 1) then
+    fxx_rho = &
+         include 'xx_rho1.f90'
+    else if (i .eq. 2) then
+    fxx_rho = &
+         include 'xx_rho2.f90'
+    else if (i .eq. 3) then
+    fxx_rho = &
+         include 'xx_rho3.f90'
+    end if
+  end function fxx_rho
+
   pure double precision function beta(m,k,l,n,axes)
     integer, intent(in) :: m,k,l
     double precision, intent(in) :: n(:), axes(:)

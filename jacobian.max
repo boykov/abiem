@@ -139,3 +139,8 @@ Jacobian : (h2/4)*(E*F - G^2);
 with_stdout("jacobian.out",f90(Jacobian),f90(x(i)),f90(B(m,l)));
 
 with_stdout("jacobian2.out",f90(Jacobian2),f90(x(i)),f90(B(m,l)));
+
+with_stdout("xx_rho.out",
+  f90((sqrt(h2)/2)*xx_fρ[1]),
+  f90((sqrt(h2)/2)*xx_fρ[2]),
+  f90((sqrt(h2)/2)*xx_fρ[3]));
