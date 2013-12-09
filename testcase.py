@@ -202,6 +202,12 @@ class params():
         self.gauss[:,0] = self.gauss_sql.gauss1
         self.gauss[:,2] = self.gauss_sql.gauss3
 
+        integ.calcomp3()
+        self.centres[:] = self.quadphi_under[:,0]
+        self.weights[:] = self.quadphi_under[:,1]
+        integ.calcomp2()
+        integ.calcomp4()
+
         self.centres[:] = self.quadsingular[:,0]
         self.weights[:] = self.quadsingular[:,1]
 
@@ -287,6 +293,12 @@ class testBIE(object):
                                  eval(self.P.name_approximateu),
                                  self.P.data.exactu),
             self.P.slae_tol, places = self.P.slae_places)
+
+    def testUnder(self):
+        self.assertAlmostEqual(
+            sum(self.P.gauss[:,5])/(4*math.pi),
+            self.P.gauss[0,3],
+            places = 3)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)
