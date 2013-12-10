@@ -8,6 +8,20 @@ contains
   include 'set_params.f90'
   include 'kernels.f90'
 
+  double precision function fAre(x,i)
+    use dbsym
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(:) :: x
+    fAre = phi(x,i,hval**2)*realpart(Amn(y_tmp,x(:) + node_coordinates(i,:),k_wave))
+  end function fAre
+
+  double precision function fAim(x,i)
+    use dbsym
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(:) :: x
+    fAim = phi(x,i,hval**2)*imagpart(Amn(y_tmp,x(:) + node_coordinates(i,:),k_wave))
+  end function fAim
+
   double precision function f2(x,i)
     use dbsym
     integer, intent(in) :: i
@@ -172,6 +186,7 @@ contains
     end do
     hval2 = hval * hval
     gauss(j_tmp,6) = intphi_under(j_tmp)
+    gauss(j_tmp,7) = gauss(j_tmp,4) - (sum(gauss(1:j_tmp-1,6)) + sum(gauss(j_tmp+1:numnodes,6)))/(4*PI)
 
   end subroutine calcomp4
 
