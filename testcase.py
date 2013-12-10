@@ -225,11 +225,11 @@ class params():
         obj.set_hval(self.hval)
         obj.set_numnodes(self.numnodes)
 
-        obj.set_axes(self.axes)
+        obj.set_dp1d_ptr("axes", self.axes)
 
-        obj.set_node_coordinates(self.node_coordinates)
-        obj.set_normal_coordinates(self.normal_coordinates)
-        obj.set_nstroke_coordinates(self.nstroke_coordinates)
+        obj.set_dp2d_ptr("node_coordinates", self.node_coordinates)
+        obj.set_dp2d_ptr("normal_coordinates", self.normal_coordinates)
+        obj.set_dp2d_ptr("nstroke_coordinates", self.nstroke_coordinates)
         obj.set_node_neighbors1(self.node_neighbors1)
         obj.set_node_neighbors2(self.node_neighbors2)
 
@@ -241,8 +241,10 @@ class params():
         obj.set_hval2(self.hval2)
         obj.set_dim_quad(self.dim_quad)
 
-        obj.set_centres(self.centres)
-        obj.set_weights(self.weights)
+        obj.set_dp2d_ptr("quadphi_over", self.quadphi_over)
+        obj.set_dp2d_ptr("quadphi_under", self.quadphi_under)
+        obj.set_dp1d_ptr("centres", self.centres)
+        obj.set_dp1d_ptr("weights", self.weights)
         obj.set_jacobian(self.jacobian)
         obj.set_nodes(self.nodes)
 
