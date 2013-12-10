@@ -1,3 +1,42 @@
+subroutine set_dp2d_ptr(name, val)
+  character(128) :: name
+  double precision, intent(in), target :: val(:,:)
+  if (name .eq. "node_coordinates") node_coordinates => val
+  if (name .eq. "normal_coordinates") normal_coordinates => val
+  if (name .eq. "nstroke_coordinates") nstroke_coordinates => val
+  if (name .eq. "quadphi_over") quadphi_over => val
+  if (name .eq. "quadphi_under") quadphi_under => val
+end subroutine set_dp2d_ptr
+
+subroutine set_dp1d_ptr(name, val)
+  character(128) :: name
+  double precision, intent(in), target :: val(:)
+  if (name .eq. "centres") centres => val
+  if (name .eq. "weights") weights => val
+  if (name .eq. "area") area => val
+  if (name .eq. "axes") axes => val
+  if (name .eq. "intphi_over") intphi_over => val
+  if (name .eq. "intphi_under") intphi_under => val
+  if (name .eq. "sigma") sigma => val
+end subroutine set_dp1d_ptr
+
+subroutine set_dp_ptr(name, val)
+  character(128) :: name
+  double precision, intent(in) :: val
+  if (name .eq. "PI") PI = val
+  if (name .eq. "hval") hval = val
+  if (name .eq. "hval2") hval2 = val
+end subroutine set_dp_ptr
+
+subroutine set_i_ptr(name, val)
+  character(128) :: name
+  integer, intent(in) :: val
+  if (name .eq. "dim_3d") dim_3d = val
+  if (name .eq. "dim_quad") dim_quad = val
+  if (name .eq. "max_neighbors") max_neighbors = val
+  if (name .eq. "numnodes") numnodes = val
+end subroutine set_i_ptr
+
 subroutine set_area(val)
   double precision, intent(in), target :: val(:)
   area => val
