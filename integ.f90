@@ -134,6 +134,8 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
+    centres(:) = quadphi_over(:,1)
+    weights(:) = quadphi_over(:,2)
     ptr_jacobian => fjacobian
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
@@ -158,6 +160,8 @@ contains
     integer i, nt, k1, j
 
     hval2 = hval
+    centres(:) = quadphi_under(:,1)
+    weights(:) = quadphi_under(:,2)
     ptr_jacobian => fjacobian2
     call integrate(nstroke_coordinates(j_tmp,:), node_coordinates(j_tmp,:),j_tmp,1)
     do j=2,max_neighbors
