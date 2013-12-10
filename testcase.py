@@ -44,6 +44,7 @@ class params():
         self.integ_places = 4
         self.slae_tol = 0.0
         self.slae_places = 0
+        self.under_places = 3
         self.orderquad = 20
         self.eps_matgen = 1e-4
         self.eps_aggl = self.eps_matgen
@@ -299,8 +300,8 @@ class testBIE(object):
     def testUnder(self):
         self.assertAlmostEqual(
             sum(self.P.gauss[:,5])/(4*math.pi),
-            self.P.gauss[0,3],
-            places = 3)
+            self.P.gauss[integ.j_tmp - 1,3],
+            places = self.P.under_places)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)
@@ -345,6 +346,7 @@ class testBIEsmall3(testBIE, unittest.TestCase):
 
 class testBIEmedium(testBIE, unittest.TestCase):
     tmpP = params(3200)
+    tmpP.under_places = 5
     tmpP.integ_places = 6
     tmpP.slae_tol = 0.0002
     tmpP.slae_places = 4

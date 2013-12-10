@@ -1,7 +1,8 @@
 module modinteg
   use params
   use modphi, only : phi, deltah
-  integer :: i_tmp
+  integer :: i_tmp, j_tmp
+  double precision :: y_tmp(3)
 contains
 
   include 'set_params.f90'
@@ -11,7 +12,7 @@ contains
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
-    f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(1,:))
+    f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:))
   end function f2
 
   double precision function f(x,i)
@@ -24,14 +25,14 @@ contains
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
-    f3 = (1 - deltah(x(:)  + node_coordinates(i,:) - node_coordinates(1,:),hval))*phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(1,:))
+    f3 = (1 - deltah(x(:)  + node_coordinates(i,:) - node_coordinates(j_tmp,:),hval))*phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:))
   end function f3
 
   double precision function f4(x,i)
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
-    f4 = (deltah(x(:) + node_coordinates(i,:) - node_coordinates(1,:),hval))*phi(x(:) + node_coordinates(i,:) - node_coordinates(i_tmp,:) ,i_tmp,hval**2)
+    f4 = (deltah(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:),hval))*phi(x(:) + node_coordinates(i,:) - node_coordinates(i_tmp,:) ,i_tmp,hval**2)
   end function f4
 
   double precision function test_fast()
@@ -143,7 +144,7 @@ contains
     end do
     !$OMP END PARALLEL DO
     do j=2,max_neighbors
-       k1 = node_neighbors1(1,j)
+       k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
        call integrate(nstroke_coordinates(k1,:), node_coordinates(k1,:),k1,1)
        gauss(k1, 6) = folding(k1,f3,1)
@@ -158,15 +159,15 @@ contains
 
     hval2 = hval
     ptr_jacobian => fjacobian2
+    call integrate(nstroke_coordinates(j_tmp,:), node_coordinates(j_tmp,:),j_tmp,1)
     do j=2,max_neighbors
-       k1 = node_neighbors1(1,j)
+       k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
-       call integrate(nstroke_coordinates(1,:), node_coordinates(1,:),1,1)
        i_tmp = k1
-       gauss(k1, 6) = gauss(k1, 6) + folding(1,f4,1)
+       gauss(k1, 6) = gauss(k1, 6) + folding(j_tmp,f4,1)
     end do
     hval2 = hval * hval
-    gauss(1,6) = intphi_under(1)
+    gauss(j_tmp,6) = intphi_under(j_tmp)
 
   end subroutine calcomp4
 
