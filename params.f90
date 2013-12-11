@@ -32,4 +32,12 @@ module params
   double complex, pointer     :: gauss(:,:)
 
   double precision, pointer :: counter(:)
+  abstract interface
+     function iface_f (x,i)
+       double precision :: iface_f
+       integer, intent(in) :: i
+       double precision, intent(in), dimension(:) :: x
+     end function iface_f
+  end interface
+  procedure (iface_f), pointer :: ptr_f => null ()
 end module params

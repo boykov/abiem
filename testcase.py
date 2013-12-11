@@ -156,6 +156,14 @@ class params():
                     'ellipsoid' : ellipsoid,
                     classname : classval})
 
+    def calcomp(self):
+        for i in range(0,self.numnodes,1):
+            integ.integrate(self.nstroke_coordinates[i,:],
+                            self.node_coordinates[i,:],
+                            i+1,
+                            self.centres,self.weights,1)
+            self.intphi_over[i] = integ.folding(i+1,self.dim_quad,1)
+
     def initInteg(self):
         self.intphi_over = zeros((self.numnodes))
         self.intphi_under = zeros((self.numnodes))

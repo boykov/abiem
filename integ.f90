@@ -69,7 +69,7 @@ contains
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call singrate(node_coordinates(i,:),node_coordinates(i,:),i,k_wave,nt)
+       call singrate(node_coordinates(i,:),node_coordinates(i,:),i,k_wave,centres,weights,nt)
        gauss(i,4) = sum(jacobian(nt + 1,:,:))
     end do
     !$OMP END PARALLEL DO
@@ -83,12 +83,13 @@ contains
     call OMP_SET_NUM_THREADS(4)
 
     ptr_jacobian => fjacobian
+    ptr_f => f
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       intphi_over(i) = folding(i,f,nt)
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
+       intphi_over(i) = folding(i,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
@@ -101,12 +102,13 @@ contains
     call OMP_SET_NUM_THREADS(4)
 
     ptr_jacobian => fjacobian2
+    ptr_f => f
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       intphi_under(i) = folding(i,f,nt)
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
+       intphi_under(i) = folding(i,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp2
@@ -119,12 +121,13 @@ contains
     call OMP_SET_NUM_THREADS(4)
 
     ptr_jacobian => fjacobian
+    ptr_f => f2
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       gauss(i,6) = folding(i,f2,nt)
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
+       gauss(i,6) = folding(i,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
     gauss(1,6) = 0.0
@@ -137,11 +140,13 @@ contains
 !      |_|_| |_|\__\___|\__, |
 !                       |___/
 
-  subroutine singrate(n,z,ip,k_wave,nt)
+  subroutine singrate(n,z,ip,k_wave,centres,weights,nt)
     use dbsym
     integer, intent(in) :: ip,nt
     double precision, intent(in) :: n(:)
     double precision, intent(in) :: z(:)
+    double precision, intent(in) :: centres(:)
+    double precision, intent(in) :: weights(:)
     double complex, intent(in) :: k_wave
 
     double precision rh,ph
@@ -151,10 +156,11 @@ contains
 
     integer i,nthread
 
-    integer Nk, iz, ik
+    integer Nk, iz, ik, dim_quad
     double complex jac
     double precision q, ispole
     nthread = nt + 1
+    dim_quad = size(centres,1)
     Nk = 4*dim_quad
 
     p(1) = z(1)
@@ -187,11 +193,13 @@ contains
     return
   end subroutine singrate
 
-  subroutine integrate(n,z,ip,nt)
+  subroutine integrate(n,z,ip,centres,weights,nt)
     use dbsym
     integer, intent(in) :: ip,nt
     double precision, intent(in), dimension(:) :: n
     double precision, intent(in), dimension(:) :: z
+    double precision, intent(in), dimension(:) :: centres
+    double precision, intent(in), dimension(:) :: weights
 
     double precision rh,ph
 
@@ -200,9 +208,10 @@ contains
 
     integer m,l,k_ind,i,nthread
 
-    integer Nk, iz, ik
+    integer Nk, iz, ik, dim_quad
     double precision jac
     nthread = nt + 1
+    dim_quad = size(centres,1)
     Nk = 4*dim_quad
 
     k_ind = MINLOC(n,dim=1)
@@ -231,16 +240,9 @@ contains
     return
   end subroutine integrate
 
-  double precision function folding(ip,f,nt)
+  double precision function folding(ip,dim_quad,nt)
     use dbsym
-    integer, intent(in) :: ip,nt
-    interface
-       function f(x,i)
-         integer, intent(in) :: i
-         double precision, intent(in), dimension(:) :: x
-         double precision :: f
-       end function f
-    end interface
+    integer, intent(in) :: ip,nt, dim_quad
 
     integer Nk, iz, ik,nthread
     double precision gtmp, tmp
@@ -251,7 +253,7 @@ contains
     gtmp = 0
     do iz=1,dim_quad
        do ik=1,Nk
-          tmp = f(nodes(nthread,iz,ik,:),ip)
+          tmp = ptr_f(nodes(nthread,iz,ik,:),ip)
           gtmp = gtmp + realpart(jacobian(nthread,iz,ik))*tmp
        end do
     end do
