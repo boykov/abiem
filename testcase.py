@@ -74,15 +74,19 @@ class params():
         slaeahmed.get_q(self.q_ahmed)
 
     def initQuad(self, orderquad):
+        import scipy.special.orthogonal as op
         self.data.orderquad = orderquad
         self.data.setupquad()
         self.dim_quad = self.data.orderquad
         self.quadphi_over = zeros((self.dim_quad,2),order = 'Fortran')
-        self.quadphi_over[:,:] = self.data.quadphi_over[:,:]
         self.quadphi_under = zeros((self.dim_quad,2),order = 'Fortran')
-        self.quadphi_under[:,:] = self.data.quadphi_under[:,:]
         self.quadsingular = zeros((self.dim_quad,2),order = 'Fortran')
-        self.quadsingular[:,:] = self.data.quadsingular[:,:]
+
+        self.quadphi_over[:,0] = op.j_roots(self.orderquad,0,1)[0]
+        self.quadphi_over[:,1] = op.j_roots(self.orderquad,0,1)[1]
+        self.quadphi_under[:,0] = op.j_roots(self.orderquad,0,0)[0]
+        self.quadphi_under[:,1] = op.j_roots(self.orderquad,0,0)[1]
+        self.quadsingular[:,:] = self.data.quadsingular[:,:] # TODO extract
 
 
     def initEllipsoid(self):
