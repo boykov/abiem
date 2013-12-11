@@ -51,6 +51,7 @@ double complex function matrixA(i,j)
   x = node_coordinates(i,:)
   y = node_coordinates(j,:)
 
+  counter = counter + 1
   if (i .eq. j) then
      matrixA = (intphi_over(i)**2)*limA(sigm,k_wave)
   else

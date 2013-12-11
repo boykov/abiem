@@ -30,4 +30,6 @@ module params
   double complex, pointer     :: q_density(:)
 
   double complex, pointer     :: gauss(:,:)
+
+  double precision, pointer :: counter(:)
 end module params

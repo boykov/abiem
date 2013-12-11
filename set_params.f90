@@ -16,6 +16,7 @@ subroutine set_dp1d_ptr(name, val)
   if (name .eq. "intphi_over") intphi_over => val
   if (name .eq. "intphi_under") intphi_under => val
   if (name .eq. "sigma") sigma => val
+  if (name .eq. "counter") counter => val
 end subroutine set_dp1d_ptr
 
 subroutine set_dp_ptr(name, val)

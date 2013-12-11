@@ -169,6 +169,7 @@ class params():
         self.weights[:] = self.quadphi_over[:,1]
 
         self.area = zeros((1))
+        self.counter = zeros((1))
 
         self.setObjInteg(integ)
         self.withWrapSql("self.integ_sql",
@@ -241,6 +242,7 @@ class params():
         obj.set_hval2(self.hval2)
         obj.set_dim_quad(self.dim_quad)
 
+        obj.set_dp1d_ptr("counter", self.counter)
         obj.set_dp2d_ptr("quadphi_over", self.quadphi_over)
         obj.set_dp2d_ptr("quadphi_under", self.quadphi_under)
         obj.set_dp1d_ptr("centres", self.centres)
@@ -262,6 +264,7 @@ class testBIE(object):
         self.P.initInteg()
         self.P.initAHMED()
         integ.set_q_density(self.P.q_ahmed)
+        logging.debug("counter = " + str(self.P.counter))
 
     def testEllipsoid(self):
         self.assertAlmostEqual(
