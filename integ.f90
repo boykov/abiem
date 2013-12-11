@@ -44,12 +44,12 @@ contains
        s3 = 0.0
        do l=1,numnodes
           if (l .ne. j) then
-             nstar = sum(normal_coordinates(l,:)*(node_coordinates(l,:)-node_coordinates(j,:))*intphi_over(l))
              sigm = sigmaij(l,j)
              x = node_coordinates(l,:)
              y = node_coordinates(j,:)
-             s = s + nstar/(4*PI*norm(node_coordinates(l,:)-node_coordinates(j,:))**3)
-             s3 = s3 + intphi_over(l)*cdexp((0,1)*k_wave*norm(node_coordinates(l,:)-node_coordinates(j,:)))/(4*PI*norm(node_coordinates(l,:)-node_coordinates(j,:)))
+             nstar = sum(normal_coordinates(l,:)*(x-y)*intphi_over(l))
+             s = s + nstar*(-Bmn(x,y,DCMPLX(0,0)))
+             s3 = s3 + intphi_over(l)*Amn(x,y,k_wave)
           end if
        end do
        gauss(j,1) = s
