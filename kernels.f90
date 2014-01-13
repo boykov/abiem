@@ -97,6 +97,24 @@ double complex function matrixA3(i,j)
   end if
 end function matrixA3
 
+double complex function matrixA4(i,j)
+  use omp_lib
+  use dbsym
+  integer, intent(in) :: i,j
+  double precision :: sigm
+  double precision, dimension(dim_3d) :: x,y
+
+  sigm = sigmaij(i,j)
+  x = node_coordinates(i,:)
+  y = node_coordinates(j,:)
+
+  if (i .eq. j) then
+     matrixA4 = intphi_over(i)*(gauss(i,4) - gauss(i,5))
+  else
+     matrixA4 = intphi_over(i)*(intphi_over(j)*Amn(x,y,k_wave) + Bmn(x,y,k_wave)*(gauss(j,7)*(y(1)-x(1)) + gauss(j,8)*(y(2)-x(2)) + gauss(j,9)*(y(3)-x(3))))
+  end if
+end function matrixA4
+
 double complex function matrixA_sigm(i,j)
   use omp_lib
   use dbsym
@@ -123,6 +141,29 @@ end function matrixA_sigm
 !        \__,_| .__/| .__/|_|  \___/_/\_\_|_| |_| |_|\__,_|\__\___|\__,_|
 !             |_|   |_|
 !
+
+double complex function approximateu4(x)
+  use omp_lib
+  use dbsym
+  double precision, intent(in), dimension(:) :: x
+  integer :: i
+  double complex, dimension(:), allocatable :: s
+
+  allocate(s(numnodes))
+
+  call OMP_SET_NUM_THREADS(4)
+
+  !$OMP PARALLEL DO &
+  !$OMP DEFAULT(SHARED) PRIVATE(v)
+  do i=1,numnodes
+     s(i) = q_density(i)*(intphi_over(i)*Amn(x,node_coordinates(i,:),k_wave) + Bmn(x,node_coordinates(i,:),k_wave) * ((node_coordinates(i,1)-x(1))*gauss(i,7) + (node_coordinates(i,2)-x(2))*gauss(i,8) + (node_coordinates(i,3)-x(3))*gauss(i,9)))
+  end do
+  !$OMP END PARALLEL DO
+
+  approximateu4 = sum(s(:))
+
+  deallocate(s)
+end function approximateu4
 
 double complex function approximateu(x)
   use omp_lib

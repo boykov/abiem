@@ -83,6 +83,8 @@ class params():
         self.quadphi_under[:,:] = self.data.quadphi_under[:,:]
         self.quadsingular = zeros((self.dim_quad,2),order = 'Fortran')
         self.quadsingular[:,:] = self.data.quadsingular[:,:]
+        self.quadphi_rho = zeros((self.dim_quad,2),order = 'Fortran')
+        self.quadphi_rho[:,:] = self.data.quadphi_rho[:,:]
 
 
     def initEllipsoid(self):
@@ -164,6 +166,7 @@ class params():
         self.weights = zeros((self.dim_quad))
         self.jacobian = zeros((4,self.dim_quad,4*self.dim_quad), dtype = complex, order = 'Fortran')
         self.nodes = zeros((4,self.dim_quad,4*self.dim_quad,3), order = 'Fortran')
+        self.nodes_rho = zeros((4,self.dim_quad,4*self.dim_quad,3), order = 'Fortran')
 
         self.centres[:] = self.quadphi_over[:,0]
         self.weights[:] = self.quadphi_over[:,1]
@@ -189,6 +192,11 @@ class params():
 
         self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
         integ.set_gauss(self.gauss)
+
+        self.centres[:] = self.quadphi_rho[:,0]
+        self.weights[:] = self.quadphi_rho[:,1]
+        integ.calcxx_rho()
+
         self.withWrapSql("self.gauss_sql",
                          "GaussWITH",
                          GaussWITH,
@@ -198,9 +206,11 @@ class params():
                          """k_wave = self.k_wave,
                             integ_id = self.integ_sql.id,
                             gauss1 = self.gauss[:,0],
-                            gauss3 = self.gauss[:,2]""")
+                            gauss3 = self.gauss[:,2],
+                            gauss5 = self.gauss[:,4]""")
         self.gauss[:,0] = self.gauss_sql.gauss1
         self.gauss[:,2] = self.gauss_sql.gauss3
+        self.gauss[:,4] = self.gauss_sql.gauss5
 
         self.centres[:] = self.quadsingular[:,0]
         self.weights[:] = self.quadsingular[:,1]
@@ -245,6 +255,7 @@ class params():
         obj.set_weights(self.weights)
         obj.set_jacobian(self.jacobian)
         obj.set_nodes(self.nodes)
+        obj.set_nodes_rho(self.nodes_rho)
 
         obj.set_area(self.area)
 

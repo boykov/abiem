@@ -65,6 +65,7 @@ class GaussWITH(Base):
     k_wave = Column(Numeric(36,16))
     gauss1 = Column(SqliteArray)
     gauss3 = Column(SqliteArray)
+    gauss5 = Column(SqliteArray)
 
 class AhmedWITH(Base):
     __tablename__ = 'ahmed'

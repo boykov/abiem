@@ -36,24 +36,27 @@ contains
     integer :: l,j
     double precision :: sigm, nstar, s
     double precision, dimension(3) :: x,y
-    double complex :: s2, s3
+    double complex :: s2, s3, s5
 
     do j=1,numnodes
        s = 0.0
        s2 = 0.0
        s3 = 0.0
+       s5 = 0.0
        do l=1,numnodes
           if (l .ne. j) then
              nstar = sum(normal_coordinates(l,:)*(node_coordinates(l,:)-node_coordinates(j,:))*intphi_over(l))
              sigm = sigmaij(l,j)
-             x = node_coordinates(l,:)
-             y = node_coordinates(j,:)
+             x = node_coordinates(j,:)
+             y = node_coordinates(l,:)
              s = s + nstar/(4*PI*norm(node_coordinates(l,:)-node_coordinates(j,:))**3)
-             s3 = s3 + intphi_over(l)*cdexp((0,1)*k_wave*norm(node_coordinates(l,:)-node_coordinates(j,:)))/(4*PI*norm(node_coordinates(l,:)-node_coordinates(j,:)))
+             s3 = s3 + intphi_over(l)*Amn(x,y,k_wave)
+             s5 = s5 + intphi_over(l)*Amn(x,y,k_wave) + Bmn(x,y,k_wave) * ((node_coordinates(l,1)-node_coordinates(j,1))*gauss(l,7) + (node_coordinates(l,2)-node_coordinates(j,2))*gauss(l,8) + (node_coordinates(l,3)-node_coordinates(j,3))*gauss(l,9))
           end if
        end do
        gauss(j,1) = s
        gauss(j,3) = s3
+       gauss(j,5) = s5
     end do
   end subroutine setgauss
 
@@ -92,6 +95,26 @@ contains
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
+
+  subroutine calcxx_rho()
+    use omp_lib
+    use dbsym
+    integer i, nt
+
+    call OMP_SET_NUM_THREADS(4)
+
+    ptr_jacobian => fjacobian
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+       gauss(i,7) = folding_rho(1,i,f,nt)
+       gauss(i,8) = folding_rho(2,i,f,nt)
+       gauss(i,9) = folding_rho(3,i,f,nt)
+    end do
+    !$OMP END PARALLEL DO
+  end subroutine calcxx_rho
 
   subroutine calcomp2()
     use omp_lib
@@ -221,6 +244,7 @@ contains
           do i=1,3
              x(i) = fx(i,bt,axes,hval2,rh,ph,z)
              nodes(nthread,iz,ik,i) = x(i)
+             nodes_rho(nthread,iz,ik,i) = fxx_rho(i,bt,axes,hval2,rh,ph,z)
           end do
 
           jac = dsqrt(ptr_jacobian(bt,axes,hval2,rh,ph,z))
@@ -230,6 +254,34 @@ contains
     end do
     return
   end subroutine integrate
+
+  double precision function folding_rho(j,ip,f,nt)
+    use dbsym
+    integer, intent(in) :: ip,nt,j
+    interface
+       function f(x,i)
+         integer, intent(in) :: i
+         double precision, intent(in), dimension(:) :: x
+         double precision :: f
+       end function f
+    end interface
+
+    integer Nk, iz, ik,nthread
+    double precision gtmp, tmp
+
+    Nk = 4*dim_quad
+    nthread = nt + 1
+
+    gtmp = 0
+    do iz=1,dim_quad
+       do ik=1,Nk
+          tmp = f(nodes(nthread,iz,ik,:),ip)
+          gtmp = gtmp + realpart(jacobian(nthread,iz,ik))*tmp*nodes_rho(nthread,iz,ik,j)
+       end do
+    end do
+    folding_rho = gtmp
+
+  end function folding_rho
 
   double precision function folding(ip,f,nt)
     use dbsym

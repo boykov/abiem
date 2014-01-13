@@ -24,6 +24,7 @@ module params
   double precision, pointer :: weights(:)
   double complex, pointer   :: jacobian(:,:,:)
   double precision, pointer :: nodes(:,:,:,:)
+  double precision, pointer :: nodes_rho(:,:,:,:)
 
   double complex :: k_wave
   double precision, pointer   :: sigma(:)

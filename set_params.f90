@@ -98,6 +98,11 @@ subroutine set_nodes(val)
   nodes => val
 end subroutine set_nodes
 
+subroutine set_nodes_rho(val)
+  double precision, intent(in), target :: val(:,:,:,:)
+  nodes_rho => val
+end subroutine set_nodes_rho
+
 subroutine set_sigma(val)
   double precision, intent(in), target :: val(:)
   sigma => val
