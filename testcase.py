@@ -270,13 +270,15 @@ class testBIE(object):
         logging.basicConfig(level=logging.DEBUG)
         self.P = self.tmpP
         self.P.data.k = self.P.k_wave # TODO cleanup
-        self.P.initQuad(self.P.orderquad)
-        self.P.initEllipsoid()
-        self.P.initPhi()
-        self.P.initInteg()
-        self.P.initAHMED()
-        integ.set_q_density(self.P.q_ahmed)
-        logging.debug("counter = " + str(self.P.counter))
+        self.P.setEllipsoid(self.P.axes, self.P.numpoints)
+        self.P.setObjPhi(phi)
+        # self.P.initQuad(self.P.orderquad)
+        # self.P.initEllipsoid()
+        # self.P.initPhi()
+        # self.P.initInteg()
+        # self.P.initAHMED()
+        # integ.set_q_density(self.P.q_ahmed)
+        # logging.debug("counter = " + str(self.P.counter))
 
     def testEllipsoid(self):
         self.assertAlmostEqual(
@@ -291,19 +293,19 @@ class testBIE(object):
             self.P.numnodes,
             places = 12)
 
-    def testInteg(self):
-        self.P.area[0] = sum(self.P.intphi_over)
-        self.assertAlmostEqual(
-            self.P.area[0],
-            6.971610618375645,
-            places = self.P.integ_places)
+    # def testInteg(self):
+    #     self.P.area[0] = sum(self.P.intphi_over)
+    #     self.assertAlmostEqual(
+    #         self.P.area[0],
+    #         6.971610618375645,
+    #         places = self.P.integ_places)
 
-    def testSLAE(self):
-        self.assertAlmostEqual(
-            self.P.data.criteria(self.P.axes,
-                                 eval(self.P.name_approximateu),
-                                 self.P.data.exactu),
-            self.P.slae_tol, places = self.P.slae_places)
+    # def testSLAE(self):
+    #     self.assertAlmostEqual(
+    #         self.P.data.criteria(self.P.axes,
+    #                              eval(self.P.name_approximateu),
+    #                              self.P.data.exactu),
+    #         self.P.slae_tol, places = self.P.slae_places)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)
@@ -333,7 +335,9 @@ class testBIEsmallNG(testBIE, unittest.TestCase):
     tmpP.slae_places = 3
 
 class testBIEsmall(testBIE, unittest.TestCase):
-    tmpP = params(200)
+    # tmpP = params(200)
+    import testmodule as tmpP
+    tmpP.numpoints = 200
     tmpP.integ_places = 5
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3
