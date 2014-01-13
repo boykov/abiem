@@ -58,6 +58,33 @@ double complex function matrixA(i,j)
   end if
 end function matrixA
 
+double complex function matrixA5(i,j)
+  use omp_lib
+  use dbsym
+  integer, intent(in) :: i,j
+  double precision :: sigm
+  double precision, dimension(dim_3d) :: x,y
+
+  sigm = sigmaij(i,j)
+  x = node_coordinates(i,:)
+  y = node_coordinates(j,:)
+
+  y_tmp(:) = y(:)
+  if (i .eq. j) then
+     matrixA5 = (intphi_over(i)**2)*limA(sigm,k_wave)
+     ! matrixA5 = (intphi_over(i))*intphi_under(i)/(4*PI)
+  else
+     if (norm(x-y) < 200*hval) then
+     matrixA5 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+     else
+     call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,1)
+     matrixA5 = intphi_over(j)*(folding(i,fAre,1) + (0,1)*folding(i,fAim,1))
+     end if
+     ! matrixA5 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+  end if
+end function matrixA5
+
+
 double complex function matrixA2(i,j)
   use dbsym
   integer, intent(in) :: i,j
@@ -97,6 +124,29 @@ double complex function matrixA3(i,j)
   end if
 end function matrixA3
 
+double complex function matrixA4(i,j)
+  use omp_lib
+  use dbsym
+  integer, intent(in) :: i,j
+  double precision :: sigm
+  double precision, dimension(dim_3d) :: x,y
+
+  sigm = sigmaij(i,j)
+  x = node_coordinates(i,:)
+  y = node_coordinates(j,:)
+
+  if (i .eq. j) then
+     ! matrixA4 = intphi_over(i)*(gauss(i,4) - gauss(i,3))
+     matrixA4 = (intphi_over(i)**2)*limA(sigm,k_wave)
+  else
+     if (norm(x-y) < 6*hval) then
+        matrixA4 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+     else
+        matrixA4 = intphi_over(i)*(intphi_over(j)*Amn(x,y,k_wave) + Bmn(x,y,k_wave)*(gauss(j,7)*(y(1)-x(1)) + gauss(j,8)*(y(2)-x(2)) + gauss(j,9)*(y(3)-x(3))))
+     end if
+  end if
+end function matrixA4
+
 double complex function matrixA_sigm(i,j)
   use omp_lib
   use dbsym
@@ -123,6 +173,36 @@ end function matrixA_sigm
 !        \__,_| .__/| .__/|_|  \___/_/\_\_|_| |_| |_|\__,_|\__\___|\__,_|
 !             |_|   |_|
 !
+
+double complex function approximateu4(x)
+  use omp_lib
+  use dbsym
+  double precision, intent(in), dimension(:) :: x
+  integer :: i
+  double complex, dimension(:), allocatable :: s
+
+  allocate(s(numnodes))
+
+  call OMP_SET_NUM_THREADS(4)
+
+  y_tmp(:) = x(:)
+  ptr_jacobian => fjacobian
+  !$OMP PARALLEL DO &
+  !$OMP DEFAULT(SHARED) PRIVATE(nt)
+  do i=1,numnodes
+     ! s(i) = q_density(i)*(intphi_over(i)*Amn(x,node_coordinates(i,:),k_wave) + Bmn(x,node_coordinates(i,:),k_wave) * ((node_coordinates(i,1)-x(1))*gauss(i,7) + (node_coordinates(i,2)-x(2))*gauss(i,8) + (node_coordinates(i,3)-x(3))*gauss(i,9)))
+     nt = OMP_GET_THREAD_NUM()
+     ! print *, "amn ", nt, intphi_over(i)*Amn(x,node_coordinates(i,:),k_wave)
+     call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
+     s(i) = q_density(i) * (folding(i,fAre,nt) + (0,1)*folding(i,fAim,nt))
+     ! print *, "fare ", nt, (folding(i,fAre,nt) + (0,1)*folding(i,fAim,nt))
+  end do
+  !$OMP END PARALLEL DO
+
+  approximateu4 = sum(s(:))
+
+  deallocate(s)
+end function approximateu4
 
 double complex function approximateu(x)
   use omp_lib

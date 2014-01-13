@@ -40,6 +40,7 @@ integ.so: params.o phi.o libinteg.so
 
 test:
 	rm -f libinteg.so
+	rm -f ddd.db
 	make testcase tn=.testBIEsmall
 
 test2:

@@ -32,7 +32,7 @@ class ellipsoid(object):
         self.parts = parts
         self.numpoints = self.samplingEllipsoid()
         self.normalVectors()
-        self.radius_hat = 2.0
+        self.radius_hat = 2 # 0.67
         
         
     def normalVectors(self):

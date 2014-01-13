@@ -26,6 +26,7 @@ class DataBase:
     def setupquad(self):
         import scipy.special.orthogonal as op
         self.quadphi_over = zeros((self.orderquad,2),order = 'Fortran')
+        self.quadphi_rho = zeros((self.orderquad,2),order = 'Fortran')
         self.quadsingular = zeros((self.orderquad,2),order = 'Fortran')
         self.quadphi_under = zeros((self.orderquad,2),order = 'Fortran')
         self.centres03 = op.j_roots(self.orderquad,0,1)[0]
@@ -43,6 +44,8 @@ class DataBase:
         self.quadphi_over[:,1] = self.C03
         self.quadphi_under[:,0] = op.j_roots(self.orderquad,0,0)[0]
         self.quadphi_under[:,1] = op.j_roots(self.orderquad,0,0)[1]
+        self.quadphi_rho[:,0] = op.j_roots(self.orderquad,0,2)[0]
+        self.quadphi_rho[:,1] = op.j_roots(self.orderquad,0,2)[1]
 
 class DataElement(DataBase):
     def __init__(self,numpoints,axes = [float(0.75),float(1.),float(0.5)]):

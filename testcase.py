@@ -83,6 +83,8 @@ class params():
         self.quadphi_under[:,:] = self.data.quadphi_under[:,:]
         self.quadsingular = zeros((self.dim_quad,2),order = 'Fortran')
         self.quadsingular[:,:] = self.data.quadsingular[:,:]
+        self.quadphi_rho = zeros((self.dim_quad,2),order = 'Fortran')
+        self.quadphi_rho[:,:] = self.data.quadphi_rho[:,:]
 
 
     def initEllipsoid(self):
@@ -135,6 +137,8 @@ class params():
 
         self.nstroke_coordinates[:,:] = self.pnts_sql.nstroke_coordinates[:,:]
 
+        print "self.node_neighbors1 ", self.node_neighbors1
+
     def withWrapSql(self, tblname, classname, classval, body, largs_search, largs_class):
         expr = '%s = self.session.query(%s).filter_by(%s).first()' % (tblname,
                                                                       classname,
@@ -164,6 +168,7 @@ class params():
         self.weights = zeros((self.dim_quad))
         self.jacobian = zeros((4,self.dim_quad,4*self.dim_quad), dtype = complex, order = 'Fortran')
         self.nodes = zeros((4,self.dim_quad,4*self.dim_quad,3), order = 'Fortran')
+        self.nodes_rho = zeros((4,self.dim_quad,4*self.dim_quad,3), order = 'Fortran')
 
         self.centres[:] = self.quadphi_over[:,0]
         self.weights[:] = self.quadphi_over[:,1]
@@ -181,6 +186,13 @@ class params():
                             points_id = self.pnts_sql.id,
                             intphi_over = self.intphi_over[:]""")
         self.intphi_over[:] = self.integ_sql.intphi_over[:]
+        # for i in range(0,self.numnodes,1):
+        #     integ.integrate(self.nstroke_coordinates[i,:],self.node_coordinates[i,:],i+1,1)
+        #     self.intphi_over[i] = integ.folding(i+1,integ.f,1)
+
+        self.centres[:] = self.quadphi_under[:,0]
+        self.weights[:] = self.quadphi_under[:,1]
+        integ.calcomp2()
 
         self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
@@ -189,6 +201,11 @@ class params():
 
         self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
         integ.set_gauss(self.gauss)
+
+        self.centres[:] = self.quadphi_rho[:,0]
+        self.weights[:] = self.quadphi_rho[:,1]
+        integ.calcxx_rho()
+
         self.withWrapSql("self.gauss_sql",
                          "GaussWITH",
                          GaussWITH,
@@ -198,9 +215,11 @@ class params():
                          """k_wave = self.k_wave,
                             integ_id = self.integ_sql.id,
                             gauss1 = self.gauss[:,0],
-                            gauss3 = self.gauss[:,2]""")
+                            gauss3 = self.gauss[:,2],
+                            gauss5 = self.gauss[:,4]""")
         self.gauss[:,0] = self.gauss_sql.gauss1
         self.gauss[:,2] = self.gauss_sql.gauss3
+        self.gauss[:,4] = self.gauss_sql.gauss5
 
         self.centres[:] = self.quadsingular[:,0]
         self.weights[:] = self.quadsingular[:,1]
@@ -217,6 +236,8 @@ class params():
                             points_id = self.pnts_sql.id,
                             fsingular3 = self.gauss[:,3]""")
         self.gauss[:,3] = self.snglr_sql.fsingular3[:]
+        self.centres[:] = self.quadphi_over[:,0]
+        self.weights[:] = self.quadphi_over[:,1]
 
     def setObjPhi(self,obj):
         obj.set_dim_3d(self.dim_3d)
@@ -245,6 +266,7 @@ class params():
         obj.set_weights(self.weights)
         obj.set_jacobian(self.jacobian)
         obj.set_nodes(self.nodes)
+        obj.set_nodes_rho(self.nodes_rho)
 
         obj.set_area(self.area)
 
@@ -317,9 +339,13 @@ class testBIEsmallNG(testBIE, unittest.TestCase):
 
 class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
+    tmpP.k_wave = 2
+    tmpP.orderquad = 20
+    # tmpP.name_approximateu = 'integ.approximateu4'
+    tmpP.name_matrixa = 'integ.matrixa4'
     tmpP.integ_places = 5
     tmpP.slae_tol = 0.003
-    tmpP.slae_places = 3
+    tmpP.slae_places = 5
 
 class testBIEsmall3(testBIE, unittest.TestCase):
     tmpP = params(200)
