@@ -197,11 +197,11 @@ class params():
 
         self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
-        integ.set_sigma(self.sigma)
-        integ.set_k_wave(self.k_wave)
+        integ.set_dp1d_ptr("sigma", self.sigma)
+        integ.set_dc_ptr("k_wave", self.k_wave)
 
         self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
-        integ.set_gauss(self.gauss)
+        integ.set_dc2d_ptr("gauss", self.gauss)
         self.withWrapSql("self.gauss_sql",
                          "GaussWITH",
                          GaussWITH,
@@ -232,37 +232,37 @@ class params():
         self.gauss[:,3] = self.snglr_sql.fsingular3[:]
 
     def setObjPhi(self,obj):
-        obj.set_dim_3d(self.dim_3d)
-        obj.set_pi(self.PI)
-        obj.set_max_neighbors(self.max_neighbors)
-        obj.set_hval(self.hval)
-        obj.set_numnodes(self.numnodes)
+        obj.set_i_ptr("dim_3d", self.dim_3d)
+        obj.set_dp_ptr("PI", self.PI)
+        obj.set_i_ptr("max_neighbors", self.max_neighbors)
+        obj.set_dp_ptr("hval", self.hval)
+        obj.set_i_ptr("numnodes", self.numnodes)
 
         obj.set_dp1d_ptr("axes", self.axes)
 
         obj.set_dp2d_ptr("node_coordinates", self.node_coordinates)
         obj.set_dp2d_ptr("normal_coordinates", self.normal_coordinates)
         obj.set_dp2d_ptr("nstroke_coordinates", self.nstroke_coordinates)
-        obj.set_node_neighbors1(self.node_neighbors1)
-        obj.set_node_neighbors2(self.node_neighbors2)
+        obj.set_i2d_ptr("node_neighbors1", self.node_neighbors1)
+        obj.set_i2d_ptr("node_neighbors2", self.node_neighbors2)
 
     def setObjInteg(self, obj):
         self.setObjPhi(obj)
 
-        obj.set_intphi_over(self.intphi_over)
-        obj.set_intphi_under(self.intphi_under)
-        obj.set_hval2(self.hval2)
-        obj.set_dim_quad(self.dim_quad)
+        obj.set_dp1d_ptr("intphi_over", self.intphi_over)
+        obj.set_dp1d_ptr("intphi_under", self.intphi_under)
+        obj.set_dp_ptr("hval2", self.hval2)
+        obj.set_i_ptr("dim_quad", self.dim_quad)
 
         obj.set_dp1d_ptr("counter", self.counter)
         obj.set_dp2d_ptr("quadphi_over", self.quadphi_over)
         obj.set_dp2d_ptr("quadphi_under", self.quadphi_under)
         obj.set_dp1d_ptr("centres", self.centres)
         obj.set_dp1d_ptr("weights", self.weights)
-        obj.set_jacobian(self.jacobian)
-        obj.set_nodes(self.nodes)
+        obj.set_dc3d_ptr("jacobian", self.jacobian)
+        obj.set_dp4d_ptr("nodes", self.nodes)
 
-        obj.set_area(self.area)
+        obj.set_dp1d_ptr("area", self.area)
 
 class testBIE(object):
     @classmethod
@@ -275,7 +275,7 @@ class testBIE(object):
         self.P.initPhi()
         self.P.initInteg()
         self.P.initAHMED()
-        integ.set_q_density(self.P.q_ahmed)
+        integ.set_dc1d_ptr("q_density", self.P.q_ahmed)
         logging.debug("counter = " + str(self.P.counter))
 
     def testEllipsoid(self):
