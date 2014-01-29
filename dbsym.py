@@ -9,6 +9,16 @@ __author__ = "Evgeny Boykov. <artscan@list.ru>"
 import optparse
 from max2f90 import *
 
+def spec():
+    spec_out = open("specfun.out").read()
+    spherical_harmonic = open("spherical_harmonic.f90", 'w')
+    spherical_bessel_y = open("spherical_bessel_y.f90", 'w')
+    spherical_bessel_j = open("spherical_bessel_j.f90", 'w')
+    ar = strtr(strtr(spec_out,onestring),f90replace).split("\n")
+    spherical_harmonic.write(ar[2])
+    spherical_bessel_y.write(ar[1])
+    spherical_bessel_j.write(ar[0])
+
 def xx_rhopy():
     xx_rho_out = open("xx_rho.out").read()
     xx_rho3 = open("xx_rho3.f90", 'w')

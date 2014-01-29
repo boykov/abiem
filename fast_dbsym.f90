@@ -3,6 +3,44 @@ module fast_dbsym
   double precision, parameter :: PI = 3.14159265358979324D0
 contains
 
+  pure double precision function asqrt(x)
+    double precision, intent(in) :: x
+    asqrt = dsqrt(abs(x))
+  end function asqrt
+
+  pure integer function dn(n,m)
+    integer, intent(in) :: n,m
+    dn = 0
+    if (n .eq. m) dn = 1
+  end function dn
+
+  double complex function spherical_hankel(n,x)
+    double precision, intent(in) :: x
+    integer, intent(in) :: n
+    spherical_hankel = spherical_bessel_j(n,x) + (0,1)*spherical_bessel_y(n,x)
+  end function spherical_hankel
+
+  double precision function spherical_bessel_y(n,x)
+    double precision, intent(in) :: x
+    integer, intent(in) :: n
+    spherical_bessel_y = &
+         include 'spherical_bessel_y.f90'
+  end function spherical_bessel_y
+
+  double precision function spherical_bessel_j(n,x)
+    double precision, intent(in) :: x
+    integer, intent(in) :: n
+    spherical_bessel_j = &
+         include 'spherical_bessel_j.f90'
+  end function spherical_bessel_j
+
+  double complex function spherical_harmonic(l,m,theta,phi)
+    double precision, intent(in) :: theta,phi
+    integer, intent(in) :: l,m
+    spherical_harmonic = &
+         include 'spherical_harmonic.f90'
+  end function spherical_harmonic
+
   double precision function foo2()
     foo2 = 5.0
   end function foo2

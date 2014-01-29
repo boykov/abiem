@@ -8,3 +8,4 @@
 !singular.max
 !jacobian.max
 !dirichlet-helmholtz.max
+!specfun.max
