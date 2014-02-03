@@ -1,0 +1,53 @@
+digraph scenbie {
+	compound=true;
+	rankdir=LR;
+	subgraph cluster_Vars {
+		style=filled;
+		color = yellow;
+		label = "class params";
+		subgraph cluster_initVars {
+			style=filled;
+			color = green;
+			label = "Init, set";
+			subgraph cluster_sql {
+				style = filled;
+				color = violet;
+				label = "TODO Требуется вынести";
+				internal;
+				subgraph cluster_params {
+					style=filled;
+					color = red;
+					label = "params: однородный набор\n параметров и типов";
+					set_params [shape = component, style=filled, label = "set_params:"];
+				}
+				subgraph cluster_function {
+					style=filled;
+					color = purple;
+					label = "function: однородный набор\n управляющих функций";
+					calcomp [shape = component, style=filled, label = "calcomp:"];
+					phi [shape = component, style=filled, label = "φ: разбиение единицы"];
+					integ [shape = component, style=filled, label = "integ: функции"];
+				}
+			}
+		}
+	}
+	subgraph cluster_sql_external {
+		style = filled;
+		color = violet;
+		label = "Инородная система SQL";
+		external;
+	}
+	subgraph cluster_scenario {
+		style = filled;
+		color = pink;
+		label = "Сценарий выполнения";
+		zeros [shape = component, style=filled, label = "init: инициализация массивов"];
+		setObj [shape = component, style=filled, label = "setObj: привязка массивов"];
+		calcFunc [shape = component, style=filled, label = "calcFunc: вызов функций"];
+	}
+	internal -> external [lhead = cluster_sql_external, arrowhead="crow"];
+	setObj -> set_params;
+	calcFunc -> calcomp;
+	
+	
+}
