@@ -307,7 +307,7 @@ class testBIE(object):
     def testUnder(self):
         self.assertAlmostEqual(
             sum(self.P.gauss[:,5])/(4*math.pi),
-            self.P.gauss[integ.j_tmp - 1,3],
+            self.P.gauss[self.P.numnodes - 1,3],
             places = self.P.under_places)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
