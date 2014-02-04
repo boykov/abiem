@@ -6,6 +6,20 @@ contains
   include 'set_params.f90'
   include 'kernels.f90'
 
+  double precision function fAre(x,i)
+    use dbsym
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(3) :: x
+    fAre = real(A(node_coordinates(i,:),x,dsqrt(2.0D0)*sigma(i),k_wave)*phi(x,i,hval**2))
+  end function fAre
+
+  double precision function fAim(x,i)
+    use dbsym
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(3) :: x
+    fAim = aimag(A(node_coordinates(i,:),x,dsqrt(2.0D0)*sigma(i),k_wave)*phi(x,i,hval**2))
+  end function fAim
+
   double precision function f2(x,i)
     use dbsym
     integer, intent(in) :: i
@@ -93,6 +107,27 @@ contains
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
+
+  subroutine calcomp4()
+    use omp_lib
+    use dbsym
+    integer i, nt
+
+    call OMP_SET_NUM_THREADS(4)
+
+    ptr_jacobian => fjacobian
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
+       ptr_f => fAre
+       gauss(i,7) = folding(i,dim_quad,nt)
+       ptr_f => fAim
+       gauss(i,8) = folding(i,dim_quad,nt)
+    end do
+    !$OMP END PARALLEL DO
+  end subroutine calcomp4
 
   subroutine calcomp2()
     use omp_lib

@@ -233,6 +233,16 @@ class params():
                             fsingular3 = self.gauss[:,3]""")
         self.gauss[:,3] = self.snglr_sql.fsingular3[:]
 
+        self.centres[:] = self.quadphi_under[:,0]
+        self.weights[:] = self.quadphi_under[:,1]
+        integ.calcomp2()
+
+        self.centres[:] = self.quadphi_over[:,0]
+        self.weights[:] = self.quadphi_over[:,1]
+        integ.calcomp3()
+        integ.calcomp4()
+
+
     def setObjPhi(self,obj):
         obj.set_i_ptr("dim_3d", self.dim_3d)
         obj.set_dp_ptr("PI", self.PI)
@@ -306,6 +316,16 @@ class testBIE(object):
                                  eval(self.P.name_approximateu),
                                  self.P.data.exactu),
             self.P.slae_tol, places = self.P.slae_places)
+
+    def testUnder(self):
+        print (self.P.intphi_under[0] + sum(self.P.gauss[:,5]))/(4*math.pi)
+        print self.P.gauss[0,3]
+        print self.P.gauss[0,3] - sum(self.P.gauss[:,5])/(4*math.pi)
+        print (self.P.intphi_under[0])/(4*math.pi)
+        print self.P.gauss[0,6], self.P.gauss[0,7]
+        limA = self.P.intphi_over[0]/((2*math.pi)**(1.5)*self.P.sigma[0])
+        print "phi*limA = ", limA
+
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)
