@@ -14,6 +14,22 @@ contains
     if (n .eq. m) dn = 1
   end function dn
 
+  double complex function cderf(z)
+    double complex, intent(in) :: z
+    cderf = &
+         include 'cderf.f90'
+  end function cderf
+
+  double complex function A_s(x,y,sigm,k)
+    double precision, intent(in) :: x(:),y(:)
+    double precision, intent(in) :: sigm
+    double complex, intent(in) :: k
+    double precision :: v,rh
+    rh = norm(x-y)
+    A_s = &
+         include 'A_s.f90'
+  end function A_s
+
   double complex function spherical_hankel(n,x)
     double precision, intent(in) :: x
     integer, intent(in) :: n

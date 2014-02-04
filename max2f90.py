@@ -29,6 +29,7 @@ f90replace =    {
     "cos"       : "dcos",
     "sqrt"       : "asqrt",
     "exp"        : "cdexp",
+    "erf"        : "cderf",
     "pxe"        : "dexp",
     "'"          : "",
     "δ"          : "dn",
