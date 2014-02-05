@@ -163,6 +163,7 @@ class params():
                     classname : classval})
 
     def calcomp(self):
+        integ.setup_calcomp()
         for i in range(0,self.numnodes,1):
             integ.integrate(self.nstroke_coordinates[i,:],
                             self.node_coordinates[i,:],

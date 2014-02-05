@@ -75,6 +75,12 @@ contains
     !$OMP END PARALLEL DO
   end function calcsing
 
+  subroutine setup_calcomp ()
+    use dbsym
+    ptr_jacobian => fjacobian
+    ptr_f => f
+  end subroutine setup_calcomp
+
   subroutine calcomp()
     use omp_lib
     use dbsym
