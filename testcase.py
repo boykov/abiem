@@ -15,7 +15,6 @@ import math
 from utilities import *
 from phi import modphi as phi
 from integ import modinteg as integ
-from dbsym import dbsym
 
 import sys,os
 import slaeahmed
@@ -40,6 +39,7 @@ class params():
         self.eps_matgen = 1e-4
         self.eps_aggl = self.eps_matgen
         self.eps_gmres = self.eps_matgen*0.01
+        self.steps_gmres = 20*self.numpoints
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
@@ -50,6 +50,7 @@ class params():
         slaeahmed.set_Hmatrix(self.eps_matgen,
                               self.eps_aggl,
                               self.eps_gmres,
+                              self.steps_gmres,
                               self.eta,
                               self.bmin,
                               self.rankmax)

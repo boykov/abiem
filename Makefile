@@ -38,7 +38,7 @@ phi.so: libphi.so
 	test -s phi.so || f2py -m phi --overwrite-signature -h phi.pyf phi.f90
 	test -s phi.so || $(f2) -m phi -L. -lphi -c phi.pyf phi.f90
 
-libinteg.so: dbsym/dbsym.o dbsym/fast_dbsym.o integ.f90 params.o set_params.f90 libphi.so
+libinteg.so: integ.f90 params.o set_params.f90 libphi.so
 	$(gf) -shared -I$(shell python defaults.py dbsym_dir) dbsym/dbsym.o dbsym/toms_mod.o dbsym/fast_dbsym.o params.o phi.o integ.f90 -o libinteg.so
 
 integ.so: integ.f90 params.o phi.o libinteg.so
@@ -53,7 +53,7 @@ test2:
 	rm -f libinteg.so
 	@make testcase tn=.testBIEmedium
 
-testcase: testcase.py phi.so dbsym/dbsym.so integ.so
+testcase: testcase.py phi.so integ.so
 	python -m unittest testcase$(tn)
 
 clear:
