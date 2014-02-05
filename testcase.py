@@ -92,35 +92,15 @@ class params():
 
 
     def initEllipsoid(self):
-        self.withWrapSql("self.ell_sql",
-                         "EllipsoidWITH",
-                         EllipsoidWITH,
-                         "",
-                         "axes = self.axes",
-                         """axe1 = self.axes[0],
-                            axe2 = self.axes[1],
-                            axe3 = self.axes[2],
-                            axes = self.axes""")
+        self.e = ellipsoid(self.axes, self.numpoints)
 
-        self.withWrapSql("self.pnts_sql",
-                         "PointsWITH",
-                         PointsWITH,
-                         "self.e = ellipsoid(self.axes, self.numpoints)",
-                         "numpoints = self.numpoints",
-                         """numpoints = self.numpoints,
-                            surface_id = self.ell_sql.id,
-                            hval = self.e.get_h(),
-                            numnodes = self.e.points.shape[0],
-                            node_coordinates = self.e.points[:,:],
-                            normal_coordinates = self.e.normalvectors[:,:]""")
-
-        self.numnodes = self.pnts_sql.numnodes
-        self.hval = self.pnts_sql.hval
+        self.numnodes = self.e.points.shape[0]
+        self.hval = self.e.get_h()
         self.hval2 = self.hval * self.hval
         self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
         self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
-        self.node_coordinates[:,:] = self.pnts_sql.node_coordinates[:,:]
-        self.normal_coordinates[:,:] = self.pnts_sql.normal_coordinates[:,:]
+        self.node_coordinates[:,:] = self.e.points[:,:]
+        self.normal_coordinates[:,:] = self.e.normalvectors[:,:]
 
     def initPhi(self):
         self.node_neighbors1 = zeros(
@@ -135,32 +115,7 @@ class params():
         phi.filter_neighbors(2*self.hval, self.node_neighbors2, self.numnodes)
         phi.filter_neighbors(  self.hval, self.node_neighbors1, self.numnodes)
 
-        if not self.pnts_sql.nstroke_coordinates.all():
-            phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
-            self.pnts_sql.nstroke_coordinates = self.nstroke_coordinates[:,:]
-
-        self.nstroke_coordinates[:,:] = self.pnts_sql.nstroke_coordinates[:,:]
-
-    def withWrapSql(self, tblname, classname, classval, body, largs_search, largs_class):
-        expr = '%s = self.session.query(%s).filter_by(%s).first()' % (tblname,
-                                                                      classname,
-                                                                      largs_search)
-        exec(expr, {'self' : self,
-                    classname : classval})
-        expr = """if not %s:
-                      %s
-                      %s = %s(%s)
-                      self.session.add(%s)
-                      self.session.commit()""" % (tblname,
-                                                  body,
-                                                  tblname,
-                                                  classname,
-                                                  largs_class,
-                                                  tblname)
-        exec(expr, {'self' : self,
-                    'integ' : integ,
-                    'ellipsoid' : ellipsoid,
-                    classname : classval})
+        phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
 
     def calcomp(self):
         for i in range(0,self.numnodes,1):
@@ -186,16 +141,7 @@ class params():
         self.counter = zeros((1))
 
         self.setObjInteg(integ)
-        self.withWrapSql("self.integ_sql",
-                         "IntegWITH",
-                         IntegWITH,
-                         "integ.calcomp()",
-                         """dim_quad = self.dim_quad,
-                            points_id = self.pnts_sql.id""",
-                         """dim_quad = self.dim_quad,
-                            points_id = self.pnts_sql.id,
-                            intphi_over = self.intphi_over[:]""")
-        self.intphi_over[:] = self.integ_sql.intphi_over[:]
+        integ.calcomp()
 
         self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
@@ -204,34 +150,12 @@ class params():
 
         self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
         integ.set_dc2d_ptr("gauss", self.gauss)
-        self.withWrapSql("self.gauss_sql",
-                         "GaussWITH",
-                         GaussWITH,
-                         "integ.setgauss()",
-                         """k_wave = self.k_wave,
-                            integ_id = self.integ_sql.id""",
-                         """k_wave = self.k_wave,
-                            integ_id = self.integ_sql.id,
-                            gauss1 = self.gauss[:,0],
-                            gauss3 = self.gauss[:,2]""")
-        self.gauss[:,0] = self.gauss_sql.gauss1
-        self.gauss[:,2] = self.gauss_sql.gauss3
+        integ.setgauss()
 
         self.centres[:] = self.quadsingular[:,0]
         self.weights[:] = self.quadsingular[:,1]
 
-        self.withWrapSql("self.snglr_sql",
-                         "SingularWITH",
-                         SingularWITH,
-                         "integ.calcsing()",
-                         """dim_quad = self.dim_quad,
-                            k_wave = self.k_wave,
-                            points_id = self.pnts_sql.id""",
-                         """dim_quad = self.dim_quad,
-                            k_wave = self.k_wave,
-                            points_id = self.pnts_sql.id,
-                            fsingular3 = self.gauss[:,3]""")
-        self.gauss[:,3] = self.snglr_sql.fsingular3[:]
+        integ.calcsing()
 
     def setObjPhi(self,obj):
         obj.set_i_ptr("dim_3d", self.dim_3d)
