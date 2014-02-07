@@ -125,14 +125,14 @@ double complex function matrixA6(i,j)
         weights(:) = quadphi_over(:,2)
         ptr_jacobian => fjacobian
         call integrate(nstroke_coordinates(kj,:), node_coordinates(kj,:),kj,1)
-        tmp = folding(kj, f3,1)
+        tmp = folding(kj, f3,dim_quad,1)
         hval2 = hval
         centres(:) = quadphi_under(:,1)
         weights(:) = quadphi_under(:,2)
         ptr_jacobian => fjacobian2
         call integrate(nstroke_coordinates(j_tmp,:), node_coordinates(j_tmp,:),j_tmp,1)
         i_tmp = kj
-        tmp = tmp + folding(j_tmp,f4,1)
+        tmp = tmp + folding(j_tmp,f4,dim_quad,1)
         hval2 = hval * hval
         matrixA6 = intphi_over(i)*tmp/(4*PI)
      else
@@ -141,7 +141,7 @@ double complex function matrixA6(i,j)
            weights(:) = quadphi_over(:,2)
            ptr_jacobian => fjacobian
            call integrate(nstroke_coordinates(j,:),node_coordinates(j,:),j,1)
-           matrixA6 = intphi_over(i)*folding(j,f2,1)/(4*PI)
+           matrixA6 = intphi_over(i)*folding(j,f2,dim_quad,1)/(4*PI)
         else
            matrixA6 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
         end if
@@ -199,7 +199,7 @@ double complex function approximateu4(x)
      nt = OMP_GET_THREAD_NUM()
      ! print *, "amn ", nt, intphi_over(i)*Amn(x,node_coordinates(i,:),k_wave)
      call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-     s(i) = q_density(i) * (folding(i,fAre,nt) + (0,1)*folding(i,fAim,nt))
+     s(i) = q_density(i) * (folding(i,fAre,dim_quad,nt) + (0,1)*folding(i,fAim,dim_quad,nt))
      ! print *, "fare ", nt, (folding(i,fAre,nt) + (0,1)*folding(i,fAim,nt))
   end do
   !$OMP END PARALLEL DO

@@ -118,7 +118,7 @@ contains
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       intphi_over(i) = folding(i,f,nt)
+       intphi_over(i) = folding(i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
@@ -136,7 +136,7 @@ contains
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       intphi_under(i) = folding(i,f,nt)
+       intphi_under(i) = folding(i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp2
@@ -156,14 +156,14 @@ contains
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-       gauss(i,6) = folding(i,f2,nt)
+       gauss(i,6) = folding(i,f2,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
     do j=2,max_neighbors
        k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
        call integrate(nstroke_coordinates(k1,:), node_coordinates(k1,:),k1,1)
-       gauss(k1, 6) = folding(k1,f3,1)
+       gauss(k1, 6) = folding(k1,f3,dim_quad,1)
     end do
 
   end subroutine calcomp3
@@ -182,7 +182,7 @@ contains
        k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
        i_tmp = k1
-       gauss(k1, 6) = gauss(k1, 6) + folding(j_tmp,f4,1)
+       gauss(k1, 6) = gauss(k1, 6) + folding(j_tmp,f4,dim_quad,1)
     end do
     hval2 = hval * hval
     gauss(j_tmp,6) = intphi_under(j_tmp)
@@ -291,9 +291,9 @@ contains
     return
   end subroutine integrate
 
-  double precision function folding(ip,f,nt)
+  double precision function folding(ip,f,dim_quad,nt)
     use dbsym
-    integer, intent(in) :: ip,nt
+    integer, intent(in) :: ip,nt,dim_quad
     interface
        function f(x,i)
          integer, intent(in) :: i
