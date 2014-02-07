@@ -54,6 +54,7 @@ class params():
         self.bmin = 15
         self.rankmax = 1000
         self.flagMemo = True
+        self.flagTestUnder = False
 
     def initAHMED(self):
         """
@@ -225,12 +226,13 @@ class params():
                             fsingular3 = self.gauss[:,3]""")
         self.gauss[:,3] = self.snglr_sql.fsingular3[:]
 
-        for i in range(0,self.numnodes,1):
-            integ.j_tmp = i+1
-            self.centres[:] = self.quadphi_over[:,0]
-            self.weights[:] = self.quadphi_over[:,1]
-            integ.calcomp3()
-            integ.calcomp4()
+        if (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder):
+            for i in range(0,self.numnodes,1):
+                integ.j_tmp = i+1
+                self.centres[:] = self.quadphi_over[:,0]
+                self.weights[:] = self.quadphi_over[:,1]
+                integ.calcomp3()
+                integ.calcomp4()
 
     def setObjPhi(self,obj):
         obj.set_i_ptr("dim_3d", self.dim_3d)
@@ -305,10 +307,11 @@ class testBIE(object):
             self.P.slae_tol, places = self.P.slae_places)
 
     def testUnder(self):
-        self.assertAlmostEqual(
-            sum(self.P.gauss[:,5])/(4*math.pi),
-            self.P.gauss[self.P.numnodes - 1,3],
-            places = self.P.under_places)
+        if self.P.flagTestUnder:
+            self.assertAlmostEqual(
+                sum(self.P.gauss[:,5])/(4*math.pi),
+                self.P.gauss[self.P.numnodes - 1,3],
+                places = self.P.under_places)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)
@@ -342,6 +345,7 @@ class testBIEsmall(testBIE, unittest.TestCase):
     tmpP.integ_places = 5
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
+    tmpP.flagTestUnder = True
     tmpP.under_places = 9
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3
