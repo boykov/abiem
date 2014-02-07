@@ -272,6 +272,19 @@ class testBIE(object):
     def setUpClass(self):
         logging.basicConfig(level=logging.DEBUG)
         self.P = self.tmpP
+        self.P.withWrapSql("self.testBIE_sql",
+                           "TestWITH",
+                           TestWITH,
+                           "",
+                           "id = 10000",
+                           """name_matrixa = self.name_matrixa,
+                              name_approximateu = self.name_approximateu,
+                              k_wave = self.k_wave,
+                              numpoints = self.numpoints,
+                              slae_tol = self.slae_tol,
+                              slae_places = self.slae_places,
+                              orderquad = self.orderquad,
+                              integ_places = self.integ_places""")
         self.P.data.k = self.P.k_wave # TODO cleanup
         self.P.initQuad(self.P.orderquad)
         self.P.initEllipsoid()

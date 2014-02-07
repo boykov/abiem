@@ -81,6 +81,20 @@ class AhmedWITH(Base):
     rankmax = Column(types.Integer)
     q_ahmed = Column(SqliteArray)
 
+class TestWITH(Base):
+    __tablename__ = 'testBIE'
+    id = Column(types.Integer, primary_key = True)
+    name_matrixa = Column(types.String(80))
+    name_approximateu = Column(types.String(80))
+    k_wave = Column(Numeric(36,16))
+    numpoints = Column(types.Integer)
+    slae_tol = Column(Numeric(36, 12))
+    slae_places = Column(types.Integer)
+    orderquad = Column(types.Integer)
+    integ_places = Column(types.Integer)
+    timestamp = Column(types.DateTime, default = datetime.datetime.now)
+
+
 def create_session(Base):
     engine = create_engine('sqlite:///ddd.db',
                            echo=False, 
