@@ -78,7 +78,6 @@ contains
   subroutine setup_calcomp ()
     use dbsym
     ptr_jacobian => fjacobian
-    ptr_f => f
   end subroutine setup_calcomp
 
   subroutine calcomp()
@@ -89,13 +88,12 @@ contains
     call OMP_SET_NUM_THREADS(4)
 
     ptr_jacobian => fjacobian
-    ptr_f => f
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
-       intphi_over(i) = folding(i,dim_quad,nt)
+       intphi_over(i) = folding(i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
@@ -108,13 +106,12 @@ contains
     call OMP_SET_NUM_THREADS(4)
 
     ptr_jacobian => fjacobian2
-    ptr_f => f
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
-       intphi_under(i) = folding(i,dim_quad,nt)
+       intphi_under(i) = folding(i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp2
@@ -127,13 +124,12 @@ contains
     call OMP_SET_NUM_THREADS(4)
 
     ptr_jacobian => fjacobian
-    ptr_f => f2
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
-       gauss(i,6) = folding(i,dim_quad,nt)
+       gauss(i,6) = folding(i,f2,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
     gauss(1,6) = 0.0
@@ -246,9 +242,16 @@ contains
     return
   end subroutine integrate
 
-  double precision function folding(ip,dim_quad,nt)
+  double precision function folding(ip,f,dim_quad,nt)
     use dbsym
     integer, intent(in) :: ip,nt, dim_quad
+    interface
+       function f(x,i)
+         integer, intent(in) :: i
+         double precision, intent(in), dimension(:) :: x
+         double precision :: f
+       end function f
+    end interface
 
     integer Nk, iz, ik,nthread
     double precision gtmp, tmp
@@ -259,7 +262,7 @@ contains
     gtmp = 0
     do iz=1,dim_quad
        do ik=1,Nk
-          tmp = ptr_f(nodes(nthread,iz,ik,:),ip)
+          tmp = f(nodes(nthread,iz,ik,:),ip)
           gtmp = gtmp + realpart(jacobian(nthread,iz,ik))*tmp
        end do
     end do
