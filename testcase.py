@@ -44,6 +44,7 @@ class params():
         self.integ_places = 4
         self.slae_tol = 0.0
         self.slae_places = 0
+        self.under_places = 3
         self.orderquad = 20
         self.eps_matgen = 1e-4
         self.eps_aggl = self.eps_matgen
@@ -53,6 +54,7 @@ class params():
         self.bmin = 15
         self.rankmax = 1000
         self.flagMemo = True
+        self.flagTestUnder = False
 
     def initAHMED(self):
         """
@@ -218,6 +220,10 @@ class params():
         self.gauss[:,0] = self.gauss_sql.gauss1
         self.gauss[:,2] = self.gauss_sql.gauss3
 
+        self.centres[:] = self.quadphi_under[:,0]
+        self.weights[:] = self.quadphi_under[:,1]
+        integ.calcomp2()
+
         self.centres[:] = self.quadsingular[:,0]
         self.weights[:] = self.quadsingular[:,1]
 
@@ -233,6 +239,12 @@ class params():
                             points_id = self.pnts_sql.id,
                             fsingular3 = self.gauss[:,3]""")
         self.gauss[:,3] = self.snglr_sql.fsingular3[:]
+
+        if (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder):
+            for i in range(self.numnodes-1,self.numnodes,1):
+                integ.j_tmp = i+1
+                integ.calcomp3()
+                integ.calcomp4()
 
     def setObjPhi(self,obj):
         obj.set_i_ptr("dim_3d", self.dim_3d)
@@ -308,6 +320,13 @@ class testBIE(object):
                                  self.P.data.exactu),
             self.P.slae_tol, places = self.P.slae_places)
 
+    def testUnder(self):
+        if self.P.flagTestUnder:
+            self.assertAlmostEqual(
+                sum(self.P.gauss[:,5])/(4*math.pi),
+                self.P.gauss[self.P.numnodes - 1,3],
+                places = self.P.under_places)
+
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)
     tmpP.k_wave = 6
@@ -338,6 +357,8 @@ class testBIEsmallNG(testBIE, unittest.TestCase):
 class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
+    tmpP.under_places = 4
+    tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3
 
@@ -352,6 +373,8 @@ class testBIEsmall3(testBIE, unittest.TestCase):
 class testBIEmedium(testBIE, unittest.TestCase):
     tmpP = params(3200)
     tmpP.integ_places = 6
+    tmpP.under_places = 5
+    tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.0002
     tmpP.slae_places = 4
 

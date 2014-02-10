@@ -1,6 +1,8 @@
 module modinteg
   use params
-  use modphi, only : phi
+  use modphi, only : phi, deltah
+  integer :: i_tmp, j_tmp
+  double precision :: y_tmp(3)
 contains
 
   include 'set_params.f90'
@@ -10,7 +12,7 @@ contains
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
-    f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(1,:))
+    f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:))
   end function f2
 
   double complex function f(x,i)
@@ -18,6 +20,20 @@ contains
     double precision, intent(in), dimension(:) :: x
     f = phi(x,i,hval**2)
   end function f
+
+  double complex function f3(x,i)
+    use dbsym
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(:) :: x
+    f3 = (1 - deltah(x(:)  + node_coordinates(i,:) - node_coordinates(j_tmp,:),hval))*phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:))
+  end function f3
+
+  double complex function f4(x,i)
+    use dbsym
+    integer, intent(in) :: i
+    double precision, intent(in), dimension(:) :: x
+    f4 = (deltah(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:),hval))*phi(x(:) + node_coordinates(i,:) - node_coordinates(i_tmp,:) ,i_tmp,hval**2)
+  end function f4
 
   double precision function test_fast()
     use fast_dbsym
@@ -122,10 +138,12 @@ contains
   subroutine calcomp3()
     use omp_lib
     use dbsym
-    integer i, nt
+    integer i, nt, k1, j
 
     call OMP_SET_NUM_THREADS(4)
 
+    centres(:) = quadphi_over(:,1)
+    weights(:) = quadphi_over(:,2)
     ptr_jacobian => fjacobian
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
@@ -135,8 +153,36 @@ contains
        gauss(i,6) = folding(i,f2,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
-    gauss(1,6) = 0.0
+    do j=2,max_neighbors
+       k1 = node_neighbors1(j_tmp,j)
+       if (k1 .eq. 0) exit
+       call integrate(nstroke_coordinates(k1,:), node_coordinates(k1,:),k1,centres,weights,1)
+       gauss(k1, 6) = folding(k1,f3,dim_quad,1)
+    end do
+
   end subroutine calcomp3
+
+  subroutine calcomp4()
+    use omp_lib
+    use dbsym
+    integer i, nt, k1, j
+
+    hval2 = hval
+    centres(:) = quadphi_under(:,1)
+    weights(:) = quadphi_under(:,2)
+    ptr_jacobian => fjacobian2
+    call integrate(nstroke_coordinates(j_tmp,:), node_coordinates(j_tmp,:),j_tmp,centres,weights,1)
+    do j=2,max_neighbors
+       k1 = node_neighbors1(j_tmp,j)
+       if (k1 .eq. 0) exit
+       i_tmp = k1
+       gauss(k1, 6) = gauss(k1, 6) + folding(j_tmp,f4,dim_quad,1)
+    end do
+    hval2 = hval * hval
+    gauss(j_tmp,6) = intphi_under(j_tmp)
+    gauss(j_tmp,7) = gauss(j_tmp,4) - (sum(gauss(1:j_tmp-1,6)) + sum(gauss(j_tmp+1:numnodes,6)))/(4*PI)
+
+  end subroutine calcomp4
 
 !       _       _
 !      (_)_ __ | |_ ___  __ _

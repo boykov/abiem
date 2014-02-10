@@ -4,6 +4,8 @@ subroutine set_dp2d_ptr(name, val)
   if (name .eq. "node_coordinates") node_coordinates => val
   if (name .eq. "normal_coordinates") normal_coordinates => val
   if (name .eq. "nstroke_coordinates") nstroke_coordinates => val
+  if (name .eq. "quadphi_over") quadphi_over => val
+  if (name .eq. "quadphi_under") quadphi_under => val
 end subroutine set_dp2d_ptr
 
 subroutine set_dp1d_ptr(name, val)
