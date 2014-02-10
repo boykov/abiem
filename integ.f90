@@ -8,41 +8,34 @@ contains
   include 'set_params.f90'
   include 'kernels.f90'
 
-  double precision function fAre(x,i)
+  double complex function fAmn(x,i)
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
-    fAre = phi(x,i,hval**2)*realpart(Amn(y_tmp,x(:) + node_coordinates(i,:),k_wave))
-  end function fAre
+    fAmn = phi(x,i,hval**2)*Amn(y_tmp,x(:) + node_coordinates(i,:),k_wave)
+  end function fAmn
 
-  double precision function fAim(x,i)
-    use dbsym
-    integer, intent(in) :: i
-    double precision, intent(in), dimension(:) :: x
-    fAim = phi(x,i,hval**2)*imagpart(Amn(y_tmp,x(:) + node_coordinates(i,:),k_wave))
-  end function fAim
-
-  double precision function f2(x,i)
+  double complex function f2(x,i)
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
     f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:))
   end function f2
 
-  double precision function f(x,i)
+  double complex function f(x,i)
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
     f = phi(x,i,hval**2)
   end function f
 
-  double precision function f3(x,i)
+  double complex function f3(x,i)
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
     f3 = (1 - deltah(x(:)  + node_coordinates(i,:) - node_coordinates(j_tmp,:),hval))*phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:))
   end function f3
 
-  double precision function f4(x,i)
+  double complex function f4(x,i)
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
@@ -298,7 +291,7 @@ contains
        function f(x,i)
          integer, intent(in) :: i
          double precision, intent(in), dimension(:) :: x
-         double precision :: f
+         double complex :: f
        end function f
     end interface
 

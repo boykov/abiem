@@ -199,8 +199,7 @@ double complex function approximateu4(x)
      nt = OMP_GET_THREAD_NUM()
      ! print *, "amn ", nt, intphi_over(i)*Amn(x,node_coordinates(i,:),k_wave)
      call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,nt)
-     s(i) = q_density(i) * (folding(i,fAre,dim_quad,nt) + (0,1)*folding(i,fAim,dim_quad,nt))
-     ! print *, "fare ", nt, (folding(i,fAre,nt) + (0,1)*folding(i,fAim,nt))
+     s(i) = q_density(i) * folding(i,fAmn,dim_quad,nt)
   end do
   !$OMP END PARALLEL DO
 
