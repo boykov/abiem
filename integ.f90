@@ -1,38 +1,45 @@
 module modinteg
   use params
   use modphi, only : phi, deltah
-  integer :: i_tmp, j_tmp
-  double precision :: y_tmp(3)
 contains
 
   include 'set_params.f90'
   include 'kernels.f90'
 
-  double complex function f2(x,i)
+  double complex function f2(x,i,j)
     use dbsym
-    integer, intent(in) :: i
+    integer, intent(in) :: i,j
     double precision, intent(in), dimension(:) :: x
-    f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:))
+    double precision, dimension(size(x)) :: y
+    y(:) = x(:) + node_coordinates(i,:) - node_coordinates(j,:)
+
+    f2 = phi(x,i,hval**2)/norm(y)
   end function f2
 
-  double complex function f(x,i)
-    integer, intent(in) :: i
+  double complex function f(x,i,j)
+    integer, intent(in) :: i,j
     double precision, intent(in), dimension(:) :: x
     f = phi(x,i,hval**2)
   end function f
 
-  double complex function f3(x,i)
+  double complex function f3(x,i,j)
     use dbsym
-    integer, intent(in) :: i
+    integer, intent(in) :: i,j
     double precision, intent(in), dimension(:) :: x
-    f3 = (1 - deltah(x(:)  + node_coordinates(i,:) - node_coordinates(j_tmp,:),hval))*phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:))
+    double precision, dimension(size(x)) :: y
+    y(:) = x(:) + node_coordinates(i,:) - node_coordinates(j,:)
+
+    f3 = (1 - deltah(y,hval))*phi(x,i,hval**2)/norm(y)
   end function f3
 
-  double complex function f4(x,i)
+  double complex function f4(x,i,j)
     use dbsym
-    integer, intent(in) :: i
+    integer, intent(in) :: i,j
     double precision, intent(in), dimension(:) :: x
-    f4 = (deltah(x(:) + node_coordinates(i,:) - node_coordinates(j_tmp,:),hval))*phi(x(:) + node_coordinates(i,:) - node_coordinates(i_tmp,:) ,i_tmp,hval**2)
+    double precision, dimension(size(x)) :: y
+    y(:) = x(:) + node_coordinates(i,:) - node_coordinates(j,:)
+
+    f4 = (deltah(x,hval))*phi(y,j,hval**2)
   end function f4
 
   double precision function test_fast()
@@ -112,7 +119,7 @@ contains
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
-       intphi_over(i) = folding(i,f,dim_quad,nt)
+       intphi_over(i) = folding(i,i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
@@ -130,14 +137,15 @@ contains
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
-       intphi_under(i) = folding(i,f,dim_quad,nt)
+       intphi_under(i) = folding(i,i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp2
 
-  subroutine calcomp3()
+  subroutine calcomp3(j_tmp)
     use omp_lib
     use dbsym
+    integer, intent(in) :: j_tmp
     integer i, nt, k1, j
 
     call OMP_SET_NUM_THREADS(4)
@@ -150,21 +158,22 @@ contains
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
-       gauss(i,6) = folding(i,f2,dim_quad,nt)
+       gauss(i,6) = folding(i,j_tmp,f2,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
     do j=2,max_neighbors
        k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
        call integrate(nstroke_coordinates(k1,:), node_coordinates(k1,:),k1,centres,weights,1)
-       gauss(k1, 6) = folding(k1,f3,dim_quad,1)
+       gauss(k1, 6) = folding(k1,j_tmp,f3,dim_quad,1)
     end do
 
   end subroutine calcomp3
 
-  subroutine calcomp4()
+  subroutine calcomp4(j_tmp)
     use omp_lib
     use dbsym
+    integer, intent(in) :: j_tmp
     integer i, nt, k1, j
 
     hval2 = hval
@@ -175,8 +184,7 @@ contains
     do j=2,max_neighbors
        k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
-       i_tmp = k1
-       gauss(k1, 6) = gauss(k1, 6) + folding(j_tmp,f4,dim_quad,1)
+       gauss(k1, 6) = gauss(k1, 6) + folding(j_tmp,k1,f4,dim_quad,1)
     end do
     hval2 = hval * hval
     gauss(j_tmp,6) = intphi_under(j_tmp)
@@ -291,12 +299,12 @@ contains
     return
   end subroutine integrate
 
-  double complex function folding(ip,f,dim_quad,nt)
+  double complex function folding(ip,jp,f,dim_quad,nt)
     use dbsym
-    integer, intent(in) :: ip,nt, dim_quad
+    integer, intent(in) :: ip,jp,nt, dim_quad
     interface
-       function f(x,i)
-         integer, intent(in) :: i
+       function f(x,i,j)
+         integer, intent(in) :: i,j
          double precision, intent(in), dimension(:) :: x
          double complex :: f
        end function f
@@ -311,7 +319,7 @@ contains
     gtmp = 0
     do iz=1,dim_quad
        do ik=1,Nk
-          tmp = f(nodes(nthread,iz,ik,:),ip)
+          tmp = f(nodes(nthread,iz,ik,:),ip,jp)
           gtmp = gtmp + realpart(jacobian(nthread,iz,ik))*tmp
        end do
     end do

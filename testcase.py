@@ -171,7 +171,7 @@ class params():
                             self.node_coordinates[i,:],
                             i+1,
                             self.centres,self.weights,1)
-            self.intphi_over[i] = integ.folding(i+1,self.dim_quad,1)
+            self.intphi_over[i] = integ.folding(i+1,i+1,self.dim_quad,1)
 
     def initInteg(self):
         self.intphi_over = zeros((self.numnodes))
@@ -242,9 +242,8 @@ class params():
 
         if (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder):
             for i in range(self.numnodes-1,self.numnodes,1):
-                integ.j_tmp = i+1
-                integ.calcomp3()
-                integ.calcomp4()
+                integ.calcomp3(i+1)
+                integ.calcomp4(i+1)
 
     def setObjPhi(self,obj):
         obj.set_i_ptr("dim_3d", self.dim_3d)
