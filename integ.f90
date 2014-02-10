@@ -38,6 +38,8 @@ contains
     double precision, dimension(3) :: x,y
     double complex :: s2, s3
 
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(s,s3,x,y)
     do j=1,numnodes
        s = 0.0
        s2 = 0.0
@@ -55,6 +57,7 @@ contains
        gauss(j,1) = s
        gauss(j,3) = s3
     end do
+    !$OMP END PARALLEL DO
   end subroutine setgauss
 
   double precision function calcsing()
