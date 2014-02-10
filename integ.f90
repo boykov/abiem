@@ -291,7 +291,7 @@ contains
     return
   end subroutine integrate
 
-  double precision function folding(ip,f,dim_quad,nt)
+  double complex function folding(ip,f,dim_quad,nt)
     use dbsym
     integer, intent(in) :: ip,nt,dim_quad
     interface
@@ -303,7 +303,7 @@ contains
     end interface
 
     integer Nk, iz, ik,nthread
-    double precision gtmp, tmp
+    double complex gtmp, tmp
 
     Nk = 4*dim_quad
     nthread = nt + 1
