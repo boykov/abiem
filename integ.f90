@@ -6,14 +6,14 @@ contains
   include 'set_params.f90'
   include 'kernels.f90'
 
-  double precision function f2(x,i)
+  double complex function f2(x,i)
     use dbsym
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
     f2 = phi(x,i,hval**2)/norm(x(:) + node_coordinates(i,:) - node_coordinates(1,:))
   end function f2
 
-  double precision function f(x,i)
+  double complex function f(x,i)
     integer, intent(in) :: i
     double precision, intent(in), dimension(:) :: x
     f = phi(x,i,hval**2)
@@ -252,7 +252,7 @@ contains
        function f(x,i)
          integer, intent(in) :: i
          double precision, intent(in), dimension(:) :: x
-         double precision :: f
+         double complex :: f
        end function f
     end interface
 
