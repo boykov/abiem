@@ -80,7 +80,7 @@ contains
     thetay = datan(y(2)/y(1))
 
     s = 0.0
-    do l = 0,10
+    do l = 0,14
        s2 = 0.0
        do m = -l, l
           s2 = s2 + cdexp((0,1)*(thetax-thetay)*m) * &
@@ -118,8 +118,8 @@ contains
 
     x = REAL(z)
     y = AIMAG(z)
-    if (dabs(y) .ge. 3) then
-       alpha = dabs(y/1e+5)
+    if (dabs(dble(y)) .ge. 3) then
+       alpha = dabs(dble(y/1e+5))
        m = 1e+20
        jm = y/alpha
        q = (real(2*m,dp)/PI)*alpha*x
@@ -130,13 +130,13 @@ contains
        end if
        wmod = DCMPLX(u,v)
     else
-       wmod = dexp(-y**2)*w(z)
+       wmod = dexp(dble(-y**2))*w(z)
     end if
   end function wmod
 
   double complex function w(z)
     use toms
-    double precision x,y,u,v
+    real(dp) x,y,u,v
     double complex, intent(in) :: z
     logical flag
 

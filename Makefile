@@ -35,7 +35,7 @@ toms_mod.o: toms_mod.f90
 	$(gf) -c toms_mod.f90
 
 fast_dbsym.o: fast_dbsym.f90 spherical_bessel_j.f90
-	$(gf) -c fast_dbsym.f90
+	$(gf) -fdefault-real-8 -c fast_dbsym.f90
 
 dbsym.o: dbsym.f90 beta.f90 beta2.f90 singular.f90 Amn.f90 xx_rho1.f90 toms_mod.o
 	$(gf) -c dbsym.f90
