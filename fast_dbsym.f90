@@ -57,6 +57,42 @@ contains
          include 'spherical_harmonic.f90'
   end function spherical_harmonic
 
+  double complex function spherical_harmonic_(l,m,theta,phi)
+    double precision, intent(in) :: theta,phi
+    integer, intent(in) :: l,m
+
+    spherical_harmonic_ = spherical_harmonic(l,m,phi,theta)/cdexp((0,1)*m*theta)
+  end function spherical_harmonic_
+
+  double complex function G_(x,y,k)
+    double precision, intent(in) :: x(:),y(:)
+    double complex, intent(in) :: k
+    double precision :: rx, phix, thetax
+    double precision :: ry, phiy, thetay
+    double complex :: s, s2
+    integer :: l,m
+
+    rx = norm(x)
+    ry = norm(y)
+    phix = dacos(x(3)/rx)
+    phiy = dacos(y(3)/ry)
+    thetax = datan(x(2)/x(1))
+    thetay = datan(y(2)/y(1))
+
+    s = 0.0
+    do l = 0,10
+       s2 = 0.0
+       do m = -l, l
+          s2 = s2 + cdexp((0,1)*(thetax-thetay)*m) * &
+               spherical_harmonic_(l,m,thetax,phix)* &
+               spherical_harmonic_(l,m,thetay,phiy)
+       end do
+       s = s + (0,1)*realpart(k)* spherical_bessel_j(l, realpart(k)*rx) * &
+            spherical_hankel(l, realpart(k)*ry) * s2
+    end do
+    G_ = s
+  end function G_
+
   double precision function foo2()
     foo2 = 5.0
   end function foo2
