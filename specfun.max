@@ -20,8 +20,8 @@ Y(l,m,θ,φ) := sqrt((2*l+1)*(l-m)!/(4*%pi)/(l+m)!)*P(l,m,cos(θ))*subst(%e=EE,e
 
 res(l,m,θ,φ) := sum(sum(δ(l,i)*δ(m,j)*float(ratsimp(Y(i,j,θ,φ))),j,-i,i),i,0,20);
 
-res_j : sum(δ(n,i)*float(ratsimp(j(x,i))),i,0,20);
-res_y : sum(δ(n,i)*float(ratsimp(y(x,i))),i,0,20);
+res_j : sum(δ(n,i)*((j(x,i))),i,0,20);
+res_y : sum(δ(n,i)*((y(x,i))),i,0,20);
 res_sh : subst(EE=%e,subst("^",f,subst(1/2=0.5,subst(f,"^",res(l,m,theta,phi)))));
 
 with_stdout("specfun.out",
