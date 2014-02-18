@@ -61,7 +61,6 @@ class params():
         """
         self.points = zeros((self.numnodes,3)) # C order !!!
         self.points[:,:] = self.node_coordinates[:,:]
-        self.q_ahmed = zeros((self.numnodes), dtype = complex)
 
         slaeahmed.set_Hmatrix(self.eps_matgen,
                               self.eps_aggl,
@@ -188,6 +187,11 @@ class params():
         self.area = zeros((1))
         self.counter = zeros((1))
 
+        self.sigma = zeros((self.numnodes))
+        self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
+
+        self.q_ahmed = zeros((self.numnodes), dtype = complex)
+
         self.setObjInteg(integ)
         self.withWrapSql("self.integ_sql",
                          "IntegWITH",
@@ -200,13 +204,8 @@ class params():
                             intphi_over = self.intphi_over[:]""")
         self.intphi_over[:] = self.integ_sql.intphi_over[:]
 
-        self.sigma = zeros((self.numnodes))
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
-        integ.set_dp1d_ptr("sigma", self.sigma)
-        integ.set_dc_ptr("k_wave", self.k_wave)
 
-        self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
-        integ.set_dc2d_ptr("gauss", self.gauss)
         self.withWrapSql("self.gauss_sql",
                          "GaussWITH",
                          GaussWITH,
@@ -278,6 +277,12 @@ class params():
 
         obj.set_dp1d_ptr("area", self.area)
 
+        obj.set_dp1d_ptr("sigma", self.sigma)
+        obj.set_dc_ptr("k_wave", self.k_wave)
+        obj.set_dc2d_ptr("gauss", self.gauss)
+
+        obj.set_dc1d_ptr("q_density", self.q_ahmed)
+
 class testBIE(object):
     @classmethod
     def setUpClass(self):
@@ -289,7 +294,6 @@ class testBIE(object):
         self.P.initPhi()
         self.P.initInteg()
         self.P.initAHMED()
-        integ.set_dc1d_ptr("q_density", self.P.q_ahmed)
         logging.debug("counter = " + str(self.P.counter))
 
     def testEllipsoid(self):
