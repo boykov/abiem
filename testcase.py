@@ -24,45 +24,74 @@ import logging
 from testsql import *
 
 class common():
+    types = {
+        "dp"   : ["double precision"           , ""],
+        "i"    : ["integer"                    , ""],
+        "dc"   : ["double complex"             , ""],
+        "dp1d" : ["double precision, pointer"  , "(:)"],
+        "dp2d" : ["double precision, pointer"  , "(:,:)"],
+        "i2d"  : ["integer, pointer"           , "(:,:)"],
+        "dc1d" : ["double complex, pointer"    , "(:)"],
+        "dc2d" : ["double complex, pointer"    , "(:,:)"],
+        "dc3d" : ["double complex, pointer"    , "(:,:,:)"],
+        "dp4d" : ["double precision, pointer"  , "(:,:,:,:)"]}
+
     def __init__(self):
-        setattr(self, "PI", 3.14159265358979324)
-        setattr(self, "max_neighbors", 100)
-        setattr(self, "dim_3d", 3)
-        setattr(self, "k_wave", 0)
-        setattr(self, "axes", zeros((3)))
+        self.names0 = {
+            "PI"            : [3.14159265358979324 , "dp"],
+            "max_neighbors" : [100                 , "i"],
+            "dim_3d"        : [3                   , "i"],
+            "k_wave"        : [0                   , "dc"],
+            "axes"          : [zeros((3))          , "dp1d"]}
+        for n in self.names0.keys():
+            setattr(self, n, self.names0[n][0])
 
     def level1(self, N, h):
-        setattr(self, "numnodes", N)
-        setattr(self, "hval", h)
-        setattr(self, "hval2", h*h)
-        setattr(self, "node_coordinates", zeros((self.numnodes,3), order = 'Fortran'))
-        setattr(self, "normal_coordinates", zeros((self.numnodes,3), order = 'Fortran'))
-        setattr(self, "node_neighbors1", zeros(
-            (self.numnodes,self.max_neighbors), dtype = int32, order = 'Fortran'))
-        setattr(self, "node_neighbors2", zeros(
-            (self.numnodes,self.max_neighbors), dtype = int32, order = 'Fortran'))
-        setattr(self, "nstroke_coordinates", zeros(
-            (self.numnodes,3), order = 'Fortran'))
-        setattr(self, "intphi_over", zeros((self.numnodes)))
-        setattr(self, "intphi_under", zeros((self.numnodes)))
-        setattr(self, "area", zeros((1)))
-        setattr(self, "counter", zeros((1)))
+        self.names1_1 = {
+            "numnodes" : [N, "i"],
+            "hval" : [h, "dp"],
+            "hval2" : [h*h, "dp"]}
+        for n in self.names1_1.keys():
+            setattr(self, n, self.names1_1[n][0])
+        self.names1_2 = {
+                "node_coordinates"    : [zeros((self.numnodes,3), order = 'Fortran'), "dp2d"],
+                "normal_coordinates"  : [zeros((self.numnodes,3), order = 'Fortran'), "dp2d"],
+                "node_neighbors1"     : [zeros((self.numnodes,self.max_neighbors),
+                                           dtype = int32, order = 'Fortran'), "i2d"],
+                "node_neighbors2"     : [zeros((self.numnodes,self.max_neighbors),
+                                           dtype = int32, order = 'Fortran'), "i2d"],
+                "nstroke_coordinates" : [zeros((self.numnodes,3),
+                                           order = 'Fortran'), "dp2d"],
+                "intphi_over"         : [zeros((self.numnodes)), "dp1d"],
+                "intphi_under"        : [zeros((self.numnodes)), "dp1d"],
+                "area"                : [zeros((1)), "dp1d"],
+                "counter"             : [zeros((1)), "dp1d"],
 
-        setattr(self, "sigma", zeros((self.numnodes)))
-        setattr(self, "gauss", zeros((self.numnodes,10), dtype = complex, order = 'Fortran'))
+                "sigma"               : [zeros((self.numnodes)), "dp1d"],
+                "gauss"               : [zeros((self.numnodes,10),
+                                           dtype = complex, order = 'Fortran'), "dc2d"],
 
-        setattr(self, "q_density", zeros((self.numnodes), dtype = complex))
+                "q_density"           : [zeros((self.numnodes), dtype = complex), "dc1d"]}
+        for n in self.names1_2.keys():
+            setattr(self, n, self.names1_2[n][0])
 
     def level2(self, q):
-        setattr(self, "dim_quad", q)
-        setattr(self, "quadphi_over", zeros((self.dim_quad,2),order = 'Fortran'))
-        setattr(self, "quadphi_under", zeros((self.dim_quad,2),order = 'Fortran'))
-        setattr(self, "quadsingular", zeros((self.dim_quad,2),order = 'Fortran'))
-        setattr(self, "centres", zeros((self.dim_quad)))
-        setattr(self, "weights", zeros((self.dim_quad)))
-        setattr(self, "jacobian", zeros(
-            (4,self.dim_quad,4*self.dim_quad), dtype = complex, order = 'Fortran'))
-        setattr(self, "nodes", zeros((4,self.dim_quad,4*self.dim_quad,3), order = 'Fortran'))
+        self.names2_1 = {
+            "dim_quad" : [q, "i"]}
+        for n in self.names2_1.keys():
+            setattr(self, n, self.names2_1[n][0])
+        self.names2_2 = {
+                "quadphi_over"  : [zeros((self.dim_quad,2),order = 'Fortran'), "dp2d"],
+                "quadphi_under" : [zeros((self.dim_quad,2),order = 'Fortran'), "dp2d"],
+                "quadsingular"  : [zeros((self.dim_quad,2),order = 'Fortran'), "dp2d"],
+                "centres"       : [zeros((self.dim_quad)), "dp1d"],
+                "weights"       : [zeros((self.dim_quad)), "dp1d"],
+                "jacobian"      : [zeros((4,self.dim_quad,4*self.dim_quad),
+                                dtype = complex, order = 'Fortran'), "dc3d"],
+                "nodes"         : [zeros((4,self.dim_quad,4*self.dim_quad,3),
+                                     order = 'Fortran'), "dp4d"]}
+        for n in self.names2_2.keys():
+            setattr(self, n, self.names2_2[n][0])
 
     def setObjPhi(self,obj):
         obj.set_i_ptr("dim_3d", self.dim_3d)
