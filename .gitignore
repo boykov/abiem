@@ -10,3 +10,5 @@
 /jacobian.out
 /dbsym/*
 /dbsym
+/params.f90
+/set_params.f90
