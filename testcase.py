@@ -23,19 +23,91 @@ from memo import memoize
 import logging
 from testsql import *
 
-class params():
-    def __del__(self):
-        self.session.close()
-
-    def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
-        self.session = create_session(Base)
+class common():
+    def __init__(self):
         self.max_neighbors = 100
         self.PI = 3.14159265358979324
-        self.dim_3d = 3
         self.axes = zeros((3))
+        self.k_wave = 0
+        self.dim_3d = 3
+
+    def level1(self, N, h):
+        self.numnodes = N
+        self.hval = h
+        self.hval2 = h*h
+        self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
+        self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
+        self.node_neighbors1 = zeros(
+            (self.numnodes,self.max_neighbors), dtype = int32, order = 'Fortran')
+        self.node_neighbors2 = zeros(
+            (self.numnodes,self.max_neighbors), dtype = int32, order = 'Fortran')
+        self.nstroke_coordinates = zeros(
+            (self.numnodes,3), order = 'Fortran')
+        self.intphi_over = zeros((self.numnodes))
+        self.intphi_under = zeros((self.numnodes))
+        self.area = zeros((1))
+        self.counter = zeros((1))
+
+        self.sigma = zeros((self.numnodes))
+        self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
+
+        self.q_ahmed = zeros((self.numnodes), dtype = complex)
+
+    def level2(self, q):
+        self.dim_quad = q
+        self.quadphi_over = zeros((self.dim_quad,2),order = 'Fortran')
+        self.quadphi_under = zeros((self.dim_quad,2),order = 'Fortran')
+        self.quadsingular = zeros((self.dim_quad,2),order = 'Fortran')
+        self.centres = zeros((self.dim_quad))
+        self.weights = zeros((self.dim_quad))
+        self.jacobian = zeros((4,self.dim_quad,4*self.dim_quad), dtype = complex, order = 'Fortran')
+        self.nodes = zeros((4,self.dim_quad,4*self.dim_quad,3), order = 'Fortran')
+
+    def setObjPhi(self,obj):
+        obj.set_i_ptr("dim_3d", self.dim_3d)
+        obj.set_dp_ptr("PI", self.PI)
+        obj.set_i_ptr("max_neighbors", self.max_neighbors)
+        obj.set_dp_ptr("hval", self.hval)
+        obj.set_i_ptr("numnodes", self.numnodes)
+
+        obj.set_dp1d_ptr("axes", self.axes)
+
+        obj.set_dp2d_ptr("node_coordinates", self.node_coordinates)
+        obj.set_dp2d_ptr("normal_coordinates", self.normal_coordinates)
+        obj.set_dp2d_ptr("nstroke_coordinates", self.nstroke_coordinates)
+        obj.set_i2d_ptr("node_neighbors1", self.node_neighbors1)
+        obj.set_i2d_ptr("node_neighbors2", self.node_neighbors2)
+
+    def setObjInteg(self, obj):
+        self.setObjPhi(obj)
+
+        obj.set_dp1d_ptr("intphi_over", self.intphi_over)
+        obj.set_dp1d_ptr("intphi_under", self.intphi_under)
+        obj.set_dp_ptr("hval2", self.hval2)
+        obj.set_i_ptr("dim_quad", self.dim_quad)
+
+        obj.set_dp1d_ptr("counter", self.counter)
+        obj.set_dp2d_ptr("quadphi_over", self.quadphi_over)
+        obj.set_dp2d_ptr("quadphi_under", self.quadphi_under)
+        obj.set_dp1d_ptr("centres", self.centres)
+        obj.set_dp1d_ptr("weights", self.weights)
+        obj.set_dc3d_ptr("jacobian", self.jacobian)
+        obj.set_dp4d_ptr("nodes", self.nodes)
+
+        obj.set_dp1d_ptr("area", self.area)
+
+        obj.set_dp1d_ptr("sigma", self.sigma)
+        obj.set_dc_ptr("k_wave", self.k_wave)
+        obj.set_dc2d_ptr("gauss", self.gauss)
+
+        obj.set_dc1d_ptr("q_density", self.q_ahmed)
+
+class params(common):
+    def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
+        common.__init__(self)
+        self.session = create_session(Base)
         self.numpoints = numpoints
         self.axes[:] = axes[:]
-        self.k_wave = 0
         self.data = DataElement(numpoints)
         self.data.magic = 0.410
         self.name_matrixa = 'integ.matrixa'
@@ -80,10 +152,7 @@ class params():
         import scipy.special.orthogonal as op
         self.data.orderquad = orderquad
         self.data.setupquad()
-        self.dim_quad = self.data.orderquad
-        self.quadphi_over = zeros((self.dim_quad,2),order = 'Fortran')
-        self.quadphi_under = zeros((self.dim_quad,2),order = 'Fortran')
-        self.quadsingular = zeros((self.dim_quad,2),order = 'Fortran')
+        self.level2(self.data.orderquad)
 
         self.quadphi_over[:,0] = op.j_roots(self.orderquad,0,1)[0]
         self.quadphi_over[:,1] = op.j_roots(self.orderquad,0,1)[1]
@@ -115,22 +184,12 @@ class params():
                             node_coordinates = self.e.points[:,:],
                             normal_coordinates = self.e.normalvectors[:,:]""")
 
-        self.numnodes = self.pnts_sql.numnodes
-        self.hval = self.pnts_sql.hval
-        self.hval2 = self.hval * self.hval
-        self.node_coordinates = zeros((self.numnodes,3), order = 'Fortran')
-        self.normal_coordinates = zeros((self.numnodes,3), order = 'Fortran')
+        self.level1(self.pnts_sql.numnodes, self.pnts_sql.hval)
+
         self.node_coordinates[:,:] = self.pnts_sql.node_coordinates[:,:]
         self.normal_coordinates[:,:] = self.pnts_sql.normal_coordinates[:,:]
 
     def initPhi(self):
-        self.node_neighbors1 = zeros(
-            (self.numnodes,self.max_neighbors), dtype = int32, order = 'Fortran')
-        self.node_neighbors2 = zeros(
-            (self.numnodes,self.max_neighbors), dtype = int32, order = 'Fortran')
-        self.nstroke_coordinates = zeros(
-            (self.numnodes,3), order = 'Fortran')
-
         self.setObjPhi(phi)
 
         phi.filter_neighbors(2*self.hval, self.node_neighbors2, self.numnodes)
@@ -173,26 +232,11 @@ class params():
             self.intphi_over[i] = integ.folding(i+1,i+1,self.dim_quad,1)
 
     def initInteg(self):
-        self.intphi_over = zeros((self.numnodes))
-        self.intphi_under = zeros((self.numnodes))
-
-        self.centres = zeros((self.dim_quad))
-        self.weights = zeros((self.dim_quad))
-        self.jacobian = zeros((4,self.dim_quad,4*self.dim_quad), dtype = complex, order = 'Fortran')
-        self.nodes = zeros((4,self.dim_quad,4*self.dim_quad,3), order = 'Fortran')
-
+        self.setObjInteg(integ)
+        
         self.centres[:] = self.quadphi_over[:,0]
         self.weights[:] = self.quadphi_over[:,1]
 
-        self.area = zeros((1))
-        self.counter = zeros((1))
-
-        self.sigma = zeros((self.numnodes))
-        self.gauss = zeros((self.numnodes,10), dtype = complex, order = 'Fortran')
-
-        self.q_ahmed = zeros((self.numnodes), dtype = complex)
-
-        self.setObjInteg(integ)
         self.withWrapSql("self.integ_sql",
                          "IntegWITH",
                          IntegWITH,
@@ -243,45 +287,6 @@ class params():
             for i in range(self.numnodes-1,self.numnodes,1):
                 integ.calcomp3(i+1)
                 integ.calcomp4(i+1)
-
-    def setObjPhi(self,obj):
-        obj.set_i_ptr("dim_3d", self.dim_3d)
-        obj.set_dp_ptr("PI", self.PI)
-        obj.set_i_ptr("max_neighbors", self.max_neighbors)
-        obj.set_dp_ptr("hval", self.hval)
-        obj.set_i_ptr("numnodes", self.numnodes)
-
-        obj.set_dp1d_ptr("axes", self.axes)
-
-        obj.set_dp2d_ptr("node_coordinates", self.node_coordinates)
-        obj.set_dp2d_ptr("normal_coordinates", self.normal_coordinates)
-        obj.set_dp2d_ptr("nstroke_coordinates", self.nstroke_coordinates)
-        obj.set_i2d_ptr("node_neighbors1", self.node_neighbors1)
-        obj.set_i2d_ptr("node_neighbors2", self.node_neighbors2)
-
-    def setObjInteg(self, obj):
-        self.setObjPhi(obj)
-
-        obj.set_dp1d_ptr("intphi_over", self.intphi_over)
-        obj.set_dp1d_ptr("intphi_under", self.intphi_under)
-        obj.set_dp_ptr("hval2", self.hval2)
-        obj.set_i_ptr("dim_quad", self.dim_quad)
-
-        obj.set_dp1d_ptr("counter", self.counter)
-        obj.set_dp2d_ptr("quadphi_over", self.quadphi_over)
-        obj.set_dp2d_ptr("quadphi_under", self.quadphi_under)
-        obj.set_dp1d_ptr("centres", self.centres)
-        obj.set_dp1d_ptr("weights", self.weights)
-        obj.set_dc3d_ptr("jacobian", self.jacobian)
-        obj.set_dp4d_ptr("nodes", self.nodes)
-
-        obj.set_dp1d_ptr("area", self.area)
-
-        obj.set_dp1d_ptr("sigma", self.sigma)
-        obj.set_dc_ptr("k_wave", self.k_wave)
-        obj.set_dc2d_ptr("gauss", self.gauss)
-
-        obj.set_dc1d_ptr("q_density", self.q_ahmed)
 
 class testBIE(object):
     @classmethod
