@@ -51,7 +51,7 @@ class common():
         setattr(self, "sigma", zeros((self.numnodes)))
         setattr(self, "gauss", zeros((self.numnodes,10), dtype = complex, order = 'Fortran'))
 
-        setattr(self, "q_ahmed", zeros((self.numnodes), dtype = complex))
+        setattr(self, "q_density", zeros((self.numnodes), dtype = complex))
 
     def level2(self, q):
         setattr(self, "dim_quad", q)
@@ -101,7 +101,7 @@ class common():
         obj.set_dc_ptr("k_wave", self.k_wave)
         obj.set_dc2d_ptr("gauss", self.gauss)
 
-        obj.set_dc1d_ptr("q_density", self.q_ahmed)
+        obj.set_dc1d_ptr("q_density", self.q_density)
 
 class params(common):
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
@@ -147,7 +147,7 @@ class params(common):
         slaeahmed.set_vectorb(eval(self.name_vectorb))
         slaeahmed.set_kernel(eval(self.name_matrixa))
         slaeahmed.solve_slae()
-        slaeahmed.get_q(self.q_ahmed)
+        slaeahmed.get_q(self.q_density)
 
     def initQuad(self, orderquad):
         import scipy.special.orthogonal as op
