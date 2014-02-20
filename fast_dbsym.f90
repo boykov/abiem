@@ -2,6 +2,7 @@ module fast_dbsym
   implicit double precision (a-h, o-z)
   double precision, parameter :: PI = 3.14159265358979324D0
 contains
+  include 'msphj.for'
 
   pure double precision function asqrt(x)
     double precision, intent(in) :: x
@@ -29,6 +30,32 @@ contains
     A_s = &
          include 'A_s.f90'
   end function A_s
+
+  real(16) function spherical_bessel_jn(n, x)
+    integer, intent(in) :: n
+    real(16), intent(in) :: x
+    integer :: nm
+    real(16) :: sj(0:n), dj(0:n)
+    call sphj(n, x, nm, sj, dj)
+    if (nm /= n) print *, "spherical_bessel_jn: sphj didn't converge"
+    spherical_bessel_jn = sj(n)
+  end function spherical_bessel_jn
+
+  real(16) function spherical_bessel_yn(n, x)
+    integer, intent(in) :: n
+    real(16), intent(in) :: x
+    integer :: nm
+    real(16) :: sj(0:n), dj(0:n)
+    call sphy(n, x, nm, sj, dj)
+    if (nm /= n) print *, "spherical_bessel_jn: sphj didn't converge"
+    spherical_bessel_yn = sj(n)
+  end function spherical_bessel_yn
+
+  double complex function spherical_hankel_n(n,x)
+    double precision, intent(in) :: x
+    integer, intent(in) :: n
+    spherical_hankel_n = spherical_bessel_jn(n,x) + (0,1)*spherical_bessel_yn(n,x)
+  end function spherical_hankel_n
 
   double complex function spherical_hankel(n,x)
     double precision, intent(in) :: x
@@ -87,8 +114,8 @@ contains
                spherical_harmonic_(l,m,thetax,phix)* &
                spherical_harmonic_(l,m,thetay,phiy)
        end do
-       s = s + (0,1)*realpart(k)* spherical_bessel_j(l, realpart(k)*rx) * &
-            spherical_hankel(l, realpart(k)*ry) * s2
+       s = s + (0,1)*realpart(k)* spherical_bessel_jn(l, realpart(k)*rx) * &
+            spherical_hankel_n(l, realpart(k)*ry) * s2
     end do
     G_ = s
   end function G_
