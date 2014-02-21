@@ -13,7 +13,7 @@ contains
     double precision, dimension(size(x)) :: y
     y(:) = x(:) + node_coordinates(i,:) - node_coordinates(j,:)
 
-    f2 = phi(x,i,hval**2)/norm(y)
+    f2 = cdexp((0,1)*k_wave*norm(y))*phi(x,i,hval**2)/norm(y)
   end function f2
 
   double complex function f(x,i,j)
@@ -29,7 +29,7 @@ contains
     double precision, dimension(size(x)) :: y
     y(:) = x(:) + node_coordinates(i,:) - node_coordinates(j,:)
 
-    f3 = (1 - deltah(y,hval))*phi(x,i,hval**2)/norm(y)
+    f3 = cdexp((0,1)*k_wave*norm(y))*(1 - deltah(y,hval))*phi(x,i,hval**2)/norm(y)
   end function f3
 
   double complex function f4(x,i,j)
@@ -39,7 +39,7 @@ contains
     double precision, dimension(size(x)) :: y
     y(:) = x(:) + node_coordinates(i,:) - node_coordinates(j,:)
 
-    f4 = (deltah(x,hval))*phi(y,j,hval**2)
+    f4 = cdexp((0,1)*k_wave*norm(x))*(deltah(x,hval))*phi(y,j,hval**2)
   end function f4
 
   double precision function test_fast()
