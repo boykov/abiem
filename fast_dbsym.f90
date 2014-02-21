@@ -91,6 +91,54 @@ contains
     spherical_harmonic_ = spherical_harmonic(l,m,phi,theta)/cdexp((0,1)*m*theta)
   end function spherical_harmonic_
 
+  double complex function G_y(y,k,l,m)
+    double precision, intent(in) :: y(:)
+    double complex, intent(in) :: k
+    integer, intent(in) :: l,m
+    double precision :: ry, phiy, thetay
+
+    ry = norm(y)
+    phiy = dacos(y(3)/ry)
+    thetay = datan(y(2)/y(1))
+
+    G_y = (0,1)*realpart(k) * spherical_hankel_n(l, realpart(k)*ry) * &
+         cdexp((0,1)*(-thetay)*m)*spherical_harmonic_(l,m,thetay,phiy)
+
+  end function G_y
+
+  double complex function G_x(x,k,l,m)
+    double precision, intent(in) :: x(:)
+    double complex, intent(in) :: k
+    integer, intent(in) :: l,m
+    double precision :: rx, phix, thetax
+
+    rx = norm(x)
+    phix = dacos(x(3)/rx)
+    thetax = datan(x(2)/x(1))
+
+    G_x =  spherical_bessel_jn(l, realpart(k)*rx) * &
+         cdexp((0,1)*thetax*m)*spherical_harmonic_(l,m,thetax,phix)
+
+  end function G_x
+
+  ! formula in [[file:~/downloads/pub/papers/epstein2012convergence.pdf][epstein]]
+
+  double complex function G_2(x,y,k)
+    double precision, intent(in) :: x(:),y(:)
+    double complex, intent(in) :: k
+    integer :: l,m
+    double complex :: s
+
+    s = 0.0
+    do l = 0,20
+       do m = -l, l
+          s = s + G_y(y,k,l,m)* G_x(x,k,l,m)
+       end do
+    end do
+
+    G_2 = s
+  end function G_2
+
   double complex function G_(x,y,k)
     double precision, intent(in) :: x(:),y(:)
     double complex, intent(in) :: k
@@ -107,7 +155,7 @@ contains
     thetay = datan(y(2)/y(1))
 
     s = 0.0
-    do l = 0,14
+    do l = 0,20
        s2 = 0.0
        do m = -l, l
           s2 = s2 + cdexp((0,1)*(thetax-thetay)*m) * &
