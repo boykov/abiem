@@ -25,46 +25,45 @@ class common():
         "dp4d" : ["double precision"  , "(:,:,:,:)" , "=>", ", pointer"]}
 
     names = {
-        "PI"                  : ["3.14159265358979324" , 0, "dp", "phi"],
-        "max_neighbors"       : ["100"                 , 0, "i", "phi"],
-        "dim_3d"              : ["3"                   , 0, "i", "phi"],
-        "k_wave"              : ["0"                   , 0, "dc", "phi"],
-        "axes"                : ["zeros((3))"          , 0, "dp1d", "phi"],
+        "PI"                  : [lambda (s): 3.14159265358979324 , 0, "dp", "phi"],
+        "max_neighbors"       : [lambda (s): 100                 , 0, "i", "phi"],
+        "dim_3d"              : [lambda (s): 3                   , 0, "i", "phi"],
+        "k_wave"              : [lambda (s): 0                   , 0, "dc", "phi"],
+        "axes"                : [lambda (s): zeros((3))          , 0, "dp1d", "phi"],
 
-        "numnodes"            : ["N"   , 10, "i", "phi"],
-        "hval"                : ["h"   , 10, "dp", "phi"],
-        "hval2"               : ["h*h" , 10, "dp", "phi"],
+        "numnodes"            : [lambda (s): s.N    , 10, "i", "phi"],
+        "hval"                : [lambda (s): s.h    , 10, "dp", "phi"],
+        "hval2"               : [lambda (s): s.h*s.h, 10, "dp", "phi"],
 
-        "node_coordinates"    : ["zeros((self.numnodes,3), order = 'Fortran')"    , 11, "dp2d", "phi"],
-        "normal_coordinates"  : ["zeros((self.numnodes,3), order = 'Fortran')"    , 11, "dp2d", "phi"],
-        "node_neighbors1"     : ["""zeros((self.numnodes,self.max_neighbors),
-                                           dtype = int32, order = 'Fortran')"""   , 11, "i2d", "phi"],
-        "node_neighbors2"     : ["""zeros((self.numnodes,self.max_neighbors),
-                                           dtype = int32, order = 'Fortran')"""   , 11, "i2d", "phi"],
-        "nstroke_coordinates" : ["""zeros((self.numnodes,3),
-                                           order = 'Fortran')"""                  , 11, "dp2d", "phi"],
-        "intphi_over"         : ["zeros((self.numnodes))"                         , 11, "dp1d", "integ"],
-        "intphi_under"        : ["zeros((self.numnodes))"                         , 11, "dp1d", "integ"],
-        "area"                : ["zeros((1))"                                     , 11, "dp1d", "integ"],
-        "counter"             : ["zeros((1))"                                     , 11, "dp1d", "integ"],
+        "node_coordinates"    : [lambda (s): zeros((s.numnodes,3), order = 'Fortran')    , 11, "dp2d", "phi"],
+        "normal_coordinates"  : [lambda (s): zeros((s.numnodes,3), order = 'Fortran')    , 11, "dp2d", "phi"],
+        "node_neighbors1"     : [lambda (s): zeros((s.numnodes,s.max_neighbors),
+                                                   dtype = int32, order = 'Fortran')     , 11, "i2d", "phi"],
+        "node_neighbors2"     : [lambda (s): zeros((s.numnodes,s.max_neighbors),
+                                                   dtype = int32, order = 'Fortran')     , 11, "i2d", "phi"],
+        "nstroke_coordinates" : [lambda (s): zeros((s.numnodes,3), order = 'Fortran')                  , 11, "dp2d", "phi"],
+        "intphi_over"         : [lambda (s): zeros((s.numnodes))                         , 11, "dp1d", "integ"],
+        "intphi_under"        : [lambda (s): zeros((s.numnodes))                         , 11, "dp1d", "integ"],
+        "area"                : [lambda (s): zeros((1))                                  , 11, "dp1d", "integ"],
+        "counter"             : [lambda (s): zeros((1))                                  , 11, "dp1d", "integ"],
 
-        "sigma"               : ["zeros((self.numnodes))"                         , 11, "dp1d", "integ"],
-        "gauss"               : ["""zeros((self.numnodes,10),
-                                           dtype = complex, order = 'Fortran')""" , 11, "dc2d", "integ"],
+        "sigma"               : [lambda (s): zeros((s.numnodes))                         , 11, "dp1d", "integ"],
+        "gauss"               : [lambda (s): zeros((s.numnodes,10),
+                                                   dtype = complex, order = 'Fortran')   , 11, "dc2d", "integ"],
 
-        "q_density"           : ["zeros((self.numnodes), dtype = complex)"        , 11, "dc1d", "integ"],
+        "q_density"           : [lambda (s): zeros((s.numnodes), dtype = complex)        , 11, "dc1d", "integ"],
 
-        "dim_quad"            : ["q", 20, "i", "integ"],
+        "dim_quad"            : [lambda (s): s.q, 20, "i", "integ"],
 
-        "quadphi_over"        : ["zeros((self.dim_quad,2),order = 'Fortran')" , 21, "dp2d", "integ"],
-        "quadphi_under"       : ["zeros((self.dim_quad,2),order = 'Fortran')" , 21, "dp2d", "integ"],
-        "quadsingular"        : ["zeros((self.dim_quad,2),order = 'Fortran')" , 21, "dp2d", "integ"],
-        "centres"             : ["zeros((self.dim_quad))"                     , 21, "dp1d", "integ"],
-        "weights"             : ["zeros((self.dim_quad))"                     , 21, "dp1d", "integ"],
-        "jacobian"            : ["""zeros((4,self.dim_quad,4*self.dim_quad),
-                                dtype = complex, order = 'Fortran')"""        , 21, "dc3d", "integ"],
-        "nodes"               : ["""zeros((4,self.dim_quad,4*self.dim_quad,3),
-                                     order = 'Fortran')"""                    , 21, "dp4d", "integ"]}
+        "quadphi_over"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')   , 21, "dp2d", "integ"],
+        "quadphi_under"       : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')   , 21, "dp2d", "integ"],
+        "quadsingular"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')   , 21, "dp2d", "integ"],
+        "centres"             : [lambda (s): zeros((s.dim_quad))                       , 21, "dp1d", "integ"],
+        "weights"             : [lambda (s): zeros((s.dim_quad))                       , 21, "dp1d", "integ"],
+        "jacobian"            : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
+                                                   dtype = complex, order = 'Fortran') , 21, "dc3d", "integ"],
+        "nodes"               : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad,3),
+                                                   order = 'Fortran')                  , 21, "dp4d", "integ"]}
 
     def create_set_module(self):
         s = "! module set_params\n"
@@ -89,23 +88,26 @@ class common():
     def __init__(self):
         for n in self.names.keys():
             if self.names[n][1]==0:
-                setattr(self, n, eval(self.names[n][0]))
+                setattr(self, n, self.names[n][0](self))
 
     def level1(self, N, h):
+        self.N = N
+        self.h = h
         for n in self.names.keys():
             if self.names[n][1]==10:
-                setattr(self, n, eval(self.names[n][0]))
+                setattr(self, n, self.names[n][0](self))
         for n in self.names.keys():
             if self.names[n][1]==11:
-                setattr(self, n, eval(self.names[n][0]))
+                setattr(self, n, self.names[n][0](self))
 
     def level2(self, q):
+        self.q = q
         for n in self.names.keys():
             if self.names[n][1]==20:
-                setattr(self, n, eval(self.names[n][0]))
+                setattr(self, n, self.names[n][0](self))
         for n in self.names.keys():
             if self.names[n][1]==21:
-                setattr(self, n, eval(self.names[n][0]))
+                setattr(self, n, self.names[n][0](self))
 
     def setObjPhi(self,obj):
         for n in self.names.keys():
