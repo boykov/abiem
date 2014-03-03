@@ -287,7 +287,7 @@ class testBIEsmallNG(testBIE, unittest.TestCase):
 class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
-    tmpP.under_places = 4
+    tmpP.under_places = 6
     tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3
@@ -303,7 +303,7 @@ class testBIEsmall3(testBIE, unittest.TestCase):
 class testBIEmedium(testBIE, unittest.TestCase):
     tmpP = params(3200)
     tmpP.integ_places = 6
-    tmpP.under_places = 5
+    tmpP.under_places = 6
     tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.0002
     tmpP.slae_places = 4
