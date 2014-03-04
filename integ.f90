@@ -96,15 +96,19 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
-    centres(:) = quadsingular(:,1)
-    weights(:) = quadsingular(:,2)
-    ptr_singular => fsingular3
-
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call singrate(node_coordinates(i,:),node_coordinates(i,:),i,k_wave,centres,weights,nt)
+       call singrate(              &
+            fsingular3,            &
+            node_coordinates(i,:), &
+            node_coordinates(i,:), &
+            i,                     &
+            k_wave,                &
+            quadsingular(:,1),     &
+            quadsingular(:,2),     &
+            nt)
        gauss(i,4) = folding(i,i,one,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
@@ -122,16 +126,29 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
-    centres(:) = quadphi_over(:,1)
-    weights(:) = quadphi_over(:,2)
-    ptr_jacobian => fjacobian
-
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
+       call integrate(                &
+            fjacobian,                &
+            nstroke_coordinates(i,:), &
+            node_coordinates(i,:),    &
+            i,                        &
+            quadphi_over(:,1),        &
+            quadphi_over(:,2),        &
+            nt)
        intphi_over(i) = folding(i,i,f,dim_quad,nt)
+
+       call integrate(                &
+            fjacobian2,               &
+            nstroke_coordinates(i,:), &
+            node_coordinates(i,:),    &
+            i,                        &
+            quadphi_under(:,1),       &
+            quadphi_under(:,2),       &
+            nt)
+       intphi_under(i) = folding(i,i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end subroutine calcomp
@@ -143,15 +160,18 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
-    centres(:) = quadphi_under(:,1)
-    weights(:) = quadphi_under(:,2)
-    ptr_jacobian => fjacobian2
-
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
+       call integrate(                &
+            fjacobian2,               &
+            nstroke_coordinates(i,:), &
+            node_coordinates(i,:),    &
+            i,                        &
+            quadphi_under(:,1),       &
+            quadphi_under(:,2),       &
+            nt)
        intphi_under(i) = folding(i,i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
@@ -165,22 +185,32 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
-    centres(:) = quadphi_over(:,1)
-    weights(:) = quadphi_over(:,2)
-    ptr_jacobian => fjacobian
-
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
-       call integrate(nstroke_coordinates(i,:),node_coordinates(i,:),i,centres,weights,nt)
+       call integrate(                &
+            fjacobian,                &
+            nstroke_coordinates(i,:), &
+            node_coordinates(i,:),    &
+            i,                        &
+            quadphi_over(:,1),        &
+            quadphi_over(:,2),        &
+            nt)
        gauss(i,6) = folding(i,j_tmp,f2,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
     do j=2,max_neighbors
        k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
-       call integrate(nstroke_coordinates(k1,:), node_coordinates(k1,:),k1,centres,weights,1)
+       call integrate(                 &
+            fjacobian,                 &
+            nstroke_coordinates(k1,:), &
+            node_coordinates(k1,:),    &
+            k1,                        &
+            quadphi_over(:,1),         &
+            quadphi_over(:,2),         &
+            1)
        gauss(k1, 6) = folding(k1,j_tmp,f3,dim_quad,1)
     end do
 
@@ -193,12 +223,14 @@ contains
     integer i, nt, k1, j
 
     hval2 = hval
-
-    centres(:) = quadphi_under(:,1)
-    weights(:) = quadphi_under(:,2)
-    ptr_jacobian => fjacobian2
-
-    call integrate(nstroke_coordinates(j_tmp,:), node_coordinates(j_tmp,:),j_tmp,centres,weights,1)
+    call integrate(                    &
+         fjacobian2,                   &
+         nstroke_coordinates(j_tmp,:), &
+         node_coordinates(j_tmp,:),    &
+         j_tmp,                        &
+         quadphi_under(:,1),           &
+         quadphi_under(:,2),           &
+         1)
     do j=2,max_neighbors
        k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
@@ -217,8 +249,17 @@ contains
 !      |_|_| |_|\__\___|\__, |
 !                       |___/
 
-  subroutine singrate(n,z,ip,k_wave,centres,weights,nt)
+  subroutine singrate(f,n,z,ip,k_wave,centres,weights,nt)
     use dbsym
+    interface
+       function f(axes,p,rh,ph,ispole,k)
+         double complex :: f
+         double precision, intent(in) :: axes(:), p(:)
+         double precision, intent(in) :: rh, ph, ispole
+         double complex, intent(in) :: k
+       end function f
+    end interface
+
     integer, intent(in) :: ip,nt
     double precision, intent(in) :: n(:)
     double precision, intent(in) :: z(:)
@@ -262,7 +303,7 @@ contains
           !    nodes(nthread,iz,ik,i) = x(i)
           ! end do
 
-          jac =  ptr_singular(axes,p,rh,ph,ispole,k_wave)
+          jac =  f(axes,p,rh,ph,ispole,k_wave)
           jacobian(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
        end do
     end do
@@ -270,8 +311,17 @@ contains
     return
   end subroutine singrate
 
-  subroutine integrate(n,z,ip,centres,weights,nt)
+  subroutine integrate(f,n,z,ip,centres,weights,nt)
     use dbsym
+    interface
+       function f (bt,axes,h2,rh,ph,z)
+         double precision :: f
+         double precision, intent(in) :: bt(:,:)
+         double precision, intent(in) :: z(:), axes(:)
+         double precision, intent(in) :: h2, rh, ph
+       end function f
+    end interface
+
     integer, intent(in) :: ip,nt
     double precision, intent(in), dimension(:) :: n
     double precision, intent(in), dimension(:) :: z
@@ -309,7 +359,7 @@ contains
              nodes(nthread,iz,ik,i) = x(i)
           end do
 
-          jac = dsqrt(ptr_jacobian(bt,axes,hval2,rh,ph,z))
+          jac = dsqrt(f(bt,axes,hval2,rh,ph,z))
           jacobian(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
 
        end do

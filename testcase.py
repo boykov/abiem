@@ -147,6 +147,7 @@ class params(common):
     def calcomp(self):
         integ.setup_calcomp()
         for i in range(0,self.numnodes,1):
+            # broken by interface f as argument
             integ.integrate(self.nstroke_coordinates[i,:],
                             self.node_coordinates[i,:],
                             i+1,
@@ -181,8 +182,6 @@ class params(common):
                             gauss3 = self.gauss[:,2]""")
         self.gauss[:,0] = self.gauss_sql.gauss1
         self.gauss[:,2] = self.gauss_sql.gauss3
-
-        integ.calcomp2()
 
         self.withWrapSql("self.snglr_sql",
                          "SingularWITH",
