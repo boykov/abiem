@@ -16,6 +16,12 @@ contains
     f2 = cdexp((0,1)*k_wave*norm(y))*phi(x,i,hval**2)/norm(y)
   end function f2
 
+  double complex function one(x,i,j)
+    integer, intent(in) :: i,j
+    double precision, intent(in), dimension(:) :: x
+    one = 1
+  end function one
+
   double complex function f(x,i,j)
     integer, intent(in) :: i,j
     double precision, intent(in), dimension(:) :: x
@@ -96,7 +102,7 @@ contains
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call singrate(node_coordinates(i,:),node_coordinates(i,:),i,k_wave,centres,weights,nt)
-       gauss(i,4) = sum(jacobian(nt + 1,:,:))
+       gauss(i,4) = folding(i,i,one,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end function calcsing
@@ -320,7 +326,7 @@ contains
     do iz=1,dim_quad
        do ik=1,Nk
           tmp = f(nodes(nthread,iz,ik,:),ip,jp)
-          gtmp = gtmp + realpart(jacobian(nthread,iz,ik))*tmp
+          gtmp = gtmp + (jacobian(nthread,iz,ik))*tmp
        end do
     end do
     folding = gtmp
@@ -346,7 +352,7 @@ contains
     do iz=1,dim_quad
        do ik=1,Nk
           tmp = farr(nthread,iz,ik)
-          gtmp = gtmp + real(jacobian(nthread,iz,ik))*tmp
+          gtmp = gtmp + (jacobian(nthread,iz,ik))*tmp
        end do
     end do
     foldingarr = gtmp
