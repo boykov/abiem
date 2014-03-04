@@ -165,8 +165,10 @@ class params(common):
                             points_id = self.pnts_sql.id""",
                          """dim_quad = self.dim_quad,
                             points_id = self.pnts_sql.id,
-                            intphi_over = self.intphi_over[:]""")
+                            intphi_over = self.intphi_over[:],
+                            intphi_under = self.intphi_under[:]""")
         self.intphi_over[:] = self.integ_sql.intphi_over[:]
+        self.intphi_under[:] = self.integ_sql.intphi_under[:]
 
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
 

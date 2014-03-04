@@ -49,6 +49,7 @@ class IntegWITH(Base):
     points_id = Column(types.Integer, ForeignKey('points.id'))
     dim_quad = Column(types.Integer)
     intphi_over = Column(SqliteArray)
+    intphi_under = Column(SqliteArray)
 
 class SingularWITH(Base):
     __tablename__ = 'singular'
