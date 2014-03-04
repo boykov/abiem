@@ -155,9 +155,6 @@ class params(common):
 
     def initInteg(self):
         self.setObjInteg(integ)
-        
-        self.centres[:] = self.quadphi_over[:,0]
-        self.weights[:] = self.quadphi_over[:,1]
 
         self.withWrapSql("self.integ_sql",
                          "IntegWITH",
@@ -185,12 +182,7 @@ class params(common):
         self.gauss[:,0] = self.gauss_sql.gauss1
         self.gauss[:,2] = self.gauss_sql.gauss3
 
-        self.centres[:] = self.quadphi_under[:,0]
-        self.weights[:] = self.quadphi_under[:,1]
         integ.calcomp2()
-
-        self.centres[:] = self.quadsingular[:,0]
-        self.weights[:] = self.quadsingular[:,1]
 
         self.withWrapSql("self.snglr_sql",
                          "SingularWITH",

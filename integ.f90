@@ -96,7 +96,10 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
+    centres(:) = quadsingular(:,1)
+    weights(:) = quadsingular(:,2)
     ptr_singular => fsingular3
+
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
@@ -119,7 +122,10 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
+    centres(:) = quadphi_over(:,1)
+    weights(:) = quadphi_over(:,2)
     ptr_jacobian => fjacobian
+
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
@@ -137,7 +143,10 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
+    centres(:) = quadphi_under(:,1)
+    weights(:) = quadphi_under(:,2)
     ptr_jacobian => fjacobian2
+
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
@@ -159,6 +168,7 @@ contains
     centres(:) = quadphi_over(:,1)
     weights(:) = quadphi_over(:,2)
     ptr_jacobian => fjacobian
+
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do i=1,numnodes
@@ -183,9 +193,11 @@ contains
     integer i, nt, k1, j
 
     hval2 = hval
+
     centres(:) = quadphi_under(:,1)
     weights(:) = quadphi_under(:,2)
     ptr_jacobian => fjacobian2
+
     call integrate(nstroke_coordinates(j_tmp,:), node_coordinates(j_tmp,:),j_tmp,centres,weights,1)
     do j=2,max_neighbors
        k1 = node_neighbors1(j_tmp,j)
