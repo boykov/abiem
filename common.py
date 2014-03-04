@@ -85,6 +85,14 @@ class common():
         s = s + "end module params"
         return s
 
+    def write_module(self):
+        file = open('params.f90', 'w')
+        file.write(self.create_module())
+
+    def write_set_module(self):
+        file = open('set_params.f90', 'w')
+        file.write(self.create_set_module())
+
     def __init__(self):
         for n in self.names.keys():
             if self.names[n][1]==0:

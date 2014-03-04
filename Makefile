@@ -10,10 +10,10 @@ f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
 export LD_LIBRARY_PATH=/home/eab/git/difwave/bie/
 
 params.f90: common.py
-	python -c "from common import common; c = common(); file = open('params.f90', 'w'); file.write(c.create_module())"
+	python -c "from common import common; c = common(); c.write_module()"
 
 set_params.f90: common.py
-	python -c "from common import common; c = common(); file = open('set_params.f90', 'w'); file.write(c.create_set_module())"
+	python -c "from common import common; c = common(); c.write_set_module()"
 
 params.o: params.f90
 	$(gf) -c params.f90
