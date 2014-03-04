@@ -47,7 +47,7 @@ class params(common):
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
-        self.flagMemo = True
+        self.flagMemo = False
         self.flagTestUnder = False
 
     def initAHMED(self):
@@ -133,15 +133,39 @@ class params(common):
                       %s
                       %s = %s(%s)
                       self.session.add(%s)
-                      self.session.commit()""" % (tblname,
-                                                  body,
-                                                  tblname,
-                                                  classname,
-                                                  largs_class,
-                                                  tblname)
+                      self.session.commit()
+                      logging.info('%s' + ' is writed to record')
+else:
+    if not %s:
+        %s
+        self.session.delete(%s)
+        self.session.commit()
+        %s = %s(%s)
+        self.session.add(%s)
+        self.session.commit()
+        logging.info('%s' + ' is writed in new record, old record is deleted')
+    else:
+        logging.info('%s' + ' is loaded from record')""" % (tblname,
+                                                            body,
+                                                            tblname,
+                                                            classname,
+                                                            largs_class,
+                                                            tblname,
+                                                            classname,
+                                                            self.flagMemo,
+                                                            body,
+                                                            tblname,
+                                                            tblname,
+                                                            classname,
+                                                            largs_class,
+                                                            tblname,
+                                                            classname,
+                                                            classname)
+
         exec(expr, {'self' : self,
                     'integ' : integ,
                     'ellipsoid' : ellipsoid,
+                    'logging' : logging,
                     classname : classval})
 
     def calcomp(self):
