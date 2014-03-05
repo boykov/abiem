@@ -117,7 +117,7 @@ class params(common):
         phi.filter_neighbors(2*self.hval, self.node_neighbors2, self.numnodes)
         phi.filter_neighbors(  self.hval, self.node_neighbors1, self.numnodes)
 
-        if not self.pnts_sql.nstroke_coordinates.all():
+        if not (type(self.pnts_sql.nstroke_coordinates) is 'NoneType'):
             phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
             self.pnts_sql.nstroke_coordinates = self.nstroke_coordinates[:,:]
 
