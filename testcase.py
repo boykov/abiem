@@ -237,11 +237,6 @@ else:
                           "fsingular3" : "self.gauss[:,3]"})
         self.gauss[:,3] = self.snglr_sql.fsingular3[:]
 
-        if (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder):
-            for i in range(self.numnodes-1,self.numnodes,1):
-                integ.calcomp3(i+1)
-                integ.calcomp4(i+1)
-
 class testBIE(object):
     @classmethod
     def setUpClass(self):
