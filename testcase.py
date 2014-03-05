@@ -194,6 +194,8 @@ else:
     def initInteg(self):
         self.setObjInteg(integ)
 
+        integ.set_l_ptr("gauss6", (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder))
+
         self.withWrapSql("self.integ_sql",
                          "IntegWITH",
                          IntegWITH,

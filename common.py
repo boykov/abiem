@@ -17,6 +17,7 @@ common_names = {
     "dim_3d"              : [lambda (s): 3                   , 0, "i", "phi"],
     "k_wave"              : [lambda (s): 0                   , 0, "dc", "phi"],
     "axes"                : [lambda (s): zeros((3))          , 0, "dp1d", "phi"],
+    "gauss6"              : [lambda (s): False               , 0, "l", "phi"],
 
     "numnodes"            : [lambda (s): s.N    , 10, "i", "phi"],
     "hval"                : [lambda (s): s.h    , 10, "dp", "phi"],
@@ -54,6 +55,7 @@ common_names = {
 
 class common():
     types = {
+        "l"    : ["logical"           , ""          , "=" , ""],
         "dp"   : ["double precision"  , ""          , "=" , ""],
         "i"    : ["integer"           , ""          , "=" , ""],
         "dc"   : ["double complex"    , ""          , "=" , ""],
