@@ -317,7 +317,7 @@ class testBIEsmallNG(testBIE, unittest.TestCase):
 class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
-    tmpP.under_places = 6
+    tmpP.under_places = 5
     tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3

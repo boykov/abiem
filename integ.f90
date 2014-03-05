@@ -35,7 +35,7 @@ contains
     double precision, dimension(size(x)) :: y
     y(:) = x(:) + node_coordinates(i,:) - node_coordinates(j,:)
 
-    f3 = cdexp((0,1)*k_wave*norm(y))*(1 - varphi(y,hval))*phi(x,i,hval**2)/norm(y)
+    f3 = cdexp((0,1)*k_wave*norm(y))*(1 - varphi(y,hval**2))*phi(x,i,hval**2)/norm(y)
   end function f3
 
   double complex function f4(x,i,j)
@@ -45,7 +45,7 @@ contains
     double precision, dimension(size(x)) :: y
     y(:) = x(:) + node_coordinates(i,:) - node_coordinates(j,:)
 
-    f4 = cdexp((0,1)*k_wave*norm(x))*(varphi(x,hval))*phi(y,j,hval**2)
+    f4 = cdexp((0,1)*k_wave*norm(x))*(varphi(x,hval**2))*phi(y,j,hval**2)
   end function f4
 
   double precision function test_fast()
@@ -200,7 +200,7 @@ contains
        gauss(i,6) = folding(i,j_tmp,f2,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
-    do j=2,max_neighbors
+    do j=1,max_neighbors
        k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
        call integrate(                 &
@@ -222,7 +222,7 @@ contains
     integer, intent(in) :: j_tmp
     integer i, nt, k1, j
 
-    hval2 = hval
+    hval2 = hval**2
     call integrate(                    &
          fjacobian2,                   &
          nstroke_coordinates(j_tmp,:), &
@@ -231,13 +231,13 @@ contains
          quadphi_under(:,1),           &
          quadphi_under(:,2),           &
          1)
-    do j=2,max_neighbors
+    do j=1,max_neighbors
        k1 = node_neighbors1(j_tmp,j)
        if (k1 .eq. 0) exit
        gauss(k1, 6) = gauss(k1, 6) + folding(j_tmp,k1,f4,dim_quad,1)
     end do
     hval2 = hval * hval
-    gauss(j_tmp,6) = intphi_under(j_tmp)
+
     gauss(j_tmp,7) = gauss(j_tmp,4) - (sum(gauss(1:j_tmp-1,6)) + sum(gauss(j_tmp+1:numnodes,6)))/(4*PI)
 
   end subroutine calcomp4
