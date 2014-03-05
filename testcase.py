@@ -89,22 +89,22 @@ class params(common):
                          EllipsoidWITH,
                          "",
                          "axes = self.axes",
-                         """axe1 = self.axes[0],
-                            axe2 = self.axes[1],
-                            axe3 = self.axes[2],
-                            axes = self.axes""")
+                         {"axe1" : "self.axes[0]",
+                          "axe2" : "self.axes[1]",
+                          "axe3" : "self.axes[2]",
+                          "axes" : "self.axes"})
 
         self.withWrapSql("self.pnts_sql",
                          "PointsWITH",
                          PointsWITH,
                          "self.e = ellipsoid(self.axes, self.numpoints)",
                          "numpoints = self.numpoints",
-                         """numpoints = self.numpoints,
-                            surface_id = self.ell_sql.id,
-                            hval = self.e.get_h(),
-                            numnodes = self.e.points.shape[0],
-                            node_coordinates = self.e.points[:,:],
-                            normal_coordinates = self.e.normalvectors[:,:]""")
+                         {"numpoints" : "self.numpoints",
+                          "surface_id" : "self.ell_sql.id",
+                          "hval" : "self.e.get_h()",
+                          "numnodes" : "self.e.points.shape[0]",
+                          "node_coordinates" : "self.e.points[:,:]",
+                          "normal_coordinates" : "self.e.normalvectors[:,:]"})
 
         self.level1(self.pnts_sql.numnodes, self.pnts_sql.hval)
 
@@ -122,6 +122,19 @@ class params(common):
             self.pnts_sql.nstroke_coordinates = self.nstroke_coordinates[:,:]
 
         self.nstroke_coordinates[:,:] = self.pnts_sql.nstroke_coordinates[:,:]
+
+    def mergeLargs(self, largs_class):
+        s = ""
+        for k in largs_class:
+            s = s + k + "=" + largs_class[k] + ","
+        return s
+
+    def mergeLargs_dic(self, largs_class):
+        s = "{"
+        for k in largs_class:
+            s = s + "'" + k + "'" + ":" + largs_class[k] + ","
+        s = s + "}"
+        return s
 
     def withWrapSql(self, tblname, classname, classval, body, largs_search, largs_class):
         expr = '%s = self.session.query(%s).filter_by(%s).first()' % (tblname,
@@ -149,7 +162,7 @@ else:
                                                             body,
                                                             tblname,
                                                             classname,
-                                                            largs_class,
+                                                            self.mergeLargs(largs_class),
                                                             tblname,
                                                             classname,
                                                             self.flagMemo,
@@ -157,7 +170,7 @@ else:
                                                             tblname,
                                                             tblname,
                                                             classname,
-                                                            largs_class,
+                                                            self.mergeLargs(largs_class),
                                                             tblname,
                                                             classname,
                                                             classname)
@@ -187,10 +200,10 @@ else:
                          "integ.calcomp()",
                          """dim_quad = self.dim_quad,
                             points_id = self.pnts_sql.id""",
-                         """dim_quad = self.dim_quad,
-                            points_id = self.pnts_sql.id,
-                            intphi_over = self.intphi_over[:],
-                            intphi_under = self.intphi_under[:]""")
+                         {"dim_quad" : "self.dim_quad",
+                          "points_id" : "self.pnts_sql.id",
+                          "intphi_over" : "self.intphi_over[:]",
+                          "intphi_under" : "self.intphi_under[:]"})
         self.intphi_over[:] = self.integ_sql.intphi_over[:]
         self.intphi_under[:] = self.integ_sql.intphi_under[:]
 
@@ -202,10 +215,10 @@ else:
                          "integ.setgauss()",
                          """k_wave = self.k_wave,
                             integ_id = self.integ_sql.id""",
-                         """k_wave = self.k_wave,
-                            integ_id = self.integ_sql.id,
-                            gauss1 = self.gauss[:,0],
-                            gauss3 = self.gauss[:,2]""")
+                         {"k_wave" : "self.k_wave",
+                          "integ_id" : "self.integ_sql.id",
+                          "gauss1" : "self.gauss[:,0]",
+                          "gauss3" : "self.gauss[:,2]"})
         self.gauss[:,0] = self.gauss_sql.gauss1
         self.gauss[:,2] = self.gauss_sql.gauss3
 
@@ -216,10 +229,10 @@ else:
                          """dim_quad = self.dim_quad,
                             k_wave = self.k_wave,
                             points_id = self.pnts_sql.id""",
-                         """dim_quad = self.dim_quad,
-                            k_wave = self.k_wave,
-                            points_id = self.pnts_sql.id,
-                            fsingular3 = self.gauss[:,3]""")
+                         {"dim_quad" : "self.dim_quad",
+                          "k_wave" : "self.k_wave",
+                          "points_id" : "self.pnts_sql.id",
+                          "fsingular3" : "self.gauss[:,3]"})
         self.gauss[:,3] = self.snglr_sql.fsingular3[:]
 
         if (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder):
