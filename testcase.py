@@ -194,10 +194,23 @@ else:
     def initInteg(self):
         self.setObjInteg(integ)
 
+        self.withWrapSql("self.snglr_sql",
+                         "SingularWITH",
+                         SingularWITH,
+                         "integ.calcsing()",
+                         """dim_quad = self.dim_quad,
+                            k_wave = self.k_wave,
+                            points_id = self.pnts_sql.id""",
+                         {"dim_quad" : "self.dim_quad",
+                          "k_wave" : "self.k_wave",
+                          "points_id" : "self.pnts_sql.id",
+                          "fsingular3" : "self.gauss[:,3]"})
+        self.gauss[:,3] = self.snglr_sql.fsingular3[:]
+
         self.withWrapSql("self.integ_sql",
                          "IntegWITH",
                          IntegWITH,
-                         "integ.calcomp()",
+                         "integ.calcomp(self.numnodes)",
                          """dim_quad = self.dim_quad,
                             points_id = self.pnts_sql.id""",
                          {"dim_quad" : "self.dim_quad",
@@ -222,23 +235,11 @@ else:
         self.gauss[:,0] = self.gauss_sql.gauss1
         self.gauss[:,2] = self.gauss_sql.gauss3
 
-        self.withWrapSql("self.snglr_sql",
-                         "SingularWITH",
-                         SingularWITH,
-                         "integ.calcsing()",
-                         """dim_quad = self.dim_quad,
-                            k_wave = self.k_wave,
-                            points_id = self.pnts_sql.id""",
-                         {"dim_quad" : "self.dim_quad",
-                          "k_wave" : "self.k_wave",
-                          "points_id" : "self.pnts_sql.id",
-                          "fsingular3" : "self.gauss[:,3]"})
-        self.gauss[:,3] = self.snglr_sql.fsingular3[:]
-
         if (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder):
             for i in range(self.numnodes-1,self.numnodes,1):
-                integ.calcomp3(i+1)
-                integ.calcomp4(i+1)
+                # integ.calcomp3(i+1)
+                # integ.calcomp4(i+1)
+                pass
 
 class testBIE(object):
     @classmethod
@@ -317,7 +318,7 @@ class testBIEsmallNG(testBIE, unittest.TestCase):
 class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
-    tmpP.under_places = 6
+    tmpP.under_places = 5
     tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3
