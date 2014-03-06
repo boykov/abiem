@@ -3,6 +3,7 @@ module fast_dbsym
   double precision, parameter :: PI = 3.14159265358979324D0
 contains
   include 'msphj.for'
+  include 'yml.f90'
 
   pure double precision function asqrt(x)
     double precision, intent(in) :: x
@@ -15,37 +16,21 @@ contains
     if (n .eq. m) dn = 1
   end function dn
 
-  double complex function cderf(z)
-    double complex, intent(in) :: z
-    cderf = &
-         include 'cderf.f90'
-  end function cderf
-
-  double complex function A_s(x,y,sigm,k)
-    double precision, intent(in) :: x(:),y(:)
-    double precision, intent(in) :: sigm
-    double complex, intent(in) :: k
-    double precision :: v,rh
-    rh = norm(x-y)
-    A_s = &
-         include 'A_s.f90'
-  end function A_s
-
-  real(16) function spherical_bessel_jn(n, x)
+  double precision function spherical_bessel_jn(n, x)
     integer, intent(in) :: n
-    real(16), intent(in) :: x
+    double precision, intent(in) :: x
     integer :: nm
-    real(16) :: sj(0:n), dj(0:n)
+    double precision :: sj(0:n), dj(0:n)
     call sphj(n, x, nm, sj, dj)
     if (nm /= n) print *, "spherical_bessel_jn: sphj didn't converge"
     spherical_bessel_jn = sj(n)
   end function spherical_bessel_jn
 
-  real(16) function spherical_bessel_yn(n, x)
+  double precision function spherical_bessel_yn(n, x)
     integer, intent(in) :: n
-    real(16), intent(in) :: x
+    double precision, intent(in) :: x
     integer :: nm
-    real(16) :: sj(0:n), dj(0:n)
+    double precision :: sj(0:n), dj(0:n)
     call sphy(n, x, nm, sj, dj)
     if (nm /= n) print *, "spherical_bessel_jn: sphj didn't converge"
     spherical_bessel_yn = sj(n)
@@ -57,38 +42,11 @@ contains
     spherical_hankel_n = spherical_bessel_jn(n,x) + (0,1)*spherical_bessel_yn(n,x)
   end function spherical_hankel_n
 
-  double complex function spherical_hankel(n,x)
-    double precision, intent(in) :: x
-    integer, intent(in) :: n
-    spherical_hankel = spherical_bessel_j(n,x) + (0,1)*spherical_bessel_y(n,x)
-  end function spherical_hankel
-
-  double precision function spherical_bessel_y(n,x)
-    double precision, intent(in) :: x
-    integer, intent(in) :: n
-    spherical_bessel_y = &
-         include 'spherical_bessel_y.f90'
-  end function spherical_bessel_y
-
-  double precision function spherical_bessel_j(n,x)
-    double precision, intent(in) :: x
-    integer, intent(in) :: n
-    spherical_bessel_j = &
-         include 'spherical_bessel_j.f90'
-  end function spherical_bessel_j
-
-  double complex function spherical_harmonic(l,m,theta,phi)
-    double precision, intent(in) :: theta,phi
-    integer, intent(in) :: l,m
-    spherical_harmonic = &
-         include 'spherical_harmonic.f90'
-  end function spherical_harmonic
-
   double complex function spherical_harmonic_(l,m,theta,phi)
     double precision, intent(in) :: theta,phi
     integer, intent(in) :: l,m
 
-    spherical_harmonic_ = spherical_harmonic(l,m,phi,theta)/cdexp((0,1)*m*theta)
+    spherical_harmonic_ = ylm(l,m,phi,theta)/cdexp((0,1)*m*theta)
   end function spherical_harmonic_
 
   double complex function G_y(y,k,l,m)
@@ -123,14 +81,15 @@ contains
 
   ! formula in [[file:~/downloads/pub/papers/epstein2012convergence.pdf][epstein]]
 
-  double complex function G_2(x,y,k)
+  double complex function G_2(N,x,y,k)
     double precision, intent(in) :: x(:),y(:)
     double complex, intent(in) :: k
+    integer, intent(in) :: N
     integer :: l,m
     double complex :: s
 
     s = 0.0
-    do l = 0,20
+    do l = 0,N
        do m = -l, l
           s = s + G_y(y,k,l,m)* G_x(x,k,l,m)
        end do
@@ -139,9 +98,10 @@ contains
     G_2 = s
   end function G_2
 
-  double complex function G_(x,y,k)
+  double complex function G_(N, x,y,k)
     double precision, intent(in) :: x(:),y(:)
     double complex, intent(in) :: k
+    integer, intent(in) :: N
     double precision :: rx, phix, thetax
     double precision :: ry, phiy, thetay
     double complex :: s, s2
@@ -155,7 +115,7 @@ contains
     thetay = datan(y(2)/y(1))
 
     s = 0.0
-    do l = 0,20
+    do l = 0,N
        s2 = 0.0
        do m = -l, l
           s2 = s2 + cdexp((0,1)*(thetax-thetay)*m) * &
@@ -182,47 +142,5 @@ contains
     double precision, intent(in) :: v(:)
     norm = dsqrt(norm2(v))
   end function norm
-
-  double complex function wmod(z)
-    use toms
-    real(dp) x,y,u,v
-    double complex, intent(in) :: z
-    real(dp) alpha
-    integer(kind=16) m,q,jm
-    logical flag
-
-    x = REAL(z)
-    y = AIMAG(z)
-    if (dabs(dble(y)) .ge. 3) then
-       alpha = dabs(dble(y/1e+5))
-       m = 1e+20
-       jm = y/alpha
-       q = (real(2*m,dp)/PI)*alpha*x
-       call wofz_mod(alpha,m,q,jm,u,v,flag)
-       if (flag) then
-          ! print *,"Alert wofz_mod"
-          ! stop
-       end if
-       wmod = DCMPLX(u,v)
-    else
-       wmod = dexp(dble(-y**2))*w(z)
-    end if
-  end function wmod
-
-  double complex function w(z)
-    use toms
-    real(dp) x,y,u,v
-    double complex, intent(in) :: z
-    logical flag
-
-    x = REAL(z)
-    y = AIMAG(z)
-    call WOFZ(x,y,u,v,flag)
-    if (flag) then
-       ! print *,"Alert wofz"
-       ! stop
-    end if
-    w = DCMPLX(u,v)
-  end function w
 
 end module fast_dbsym

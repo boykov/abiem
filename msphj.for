@@ -171,8 +171,8 @@
         RETURN
         END
 
-        real(16) function envj(n, x) result(r)
+        double precision function envj(n, x) result(r)
         integer, intent(in) :: n
-        real(16), intent(in) :: x
+        double precision, intent(in) :: x
         r = log10(6.28_8*n)/2 - n*log10(1.36_8*x/n)
         end function

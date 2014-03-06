@@ -10,3 +10,5 @@
 !dirichlet-helmholtz.max
 !specfun.max
 !msphj.for
+!yml.f90
+!notuse.f90
