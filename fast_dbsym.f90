@@ -57,7 +57,7 @@ contains
 
     ry = norm(y)
     phiy = dacos(y(3)/ry)
-    thetay = datan(y(2)/y(1))
+    thetay = datan2(y(2),y(1))
 
     G_y = (0,1)*realpart(k) * spherical_hankel_n(l, realpart(k)*ry) * &
          cdexp((0,1)*(-thetay)*m)*spherical_harmonic_(l,m,thetay,phiy)
@@ -72,7 +72,7 @@ contains
 
     rx = norm(x)
     phix = dacos(x(3)/rx)
-    thetax = datan(x(2)/x(1))
+    thetax = datan2(x(2),x(1))
 
     G_x =  spherical_bessel_jn(l, realpart(k)*rx) * &
          cdexp((0,1)*thetax*m)*spherical_harmonic_(l,m,thetax,phix)
@@ -111,8 +111,8 @@ contains
     ry = norm(y)
     phix = dacos(x(3)/rx)
     phiy = dacos(y(3)/ry)
-    thetax = datan(x(2)/x(1))
-    thetay = datan(y(2)/y(1))
+    thetax = datan2(x(2),x(1))
+    thetay = datan2(y(2),y(1))
 
     s = 0.0
     do l = 0,N
