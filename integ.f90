@@ -347,8 +347,8 @@ contains
     getnode(:) = nodes(nt,iz,ik,:)
   end function getnode
 
-  double complex function foldingarr(ip,farr,nt)
-    integer, intent(in) :: ip,nt
+  double complex function foldingarr(farr,dim_quad,nt)
+    integer, intent(in) :: nt, dim_quad
     double complex, dimension(:,:,:) :: farr
     integer Nk, iz, ik,nthread
     double complex gtmp, tmp
