@@ -119,18 +119,41 @@ contains
     ptr_jacobian => fjacobian
   end subroutine setup_calcomp
 
+  double complex function foldingG(N,i,j,k)
+    use fast_dbsym
+    double complex, intent(in) :: k
+    integer, intent(in) :: i,j,N
+    integer :: l,m
+    double precision, dimension(3) :: x
+    double complex :: s
+
+    s = 0.0
+    do l = 0,N
+       do m = -l, l
+          x(:) = node_coordinates(i,:) - node_coordinates(j,:)
+          s = s + G_y(x,k_wave,l,m) * intG_x(j,l+1,size(intG_x,2)+m)
+       end do
+    end do
+    print *, cdexp((0,1)*k_wave*norm(x))/(4*PI*norm(x)) * intphi_over(j)
+    foldingG = s
+  end function foldingG
+
   subroutine calcomp()
     use omp_lib
     use dbsym
+    use fast_dbsym
     integer :: j_tmp
     integer i, nt
+    integer l,m
+    double precision, dimension(3) :: x
+    double complex :: tmp
 
     j_tmp = numnodes
 
     call OMP_SET_NUM_THREADS(4)
 
     !$OMP PARALLEL DO &
-    !$OMP DEFAULT(SHARED) PRIVATE(nt, k1, hval2)
+    !$OMP DEFAULT(SHARED) PRIVATE(nt, k1, hval2, x)
     do i=1,numnodes
        nt = OMP_GET_THREAD_NUM()
        call integrate(                &
@@ -142,6 +165,22 @@ contains
             quadphi_over(:,2),        &
             nt)
        intphi_over(i) = folding(i,i,f,dim_quad,nt)
+
+       if (qbx) then
+          do l=0,size(intG_x,2)-1
+             do m =-l,l
+
+                do iz=1,dim_quad
+                   do ik=1,4*dim_quad
+                      x(:) = nodes(nt+1,iz,ik,:)
+                      farr(nt+1,iz,ik) = G_x(x,k_wave,l,m)*phi(x,i,hval**2)
+                   end do
+                end do
+
+                intG_x(i,l+1,size(intG_x,2)+m) = foldingarr(farr,dim_quad, nt)
+             end do
+          end do
+       end if
 
        if (gauss6) then
           do j=1,max_neighbors

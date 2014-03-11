@@ -18,6 +18,7 @@ common_names = {
     "k_wave"              : [lambda (s): 0                   , 0, "dc", "phi"],
     "axes"                : [lambda (s): zeros((3))          , 0, "dp1d", "phi"],
     "gauss6"              : [lambda (s): False               , 0, "l", "phi"],
+    "qbx"                 : [lambda (s): False               , 0, "l", "phi"],
 
     "numnodes"            : [lambda (s): s.N    , 10, "i", "phi"],
     "hval"                : [lambda (s): s.h    , 10, "dp", "phi"],
@@ -40,8 +41,13 @@ common_names = {
                                                dtype = complex, order = 'Fortran'), 11, "dc2d", "integ"],
 
     "q_density"           : [lambda (s): zeros((s.numnodes), dtype = complex)     , 11, "dc1d", "integ"],
+    "intG_x"              : [lambda (s): zeros((s.numnodes,6,11),
+                                               dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
+    "valG_y"              : [lambda (s): zeros((s.numnodes,6,11),
+                                               dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
 
     "dim_quad"            : [lambda (s): s.q, 20, "i", "integ"],
+
 
     "quadphi_over"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
     "quadphi_under"       : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
@@ -49,6 +55,8 @@ common_names = {
     "centres"             : [lambda (s): zeros((s.dim_quad))                      , 21, "dp1d", "integ"],
     "weights"             : [lambda (s): zeros((s.dim_quad))                      , 21, "dp1d", "integ"],
     "jacobian"            : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
+                                               dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
+    "farr"                : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
     "nodes"               : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad,3),
                                                order = 'Fortran')                 , 21, "dp4d", "integ"]}

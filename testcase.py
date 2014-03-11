@@ -37,6 +37,7 @@ class params(common):
         self.slae_tol = 0.0
         self.slae_places = 0
         self.under_places = 3
+        self.qbx_places = 5
         self.orderquad = 20
         self.eps_matgen = 1e-4
         self.eps_aggl = self.eps_matgen
@@ -47,6 +48,7 @@ class params(common):
         self.rankmax = 1000
         self.flagMemo = False
         self.flagTestUnder = False
+        self.flagTestQBX = False
 
     def initAHMED(self):
         """
@@ -108,6 +110,7 @@ class params(common):
         self.setObjInteg(integ)
 
         integ.set_l_ptr("gauss6", (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder))
+        integ.set_l_ptr("qbx", (self.flagTestQBX))
 
         integ.calcomp()
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
@@ -162,6 +165,13 @@ class testBIE(object):
                 self.P.gauss[self.P.numnodes - 1,3],
                 places = self.P.under_places)
 
+    def testQBX(self):
+        if self.P.flagTestQBX:
+            self.assertAlmostEqual(
+                self.P.gauss[30,5]/(4*math.pi),
+                integ.foldingg(5,self.P.numnodes,31,self.P.k_wave),
+                places = self.P.qbx_places)
+
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)
     tmpP.k_wave = 6
@@ -195,6 +205,17 @@ class testBIEsmall(testBIE, unittest.TestCase):
     tmpP.under_places = 5
     tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.003
+    tmpP.slae_places = 3
+
+class testBIEsmallQBX(testBIE, unittest.TestCase):
+    tmpP = params(200)
+    tmpP.integ_places = 5
+    tmpP.under_places = 5
+    tmpP.k_wave = 1
+    tmpP.flagTestUnder = True
+    tmpP.qbx_places = 8
+    tmpP.flagTestQBX = True
+    tmpP.slae_tol = 0.007
     tmpP.slae_places = 3
 
 class testBIEsmall3(testBIE, unittest.TestCase):
