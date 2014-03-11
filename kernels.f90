@@ -40,6 +40,69 @@ end function vectorb2
 !      |_|  |_|\__,_|\__|_|  |_/_/\_\/_/   \_\
 !
 
+double complex function matrixA6(i,j)
+  use omp_lib
+  use dbsym
+  integer, intent(in) :: i,j
+  double precision :: sigm
+  double precision, dimension(dim_3d) :: x,y
+  integer :: jj, kj
+  double complex :: tmp
+
+  sigm = sigmaij(i,j)
+  x = node_coordinates(i,:)
+  y = node_coordinates(j,:)
+
+  if (i .eq. j) then
+     matrixA6 = intphi_over(i) * (gauss(i,4) + gauss(i,7)) ! intphi_over(i)*intphi_under(i)/(4*PI) ! intphi_over(i) * gauss(i,7)
+  else
+     do jj=1, max_neighbors
+        kj = node_neighbors1(i,jj)
+        if (kj .eq. j) exit
+        kj = 0
+     end do
+        ! if (kj .eq. 0) exit
+     if (kj > 0) then
+        call integrate(                 &
+             fjacobian,                 &
+             nstroke_coordinates(kj,:), &
+             node_coordinates(kj,:),    &
+             kj,                        &
+             quadphi_over(:,1),         &
+             quadphi_over(:,2),         &
+             1)
+        tmp = folding(kj,i,f3,dim_quad,1)
+
+        call integrate(                    &
+             fjacobian2,                   &
+             nstroke_coordinates(i,:),     &
+             node_coordinates(i,:),        &
+             i,                            &
+             quadphi_under(:,1),           &
+             quadphi_under(:,2),           &
+             1)
+        tmp = tmp + folding(i,kj,f4,dim_quad,1)
+
+        matrixA6 = intphi_over(i)*tmp/(4*PI)
+     else
+        if (norm(x-y) < 10*hval) then
+           call integrate(                &
+                fjacobian,                &
+                nstroke_coordinates(j,:), &
+                node_coordinates(j,:),    &
+                j,                        &
+                quadphi_over(:,1),        &
+                quadphi_over(:,2),        &
+                1)
+           matrixA6 = intphi_over(i)*folding(j,i,f2,dim_quad,1)/(4*PI)
+        else
+           matrixA6 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+        end if
+      end if
+     ! end do
+  end if
+end function matrixA6
+
 double complex function matrixA(i,j)
   use omp_lib
   use dbsym
@@ -124,6 +187,40 @@ end function matrixA_sigm
 !        \__,_| .__/| .__/|_|  \___/_/\_\_|_| |_| |_|\__,_|\__\___|\__,_|
 !             |_|   |_|
 !
+
+double complex function approximateu4(x)
+  use omp_lib
+  use dbsym
+  double precision, intent(in), dimension(:) :: x
+  integer :: i
+  double complex, dimension(:), allocatable :: s
+
+  allocate(s(numnodes))
+
+  call OMP_SET_NUM_THREADS(4)
+
+  y_tmp(:) = x(:)
+  !$OMP PARALLEL DO &
+  !$OMP DEFAULT(SHARED) PRIVATE(nt)
+  do i=1,numnodes
+     nt = OMP_GET_THREAD_NUM()
+     call integrate(                &
+          fjacobian,                &
+          nstroke_coordinates(i,:), &
+          node_coordinates(i,:),    &
+          i,                        &
+          quadphi_over(:,1),        &
+          quadphi_over(:,2),        &
+          nt)
+     s(i) = q_density(i) * folding(i,i,fAmn,dim_quad,nt)
+  end do
+  !$OMP END PARALLEL DO
+
+  approximateu4 = sum(s(:))
+
+  deallocate(s)
+end function approximateu4
+
 
 double complex function approximateu(x)
   use omp_lib

@@ -111,6 +111,7 @@ class params(common):
 
         integ.set_l_ptr("gauss6", (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder))
         integ.set_l_ptr("qbx", (self.flagTestQBX))
+        integ.set_l_ptr("matrixa6_p", (self.name_matrixa == 'integ.matrixa6'))
 
         integ.calcomp()
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
@@ -203,6 +204,16 @@ class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
     tmpP.under_places = 5
+    tmpP.flagTestUnder = True
+    tmpP.slae_tol = 0.003
+    tmpP.slae_places = 3
+
+class testBIEsmall6(testBIE, unittest.TestCase):
+    tmpP = params(200)
+    tmpP.integ_places = 5
+    tmpP.under_places = 5
+    tmpP.name_approximateu = 'integ.approximateu4'
+    tmpP.name_matrixa = 'integ.matrixa6'
     tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3

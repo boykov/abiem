@@ -1,10 +1,21 @@
 module modinteg
   use params
   use modphi, only : phi, varphi, deltah
+  double precision :: y_tmp(3)
 contains
 
   include 'set_params.f90'
   include 'kernels.f90'
+
+  double complex function fAmn(x,i,j)
+    use dbsym
+    integer, intent(in) :: i,j
+    double precision, intent(in), dimension(:) :: x
+    double precision, dimension(size(x)) :: y
+    y(:) = x(:) + node_coordinates(i,:)
+
+    fAmn = phi(x,i,hval**2)*Amn(y_tmp,y,k_wave)
+  end function fAmn
 
   double complex function f2(x,i,j)
     use dbsym
@@ -142,16 +153,21 @@ contains
     use omp_lib
     use dbsym
     use fast_dbsym
-    integer :: j_tmp
+    integer :: j_tmp, j_init
     integer i, nt
     integer l,m
     double precision, dimension(3) :: x
     double complex :: tmp
 
     j_tmp = numnodes
+    j_init = numnodes
+
+    if (matrixa6_p) j_init=1
 
     call OMP_SET_NUM_THREADS(4)
 
+    do j_tmp=j_init,numnodes
+       gauss(:,6) = 0
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt, k1, hval2, x)
     do i=1,numnodes
@@ -225,6 +241,8 @@ contains
        intphi_under(i) = folding(i,i,f,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
+    gauss(j_tmp,7) = - (sum(gauss(1:j_tmp-1,6)) + sum(gauss(j_tmp+1:numnodes,6)))/(4*3.14159265358979324D0)
+    end do
   end subroutine calcomp
 
 !       _       _
