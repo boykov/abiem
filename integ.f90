@@ -186,11 +186,11 @@ contains
           do j=1,max_neighbors
              k1 = node_neighbors1(j_tmp,j)
              if (k1 .eq. i) then
-                gauss(k1, 6) = folding(k1,j_tmp,f3,dim_quad,nt)
+                gauss(k1, 6) = gauss(k1, 6) + folding(k1,j_tmp,f3,dim_quad,nt)
                 exit
              end if
              if ((k1 .eq. 0)) then
-                gauss(i,6) = folding(i,j_tmp,f2,dim_quad,nt)
+                gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,nt)
                 exit
              end if
           end do
