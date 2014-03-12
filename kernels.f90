@@ -54,52 +54,18 @@ double complex function matrixA6(i,j)
   y = node_coordinates(j,:)
 
   if (i .eq. j) then
-     matrixA6 = intphi_over(i) * (gauss(i,4) + gauss(i,7)) ! intphi_over(i)*intphi_under(i)/(4*PI) ! intphi_over(i) * gauss(i,7)
+     matrixA6 = intphi_over(i) * (gauss(i,4) + gauss(i,7))
   else
      do jj=1, max_neighbors
         kj = node_neighbors1(i,jj)
         if (kj .eq. j) exit
         kj = 0
      end do
-        ! if (kj .eq. 0) exit
      if (kj > 0) then
-        call integrate(                 &
-             fjacobian,                 &
-             nstroke_coordinates(kj,:), &
-             node_coordinates(kj,:),    &
-             kj,                        &
-             quadphi_over(:,1),         &
-             quadphi_over(:,2),         &
-             1)
-        tmp = folding(kj,i,f3,dim_quad,1)
-
-        call integrate(                    &
-             fjacobian2,                   &
-             nstroke_coordinates(i,:),     &
-             node_coordinates(i,:),        &
-             i,                            &
-             quadphi_under(:,1),           &
-             quadphi_under(:,2),           &
-             1)
-        tmp = tmp + folding(i,kj,f4,dim_quad,1)
-
-        matrixA6 = intphi_over(i)*tmp/(4*PI)
+        matrixA6 = intphi_over(i)*int_neighbors1(i,jj)/(4*PI)
      else
-        if (norm(x-y) < 10*hval) then
-           call integrate(                &
-                fjacobian,                &
-                nstroke_coordinates(j,:), &
-                node_coordinates(j,:),    &
-                j,                        &
-                quadphi_over(:,1),        &
-                quadphi_over(:,2),        &
-                1)
-           matrixA6 = intphi_over(i)*folding(j,i,f2,dim_quad,1)/(4*PI)
-        else
-           matrixA6 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
-        end if
+        matrixA6 = intphi_over(i)*foldingG(size(intG_x,2)-1,node_coordinates(i,:),j,k_wave)
       end if
-     ! end do
   end if
 end function matrixA6
 
@@ -204,6 +170,7 @@ double complex function approximateu4(x)
   !$OMP DEFAULT(SHARED) PRIVATE(nt)
   do i=1,numnodes
      nt = OMP_GET_THREAD_NUM()
+     if (norm(node_coordinates(i,:)-x) < 1.5*hval) then
      call integrate(                &
           fjacobian,                &
           nstroke_coordinates(i,:), &
@@ -213,6 +180,9 @@ double complex function approximateu4(x)
           quadphi_over(:,2),        &
           nt)
      s(i) = q_density(i) * folding(i,i,fAmn,dim_quad,nt)
+     else
+        s(i) = q_density(i) * foldingG(size(intG_x,2)-1,x,i,k_wave)
+     end if
   end do
   !$OMP END PARALLEL DO
 

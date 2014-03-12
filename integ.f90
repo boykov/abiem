@@ -12,9 +12,9 @@ contains
     integer, intent(in) :: i,j
     double precision, intent(in), dimension(:) :: x
     double precision, dimension(size(x)) :: y
-    y(:) = x(:) + node_coordinates(i,:)
+    y(:) = x(:) + node_coordinates(i,:) - y_tmp(:)
 
-    fAmn = phi(x,i,hval**2)*Amn(y_tmp,y,k_wave)
+    fAmn = phi(x,i,hval**2)*Amn(y/2,-y/2,k_wave)
   end function fAmn
 
   double complex function f2(x,i,j)
@@ -130,10 +130,11 @@ contains
     ptr_jacobian => fjacobian
   end subroutine setup_calcomp
 
-  double complex function foldingG(N,i,j,k)
+  double complex function foldingG(N,y,j,k)
     use fast_dbsym
     double complex, intent(in) :: k
-    integer, intent(in) :: i,j,N
+    double precision, intent(in), dimension(:) :: y
+    integer, intent(in) :: j,N
     integer :: l,m
     double precision, dimension(3) :: x
     double complex :: s
@@ -141,18 +142,17 @@ contains
     s = 0.0
     do l = 0,N
        do m = -l, l
-          x(:) = node_coordinates(i,:) - node_coordinates(j,:)
-          s = s + G_y(x,k_wave,l,m) * intG_x(j,l+1,size(intG_x,2)+m)
+          x(:) = y(:) - node_coordinates(j,:)
+          s = s + G_y(x(:),k,l,m) * intG_x(j,l+1,size(intG_x,2)+m)
        end do
     end do
-    print *, cdexp((0,1)*k_wave*norm(x))/(4*PI*norm(x)) * intphi_over(j)
     foldingG = s
   end function foldingG
 
   subroutine calcomp()
     use omp_lib
     use dbsym
-    use fast_dbsym
+    use fast_dbsym, PI_new => PI
     integer :: j_tmp, j_init
     integer i, nt
     integer l,m
@@ -166,8 +166,6 @@ contains
 
     call OMP_SET_NUM_THREADS(4)
 
-    do j_tmp=j_init,numnodes
-       gauss(:,6) = 0
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt, k1, hval2, x)
     do i=1,numnodes
@@ -199,50 +197,72 @@ contains
        end if
 
        if (gauss6) then
-          do j=1,max_neighbors
-             k1 = node_neighbors1(j_tmp,j)
-             if (k1 .eq. i) then
-                gauss(k1, 6) = gauss(k1, 6) + folding(k1,j_tmp,f3,dim_quad,nt)
-                exit
-             end if
-             if ((k1 .eq. 0)) then
-                gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,nt)
-                exit
-             end if
-          end do
-          
-          if (i .eq. j_tmp) then
-             hval2 = hval**2
-             call integrate(                    &
-                  fjacobian2,                   &
-                  nstroke_coordinates(j_tmp,:), &
-                  node_coordinates(j_tmp,:),    &
-                  j_tmp,                        &
-                  quadphi_under(:,1),           &
-                  quadphi_under(:,2),           &
-                  nt)
+          do j_tmp=j_init,numnodes
              do j=1,max_neighbors
                 k1 = node_neighbors1(j_tmp,j)
-                if (k1 .eq. 0) exit
-                gauss(k1, 6) = gauss(k1, 6) + folding(j_tmp,k1,f4,dim_quad,nt)
+                if (k1 .eq. i) then
+                   int_neighbors1(j_tmp,j) = int_neighbors1(j_tmp,j) + folding(k1,j_tmp,f3,dim_quad,nt)
+                   exit
+                end if
+                if ((k1 .eq. 0)) then
+                   exit
+                end if
              end do
-             hval2 = hval * hval
-          end if
-       end if
+          end do
 
-       call integrate(                &
-            fjacobian2,               &
-            nstroke_coordinates(i,:), &
-            node_coordinates(i,:),    &
-            i,                        &
-            quadphi_under(:,1),       &
-            quadphi_under(:,2),       &
-            nt)
-       intphi_under(i) = folding(i,i,f,dim_quad,nt)
+          hval2 = hval**2
+          call integrate(                &
+               fjacobian2,               &
+               nstroke_coordinates(i,:), &
+               node_coordinates(i,:),    &
+               i,                        &
+               quadphi_under(:,1),       &
+               quadphi_under(:,2),       &
+               nt)
+          intphi_under(i) = folding(i,i,f,dim_quad,nt)
+          do j=1,max_neighbors
+             k1 = node_neighbors1(i,j)
+             if (k1 .eq. 0) exit
+             int_neighbors1(i,j) = int_neighbors1(i,j) + folding(i,k1,f4,dim_quad,nt)
+          end do
+          hval2 = hval * hval
+       end if
     end do
     !$OMP END PARALLEL DO
-    gauss(j_tmp,7) = - (sum(gauss(1:j_tmp-1,6)) + sum(gauss(j_tmp+1:numnodes,6)))/(4*3.14159265358979324D0)
-    end do
+
+    if (gauss6) then
+       do j_tmp=j_init,numnodes
+          gauss(:,6) = 0
+          do i=1,numnodes
+             do j=1,max_neighbors
+                k1 = node_neighbors1(j_tmp,j)
+                if (k1 .eq. i) then
+                   gauss(k1, 6) = int_neighbors1(j_tmp,j)
+                   exit
+                end if
+                if ((k1 .eq. 0)) then
+                   if (qbx) then
+                      gauss(i,6) = gauss(i, 6) + foldingG(size(intG_x,2)-1,node_coordinates(j_tmp,:),i,k_wave)*(4*PI)
+                   else
+                      call integrate(                &
+                           fjacobian,                &
+                           nstroke_coordinates(i,:), &
+                           node_coordinates(i,:),    &
+                           i,                        &
+                           quadphi_over(:,1),        &
+                           quadphi_over(:,2),        &
+                           1)
+                      gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,1)
+                   end if
+                   exit
+                end if
+             end do
+          end do
+
+          gauss(j_tmp,7) = - (sum(gauss(1:j_tmp-1,6)) + sum(gauss(j_tmp+1:numnodes,6)))/(4*PI)
+       end do
+    end if
+
   end subroutine calcomp
 
 !       _       _

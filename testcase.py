@@ -170,7 +170,7 @@ class testBIE(object):
         if self.P.flagTestQBX:
             self.assertAlmostEqual(
                 self.P.gauss[30,5]/(4*math.pi),
-                integ.foldingg(5,self.P.numnodes,31,self.P.k_wave),
+                integ.foldingg(5,self.P.node_coordinates[self.P.numnodes-1,:],31,self.P.k_wave),
                 places = self.P.qbx_places)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
@@ -211,17 +211,33 @@ class testBIEsmall(testBIE, unittest.TestCase):
 class testBIEsmall6(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
-    tmpP.under_places = 5
+    tmpP.under_places = 4
+    tmpP.k_wave = 0.1
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
+    tmpP.qbx_places = 8
+    tmpP.flagTestQBX = True
     tmpP.flagTestUnder = True
-    tmpP.slae_tol = 0.003
-    tmpP.slae_places = 3
+    tmpP.slae_tol = 0.00006
+    tmpP.slae_places = 5
+
+class testBIEmicro6(testBIE, unittest.TestCase):
+    tmpP = params(50)
+    tmpP.integ_places = 2
+    tmpP.under_places = 3
+    tmpP.k_wave = 0.1
+    tmpP.name_approximateu = 'integ.approximateu4'
+    tmpP.name_matrixa = 'integ.matrixa6'
+    tmpP.qbx_places = 8
+    tmpP.flagTestQBX = True
+    tmpP.flagTestUnder = True
+    tmpP.slae_tol = 0.01
+    tmpP.slae_places = 2
 
 class testBIEsmallQBX(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
-    tmpP.under_places = 5
+    tmpP.under_places = 4
     tmpP.k_wave = 1
     tmpP.flagTestUnder = True
     tmpP.qbx_places = 8
