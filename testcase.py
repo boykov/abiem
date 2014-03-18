@@ -39,16 +39,16 @@ class params(common):
         self.under_places = 3
         self.qbx_places = 5
         self.orderquad = 20
-        self.eps_matgen = 1e-4
+        self.eps_matgen = 1e-7
         self.eps_aggl = self.eps_matgen
-        self.eps_gmres = self.eps_matgen*0.01
+        self.eps_gmres = self.eps_matgen*10
         self.steps_gmres = 20*self.numpoints
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
         self.flagMemo = False
         self.flagTestUnder = False
-        self.flagTestQBX = False
+        self.flagNeedQBX = False
         self.flagTestQBX_gauss6 = False
 
     def initAHMED(self):
@@ -111,7 +111,7 @@ class params(common):
         self.setObjInteg(integ)
 
         integ.set_l_ptr("gauss6", (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder))
-        integ.set_l_ptr("qbx", (self.flagTestQBX))
+        integ.set_l_ptr("qbx", (self.flagNeedQBX))
         integ.set_l_ptr("qbx_gauss6", (self.flagTestQBX_gauss6))
         integ.set_l_ptr("matrixa6_p", (self.name_matrixa == 'integ.matrixa6'))
         integ.set_l_ptr("use_int_neighbors_p", self.use_int_neighbors_p)
@@ -213,6 +213,20 @@ class testBIEsmallNG(testBIE, unittest.TestCase):
     tmpP.slae_tol = 0.009
     tmpP.slae_places = 3
 
+class testBIEmediumQBX(testBIE, unittest.TestCase):
+    tmpP = params(1600)
+    tmpP.integ_places = 7
+    tmpP.under_places = 7
+    tmpP.k_wave = 0.1
+    tmpP.orderquad = 30
+    tmpP.dim_intG = 7
+    tmpP.flagTestUnder = True
+    tmpP.qbx_places = 7
+    tmpP.flagNeedQBX = True
+    tmpP.flagTestQBX_gauss6 = False
+    tmpP.slae_tol = 0.0003
+    tmpP.slae_places = 4
+
 class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
@@ -229,10 +243,26 @@ class testBIEsmall6(testBIE, unittest.TestCase):
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
     tmpP.qbx_places = 6
-    tmpP.flagTestQBX = True
+    tmpP.flagNeedQBX = True
     tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.00005
     tmpP.slae_places = 5
+
+class testBIEmedium6(testBIE, unittest.TestCase):
+    tmpP = params(1600)
+    tmpP.integ_places = 7
+    tmpP.under_places = 7
+    tmpP.k_wave = 0.1
+    tmpP.orderquad = 30
+    tmpP.dim_intG = 7
+    tmpP.name_approximateu = 'integ.approximateu4'
+    tmpP.name_matrixa = 'integ.matrixa6'
+    tmpP.qbx_places = 7
+    tmpP.flagNeedQBX = True
+    tmpP.flagTestUnder = True
+    tmpP.flagTestQBX_gauss6 = True
+    tmpP.slae_tol = 0.000002
+    tmpP.slae_places = 6
 
 class testBIEmicro6(testBIE, unittest.TestCase):
     tmpP = params(50)
@@ -242,7 +272,7 @@ class testBIEmicro6(testBIE, unittest.TestCase):
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
     tmpP.qbx_places = 8
-    tmpP.flagTestQBX = True
+    tmpP.flagNeedQBX = True
     tmpP.flagTestUnder = True
     tmpP.slae_tol = 0.01
     tmpP.slae_places = 2
@@ -254,7 +284,7 @@ class testBIEsmallQBX(testBIE, unittest.TestCase):
     tmpP.k_wave = 1
     tmpP.flagTestUnder = True
     tmpP.qbx_places = 6
-    tmpP.flagTestQBX = True
+    tmpP.flagNeedQBX = True
     tmpP.flagTestQBX_gauss6 = False
     tmpP.slae_tol = 0.007
     tmpP.slae_places = 3
