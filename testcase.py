@@ -112,6 +112,7 @@ class params(common):
         integ.set_l_ptr("gauss6", (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder))
         integ.set_l_ptr("qbx", (self.flagTestQBX))
         integ.set_l_ptr("matrixa6_p", (self.name_matrixa == 'integ.matrixa6'))
+        integ.set_l_ptr("use_int_neighbors_p", self.use_int_neighbors_p)
 
         integ.calcomp()
         self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]

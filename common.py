@@ -20,6 +20,7 @@ common_names = {
     "gauss6"              : [lambda (s): False               , 0, "l", "phi"],
     "qbx"                 : [lambda (s): False               , 0, "l", "phi"],
     "matrixa6_p"          : [lambda (s): False               , 0, "l", "phi"],
+    "use_int_neighbors_p" : [lambda (s): False               , 0, "l", "phi"],
 
     "numnodes"            : [lambda (s): s.N    , 10, "i", "phi"],
     "hval"                : [lambda (s): s.h    , 10, "dp", "phi"],
@@ -27,7 +28,7 @@ common_names = {
 
     "node_coordinates"    : [lambda (s): zeros((s.numnodes,3), order = 'Fortran') , 11, "dp2d", "phi"],
     "normal_coordinates"  : [lambda (s): zeros((s.numnodes,3), order = 'Fortran') , 11, "dp2d", "phi"],
-    "int_neighbors1"           : [lambda (s): zeros((s.numnodes,s.max_neighbors),
+    "int_neighbors1"      : [lambda (s): zeros((s.numnodes,s.max_neighbors),
                                                dtype = complex, order = 'Fortran'), 11, "dc2d", "phi"],
     "node_neighbors1"     : [lambda (s): zeros((s.numnodes,s.max_neighbors),
                                                dtype = int32, order = 'Fortran')  , 11, "i2d", "phi"],

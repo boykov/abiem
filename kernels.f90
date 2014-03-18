@@ -54,7 +54,14 @@ double complex function matrixA6(i,j)
   y = node_coordinates(j,:)
 
   if (i .eq. j) then
-     matrixA6 = intphi_over(i) * (gauss(i,4) + gauss(i,7))
+     if (use_int_neighbors_p) then
+        do jj=1, max_neighbors
+           kj = node_neighbors1(i,jj)
+           if (kj .eq. i) matrixA6 = intphi_over(i) * int_neighbors1(i,jj)/(4*PI)
+        end do
+     else
+        matrixA6 = intphi_over(i) * (gauss(i,4) + gauss(i,7))
+     end if
   else
      do jj=1, max_neighbors
         kj = node_neighbors1(i,jj)
