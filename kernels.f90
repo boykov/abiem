@@ -56,20 +56,20 @@ double complex function matrixA6(i,j)
   if (i .eq. j) then
      if (use_int_neighbors_p) then
         do jj=1, max_neighbors
-           kj = node_neighbors1(i,jj)
-           if (kj .eq. i) matrixA6 = intphi_over(i) * int_neighbors1(i,jj)/(4*PI)
+           kj = node_neighbors2(i,jj)
+           if (kj .eq. i) matrixA6 = intphi_over(i) * int_neighbors2(i,jj)/(4*PI)
         end do
      else
         matrixA6 = intphi_over(i) * (gauss(i,4) + gauss(i,7))
      end if
   else
      do jj=1, max_neighbors
-        kj = node_neighbors1(i,jj)
+        kj = node_neighbors2(i,jj)
         if (kj .eq. j) exit
         kj = 0
      end do
      if (kj > 0) then
-        matrixA6 = intphi_over(i)*int_neighbors1(i,jj)/(4*PI)
+        matrixA6 = intphi_over(i)*int_neighbors2(i,jj)/(4*PI)
      else
         matrixA6 = intphi_over(i)*foldingG(size(intG_x,2)-1,node_coordinates(i,:),j,k_wave)
       end if

@@ -199,9 +199,9 @@ contains
        if (gauss6) then
           do j_tmp=j_init,numnodes
              do j=1,max_neighbors
-                k1 = node_neighbors1(j_tmp,j)
+                k1 = node_neighbors2(j_tmp,j)
                 if (k1 .eq. i) then
-                   int_neighbors1(j_tmp,j) = int_neighbors1(j_tmp,j) + folding(k1,j_tmp,f3,dim_quad,nt)
+                   int_neighbors2(j_tmp,j) = int_neighbors2(j_tmp,j) + folding(k1,j_tmp,f3,dim_quad,nt)
                    exit
                 end if
                 if ((k1 .eq. 0)) then
@@ -221,9 +221,9 @@ contains
                nt)
           intphi_under(i) = folding(i,i,f,dim_quad,nt)
           do j=1,max_neighbors
-             k1 = node_neighbors1(i,j)
+             k1 = node_neighbors2(i,j)
              if (k1 .eq. 0) exit
-             int_neighbors1(i,j) = int_neighbors1(i,j) + folding(i,k1,f4,dim_quad,nt)
+             int_neighbors2(i,j) = int_neighbors2(i,j) + folding(i,k1,f4,dim_quad,nt)
           end do
           hval2 = hval * hval
        end if
@@ -235,9 +235,9 @@ contains
           gauss(:,6) = 0
           do i=1,numnodes
              do j=1,max_neighbors
-                k1 = node_neighbors1(j_tmp,j)
+                k1 = node_neighbors2(j_tmp,j)
                 if (k1 .eq. i) then
-                   gauss(k1, 6) = int_neighbors1(j_tmp,j)
+                   gauss(k1, 6) = int_neighbors2(j_tmp,j)
                    exit
                 end if
                 if ((k1 .eq. 0)) then

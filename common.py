@@ -30,6 +30,8 @@ common_names = {
     "normal_coordinates"  : [lambda (s): zeros((s.numnodes,3), order = 'Fortran') , 11, "dp2d", "phi"],
     "int_neighbors1"      : [lambda (s): zeros((s.numnodes,s.max_neighbors),
                                                dtype = complex, order = 'Fortran'), 11, "dc2d", "phi"],
+    "int_neighbors2"      : [lambda (s): zeros((s.numnodes,s.max_neighbors),
+                                               dtype = complex, order = 'Fortran'), 11, "dc2d", "phi"],
     "node_neighbors1"     : [lambda (s): zeros((s.numnodes,s.max_neighbors),
                                                dtype = int32, order = 'Fortran')  , 11, "i2d", "phi"],
     "node_neighbors2"     : [lambda (s): zeros((s.numnodes,s.max_neighbors),
