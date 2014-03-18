@@ -49,6 +49,7 @@ class params(common):
         self.flagMemo = False
         self.flagTestUnder = False
         self.flagTestQBX = False
+        self.flagTestQBX_gauss6 = False
 
     def initAHMED(self):
         """
@@ -111,6 +112,7 @@ class params(common):
 
         integ.set_l_ptr("gauss6", (self.name_matrixa == 'integ.matrixa6' or self.flagTestUnder))
         integ.set_l_ptr("qbx", (self.flagTestQBX))
+        integ.set_l_ptr("qbx_gauss6", (self.flagTestQBX_gauss6))
         integ.set_l_ptr("matrixa6_p", (self.name_matrixa == 'integ.matrixa6'))
         integ.set_l_ptr("use_int_neighbors_p", self.use_int_neighbors_p)
 
@@ -168,11 +170,18 @@ class testBIE(object):
                 places = self.P.under_places)
 
     def testQBX(self):
-        if self.P.flagTestQBX:
-            self.assertAlmostEqual(
-                self.P.gauss[30,5]/(4*math.pi),
-                integ.foldingg(5,self.P.node_coordinates[self.P.numnodes-1,:],31,self.P.k_wave),
-                places = self.P.qbx_places)
+        if (not self.P.flagTestQBX_gauss6):
+            for nj in range(self.P.numnodes-1,self.P.numnodes):
+                for i in range(0,self.P.numnodes):
+                    for j in range(0,self.P.max_neighbors):
+                        kj = self.P.node_neighbors2[nj,j]
+                        if (kj-1 == i):
+                            break
+                    if ((kj == 0)):
+                        self.assertAlmostEqual(
+                                self.P.gauss[i,5]/(4*math.pi),
+                                integ.foldingg(self.P.dim_intG,self.P.node_coordinates[nj,:],i+1,self.P.k_wave),
+                                places = self.P.qbx_places)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)
@@ -219,10 +228,10 @@ class testBIEsmall6(testBIE, unittest.TestCase):
     tmpP.k_wave = 0.1
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
-    tmpP.qbx_places = 8
+    tmpP.qbx_places = 6
     tmpP.flagTestQBX = True
     tmpP.flagTestUnder = True
-    tmpP.slae_tol = 0.00006
+    tmpP.slae_tol = 0.00005
     tmpP.slae_places = 5
 
 class testBIEmicro6(testBIE, unittest.TestCase):
@@ -241,11 +250,12 @@ class testBIEmicro6(testBIE, unittest.TestCase):
 class testBIEsmallQBX(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
-    tmpP.under_places = 4
+    tmpP.under_places = 5
     tmpP.k_wave = 1
     tmpP.flagTestUnder = True
-    tmpP.qbx_places = 8
+    tmpP.qbx_places = 6
     tmpP.flagTestQBX = True
+    tmpP.flagTestQBX_gauss6 = False
     tmpP.slae_tol = 0.007
     tmpP.slae_places = 3
 

@@ -19,6 +19,7 @@ common_names = {
     "axes"                : [lambda (s): zeros((3))          , 0, "dp1d", "phi"],
     "gauss6"              : [lambda (s): False               , 0, "l", "phi"],
     "qbx"                 : [lambda (s): False               , 0, "l", "phi"],
+    "qbx_gauss6"          : [lambda (s): False               , 0, "l", "phi"],
     "matrixa6_p"          : [lambda (s): False               , 0, "l", "phi"],
     "use_int_neighbors_p" : [lambda (s): False               , 0, "l", "phi"],
 

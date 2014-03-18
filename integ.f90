@@ -241,9 +241,9 @@ contains
                    exit
                 end if
                 if ((k1 .eq. 0)) then
-                   if (qbx) then
                       gauss(i,6) = gauss(i, 6) + foldingG(size(intG_x,2)-1,node_coordinates(j_tmp,:),i,k_wave)*(4*PI)
                    else
+                   if (qbx_gauss6) then
                       call integrate(                &
                            fjacobian,                &
                            nstroke_coordinates(i,:), &
