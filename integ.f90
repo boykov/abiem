@@ -191,7 +191,7 @@ contains
                    end do
                 end do
 
-                intG_x(i,l+1,size(intG_x,2)+m) = foldingarr(farr,dim_quad, nt)
+                intG_x(i,l+1,dim_intG+1+m) = foldingarr(farr,dim_quad, nt)
              end do
           end do
        end if
@@ -241,9 +241,9 @@ contains
                    exit
                 end if
                 if ((k1 .eq. 0)) then
-                      gauss(i,6) = gauss(i, 6) + foldingG(size(intG_x,2)-1,node_coordinates(j_tmp,:),i,k_wave)*(4*PI)
-                   else
                    if (qbx_gauss6) then
+                      gauss(i,6) = gauss(i, 6) + foldingG(dim_intG,node_coordinates(j_tmp,:),i,k_wave)*(4*PI)
+                      else
                       call integrate(                &
                            fjacobian,                &
                            nstroke_coordinates(i,:), &

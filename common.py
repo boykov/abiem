@@ -15,6 +15,7 @@ common_names = {
     "PI"                  : [lambda (s): 3.14159265358979324 , 0, "dp", "phi"],
     "max_neighbors"       : [lambda (s): 100                 , 0, "i", "phi"],
     "dim_3d"              : [lambda (s): 3                   , 0, "i", "phi"],
+    "dim_intG"            : [lambda (s): 5                   , 0, "i", "phi"],
     "k_wave"              : [lambda (s): 0                   , 0, "dc", "phi"],
     "axes"                : [lambda (s): zeros((3))          , 0, "dp1d", "phi"],
     "gauss6"              : [lambda (s): False               , 0, "l", "phi"],
@@ -48,9 +49,9 @@ common_names = {
                                                dtype = complex, order = 'Fortran'), 11, "dc2d", "integ"],
 
     "q_density"           : [lambda (s): zeros((s.numnodes), dtype = complex)     , 11, "dc1d", "integ"],
-    "intG_x"              : [lambda (s): zeros((s.numnodes,6,11),
+    "intG_x"              : [lambda (s): zeros((s.numnodes,s.dim_intG + 1,2*s.dim_intG + 1),
                                                dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
-    "valG_y"              : [lambda (s): zeros((s.numnodes,6,11),
+    "valG_y"              : [lambda (s): zeros((s.numnodes,s.dim_intG + 1,2*s.dim_intG + 1),
                                                dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
 
     "dim_quad"            : [lambda (s): s.q, 20, "i", "integ"],

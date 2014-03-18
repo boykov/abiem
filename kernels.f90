@@ -71,7 +71,7 @@ double complex function matrixA6(i,j)
      if (kj > 0) then
         matrixA6 = intphi_over(i)*int_neighbors2(i,jj)/(4*PI)
      else
-        matrixA6 = intphi_over(i)*foldingG(size(intG_x,2)-1,node_coordinates(i,:),j,k_wave)
+        matrixA6 = intphi_over(i)*foldingG(dim_intG,node_coordinates(i,:),j,k_wave)
       end if
   end if
 end function matrixA6
@@ -188,7 +188,7 @@ double complex function approximateu4(x)
           nt)
      s(i) = q_density(i) * folding(i,i,fAmn,dim_quad,nt)
      else
-        s(i) = q_density(i) * foldingG(size(intG_x,2)-1,x,i,k_wave)
+        s(i) = q_density(i) * foldingG(dim_intG,x,i,k_wave)
      end if
   end do
   !$OMP END PARALLEL DO
