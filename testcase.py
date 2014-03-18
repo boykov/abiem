@@ -191,7 +191,10 @@ class testBIEtest(testBIE, unittest.TestCase):
 class testBIEinteg(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.orderquad = 160
+    tmpP.k_wave = 0.1
     tmpP.integ_places = 9
+    tmpP.under_places = 8
+    tmpP.flagTestUnder = True
 
 class testBIEsmallNG(testBIE, unittest.TestCase):
     tmpP = params(200)
