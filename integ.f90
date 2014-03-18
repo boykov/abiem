@@ -137,13 +137,15 @@ contains
     integer, intent(in) :: j,N
     integer :: l,m
     double precision, dimension(3) :: x
+    double complex, dimension(N+1) :: tmp
     double complex :: s
 
+    x(:) = y(:) - node_coordinates(j,:)
+    tmp = aspherical_hankel_n(N,realpart(k_wave)*norm(x))
     s = 0.0
     do l = 0,N
        do m = -l, l
-          x(:) = y(:) - node_coordinates(j,:)
-          s = s + G_y(x(:),k,l,m) * intG_x(j,l+1,size(intG_x,2)+m)
+          s = s + tmp(l+1) * G_harmonic_y(x(:),k,l,m) * intG_x(j,l+1,dim_intG+1+m)
        end do
     end do
     foldingG = s
@@ -152,7 +154,7 @@ contains
   subroutine calcomp()
     use omp_lib
     use dbsym
-    use fast_dbsym, PI_new => PI
+    use fast_dbsym, PI_new => PI, norm_new => norm
     integer :: j_tmp, j_init
     integer i, nt
     integer l,m
@@ -181,13 +183,21 @@ contains
        intphi_over(i) = folding(i,i,f,dim_quad,nt)
 
        if (qbx) then
-          do l=0,size(intG_x,2)-1
+          do iz=1,dim_quad
+             do ik=1,4*dim_quad
+                x(:) = nodes(nt+1,iz,ik,:)
+                cache_phi(nt+1,iz,ik) = phi(x,i,hval**2)
+                cache_bessel_jn(nt+1,iz,ik,:) = aspherical_bessel_jn(dim_intG,realpart(k_wave)*norm(x))
+             end do
+          end do
+
+          do l=0,dim_intG
              do m =-l,l
 
                 do iz=1,dim_quad
                    do ik=1,4*dim_quad
                       x(:) = nodes(nt+1,iz,ik,:)
-                      farr(nt+1,iz,ik) = G_x(x,k_wave,l,m)*phi(x,i,hval**2)
+                      farr(nt+1,iz,ik) = cache_bessel_jn(nt+1,iz,ik,l+1)*G_harmonic_x(x,k_wave,l,m)*cache_phi(nt+1,iz,ik)
                    end do
                 end do
 

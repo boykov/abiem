@@ -66,6 +66,10 @@ common_names = {
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
     "farr"                : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
+    "cache_phi"           : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad),
+                                               dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
+    "cache_bessel_jn"     : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad,s.dim_intG + 1),
+                                               order = 'Fortran')                 , 21, "dp4d", "integ"],
     "nodes"               : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad,3),
                                                order = 'Fortran')                 , 21, "dp4d", "integ"]}
 
