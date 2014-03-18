@@ -170,7 +170,7 @@ class testBIE(object):
                 places = self.P.under_places)
 
     def testQBX(self):
-        if (not self.P.flagTestQBX_gauss6):
+        if (self.P.flagNeedQBX and (not self.P.flagTestQBX_gauss6)):
             for nj in range(self.P.numnodes-1,self.P.numnodes):
                 for i in range(0,self.P.numnodes):
                     for j in range(0,self.P.max_neighbors):
