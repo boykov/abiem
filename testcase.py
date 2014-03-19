@@ -245,6 +245,7 @@ class testBIEsmall6(testBIE, unittest.TestCase):
     tmpP.qbx_places = 6
     tmpP.flagNeedQBX = True
     tmpP.flagTestUnder = True
+    tmpP.flagTestQBX_gauss6 = True
     tmpP.slae_tol = 0.00005
     tmpP.slae_places = 5
 
