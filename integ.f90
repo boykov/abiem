@@ -120,7 +120,7 @@ contains
             quadsingular(:,1),     &
             quadsingular(:,2),     &
             nt)
-       gauss(i,4) = folding(i,i,one,dim_quad,nt)
+       gauss(i,4) = sum(jacobian_sing(nt + 1,:,:)) ! folding(i,i,one,dim_quad,nt)
     end do
     !$OMP END PARALLEL DO
   end function calcsing
@@ -337,7 +337,7 @@ contains
           ! end do
 
           jac =  f(axes,p,rh,ph,ispole,k_wave)
-          jacobian(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
+          jacobian_sing(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
        end do
     end do
 

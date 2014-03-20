@@ -39,6 +39,7 @@ class params(common):
         self.under_places = 3
         self.qbx_places = 5
         self.orderquad = 20
+        self.orderquad_sing = 20
         self.eps_matgen = 1e-7
         self.eps_aggl = self.eps_matgen
         self.eps_gmres = self.eps_matgen*10
@@ -71,11 +72,12 @@ class params(common):
         slaeahmed.solve_slae()
         slaeahmed.get_q(self.q_density)
 
-    def initQuad(self, orderquad):
+    def initQuad(self, orderquad, orderquad_sing):
         import scipy.special.orthogonal as op
         self.data.orderquad = orderquad
+        self.data.orderquad_sing = orderquad_sing
         self.data.setupquad()
-        self.level2(self.data.orderquad)
+        self.level2(self.data.orderquad, self.data.orderquad_sing)
 
         self.quadphi_over[:,0] = op.j_roots(self.orderquad,0,1)[0]
         self.quadphi_over[:,1] = op.j_roots(self.orderquad,0,1)[1]
@@ -128,7 +130,7 @@ class testBIE(object):
         logging.basicConfig(level=logging.DEBUG)
         self.P = self.tmpP
         self.P.data.k = self.P.k_wave # TODO cleanup
-        self.P.initQuad(self.P.orderquad)
+        self.P.initQuad(self.P.orderquad, self.P.orderquad_sing)
         self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()

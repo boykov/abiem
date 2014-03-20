@@ -55,14 +55,17 @@ common_names = {
                                                dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
 
     "dim_quad"            : [lambda (s): s.q, 20, "i", "integ"],
+    "dim_quad_sing"       : [lambda (s): s.q_sing, 20, "i", "integ"],
 
 
     "quadphi_over"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
     "quadphi_under"       : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
-    "quadsingular"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
+    "quadsingular"        : [lambda (s): zeros((s.dim_quad_sing,2),order = 'Fortran')  , 21, "dp2d", "integ"],
     "centres"             : [lambda (s): zeros((s.dim_quad))                      , 21, "dp1d", "integ"],
     "weights"             : [lambda (s): zeros((s.dim_quad))                      , 21, "dp1d", "integ"],
     "jacobian"            : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
+                                               dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
+    "jacobian_sing"       : [lambda (s): zeros((4,s.dim_quad_sing,4*s.dim_quad_sing),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
     "farr"                : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
@@ -137,8 +140,9 @@ class common():
             if common_names[n][1]==11:
                 setattr(self, n, common_names[n][0](self))
 
-    def level2(self, q):
+    def level2(self, q, q_sing):
         self.q = q
+        self.q_sing = q_sing
         for n in common_names.keys():
             if common_names[n][1]==20:
                 setattr(self, n, common_names[n][0](self))
