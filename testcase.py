@@ -7,6 +7,7 @@
 __author__ = "Evgeny Boykov. <artscan@list.ru>"
 
 import unittest
+from datetime import datetime
 from ellipsoid import ellipsoid
 from dataelement import *
 from numpy import *
@@ -33,6 +34,7 @@ class params(common):
         self.name_matrixa = 'integ.matrixa'
         self.name_vectorb = 'integ.vectorb'
         self.name_approximateu = 'integ.approximateu'
+        self.test_seconds = 10
         self.integ_places = 4
         self.slae_tol = 0.0
         self.slae_places = 0
@@ -125,6 +127,7 @@ class params(common):
 class testBIE(object):
     @classmethod
     def setUpClass(self):
+        tick = datetime.now()
         logging.basicConfig(level=logging.DEBUG)
         self.P = self.tmpP
         self.P.data.k = self.P.k_wave # TODO cleanup
@@ -134,6 +137,12 @@ class testBIE(object):
         self.P.initInteg()
         self.P.initAHMED()
         logging.debug("counter = " + str(self.P.counter))
+        tock = datetime.now()
+        self.diff = tock - tick
+        print "seconds: ", self.diff.seconds
+
+    def testSeconds(self):
+        self.assertLess(self.diff.seconds, self.P.test_seconds)
 
     def testEllipsoid(self):
         self.assertAlmostEqual(
@@ -232,6 +241,7 @@ class testBIEsmall(testBIE, unittest.TestCase):
     tmpP.integ_places = 5
     tmpP.under_places = 5
     tmpP.flagTestUnder = True
+    tmpP.test_seconds = 15
     tmpP.slae_tol = 0.003
     tmpP.slae_places = 3
 
