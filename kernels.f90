@@ -198,6 +198,55 @@ double complex function approximateu4(x)
   deallocate(s)
 end function approximateu4
 
+double complex function approximateu5(x)
+  use omp_lib
+  use dbsym
+  double precision, intent(in), dimension(:) :: x
+  integer :: i
+  double complex, dimension(:), allocatable :: s
+  integer :: jj, kj,j
+
+  allocate(s(numnodes))
+
+  call OMP_SET_NUM_THREADS(4)
+  do i=1,numnodes
+     if (norm(node_coordinates(i,:) - x(:)) .le. 1.0E-8) j=i
+  end do
+
+  y_tmp(:) = x(:)
+  !$OMP PARALLEL DO &
+  !$OMP DEFAULT(SHARED) PRIVATE(nt)
+  do i=1,numnodes
+     nt = OMP_GET_THREAD_NUM()
+     if (i .eq. j) then
+        if (use_int_neighbors_p) then
+           do jj=1, max_neighbors
+              kj = node_neighbors2(i,jj)
+              if (kj .eq. i) s(i) = q_density(i) * int_neighbors2(i,jj)/(4*PI)
+           end do
+        else
+           s(i) = q_density(i) * (gauss(i,4) + gauss(i,7))
+        end if
+     else
+        do jj=1, max_neighbors
+           kj = node_neighbors2(j,jj)
+           if (kj .eq. i) exit
+           kj = 0
+        end do
+        if (kj > 0) then
+           s(i) = q_density(i)*int_neighbors2(j,jj)/(4*PI)
+        else
+           s(i) = q_density(i)*foldingG(dim_intG,node_coordinates(j,:),i,k_wave)
+        end if
+     end if
+  end do
+  !$OMP END PARALLEL DO
+
+  approximateu5 = sum(s(:))
+
+  deallocate(s)
+end function approximateu5
+
 
 double complex function approximateu(x)
   use omp_lib
