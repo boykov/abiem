@@ -121,6 +121,7 @@ class params(common):
 
         integ.setgauss()
         integ.calcsing()
+        integ.calcmicro()
 
 class testBIE(object):
     @classmethod
@@ -182,6 +183,25 @@ class testBIE(object):
                                 self.P.gauss[i,5]/(4*math.pi),
                                 integ.foldingg(self.P.dim_intG,self.P.node_coordinates[nj,:],i+1,self.P.k_wave),
                                 places = self.P.qbx_places)
+
+    def testlimA(self):
+        j = 0
+        sigma = math.sqrt(0.5*self.P.intphi_over[j]/(math.pi**2))
+        sigma_new = 2*self.P.intphi_over[j]/math.sqrt(2*math.pi)/self.P.intphi_under[j] # chiterstvo
+        print "sigma(1) = ", self.P.sigma[j], sigma, sigma_new
+        print "h = ", self.P.hval
+        print "phi = ", self.P.intphi_over[j]
+        limA = self.P.intphi_over[j]/((2*math.pi)**(1.5)*sigma)
+        print "phi*limA = ", limA
+        phi_r = self.P.intphi_under[j]/(4*math.pi)
+        print "under_micro ", self.P.intphi_over[j]*self.P.intphi_under_micro[j]/(4*math.pi)/self.P.intphi_micro[j]
+        print "over_micro ", self.P.intphi_micro[j]
+        print "phi/(4pi*r) = ", phi_r
+        print "*/* =", limA/phi_r
+        print "sum = ", sum(self.P.intphi_under[:])/(4*math.pi)
+        print "φ(r)/r full =", 0.691797810029
+        print "φ(r)/r - sum =", sum(self.P.intphi_under[:])/(4*math.pi) - self.P.gauss[0,2]
+        print "micro: lim = ", self.P.intphi_over[j]*self.P.intphi_under_micro[j]/(4*math.pi)
 
 class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP = params(800)

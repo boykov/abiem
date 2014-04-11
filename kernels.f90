@@ -89,7 +89,7 @@ double complex function matrixA(i,j)
 
   counter = counter + 1
   if (i .eq. j) then
-     matrixA = (intphi_over(i)**2)*limA(sigm,k_wave)
+     matrixA = (intphi_over(i)**2)*intphi_under_micro(i)/(4*PI)/intphi_micro(i) !*limA(sigm,k_wave)
   else
      matrixA = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
   end if

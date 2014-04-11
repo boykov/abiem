@@ -40,7 +40,9 @@ common_names = {
                                                dtype = int32, order = 'Fortran')  , 11, "i2d", "phi"],
     "nstroke_coordinates" : [lambda (s): zeros((s.numnodes,3), order = 'Fortran') , 11, "dp2d", "phi"],
     "intphi_over"         : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
+    "intphi_micro"        : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
     "intphi_under"        : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
+    "intphi_under_micro"  : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
     "area"                : [lambda (s): zeros((1))                               , 11, "dp1d", "integ"],
     "counter"             : [lambda (s): zeros((1))                               , 11, "dp1d", "integ"],
 

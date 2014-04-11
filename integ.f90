@@ -39,6 +39,12 @@ contains
     f = phi(x,i,hval**2)
   end function f
 
+  double complex function fdh(x,i,j)
+    integer, intent(in) :: i,j
+    double precision, intent(in), dimension(:) :: x
+    fdh = deltah(x,hval**2)
+  end function fdh
+
   double complex function f3(x,i,j)
     use dbsym
     integer, intent(in) :: i,j
@@ -150,6 +156,44 @@ contains
     end do
     foldingG = s
   end function foldingG
+
+
+  double precision function calcmicro()
+    use omp_lib
+    use dbsym
+    integer i, nt,iz,ik
+
+    call OMP_SET_NUM_THREADS(4)
+
+    hval = hval/4
+    hval2 = hval**2
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call integrate(                &
+            fjacobian,                &
+            nstroke_coordinates(i,:), &
+            node_coordinates(i,:),    &
+            i,                        &
+            quadphi_over(:,1),        &
+            quadphi_over(:,2),        &
+            nt)
+       intphi_micro(i) = folding(i,i,fdh,dim_quad,nt)
+       call integrate(                &
+            fjacobian2,               &
+            nstroke_coordinates(i,:), &
+            node_coordinates(i,:),    &
+            i,                        &
+            quadphi_under(:,1),       &
+            quadphi_under(:,2),       &
+            nt)
+       intphi_under_micro(i) = folding(i,i,fdh,dim_quad,nt)
+    end do
+    !$OMP END PARALLEL DO
+    hval = hval*4
+    hval2 = hval**2
+  end function calcmicro
 
   subroutine calcomp()
     use omp_lib
