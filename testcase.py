@@ -41,9 +41,7 @@ class params(common):
         self.under_places = 3
         self.qbx_places = 5
         self.orderquad = 20
-        self.eps_matgen = 1e-7
-        self.eps_aggl = self.eps_matgen
-        self.eps_gmres = self.eps_matgen*10
+        self.eps_matgen = 1e-5
         self.steps_gmres = 20*self.numpoints
         self.eta = 0.8
         self.bmin = 15
@@ -53,6 +51,12 @@ class params(common):
         self.flagNeedQBX = False
         self.flagTestQBX_gauss6 = False
 
+    def eps_aggl(self):
+        return self.eps_matgen
+
+    def eps_gmres(self):
+        return self.eps_matgen*10
+
     def initAHMED(self):
         """
         """
@@ -60,8 +64,8 @@ class params(common):
         self.points[:,:] = self.node_coordinates[:,:]
 
         slaeahmed.set_Hmatrix(self.eps_matgen,
-                              self.eps_aggl,
-                              self.eps_gmres,
+                              self.eps_aggl(),
+                              self.eps_gmres(),
                               self.steps_gmres,
                               self.eta,
                               self.bmin,
@@ -247,6 +251,8 @@ class testBIEsmall(testBIE, unittest.TestCase):
 
 class testBIEsmall6(testBIE, unittest.TestCase):
     tmpP = params(200)
+    tmpP.eps_matgen = 1e-6
+    tmpP.test_seconds = 30
     tmpP.integ_places = 5
     tmpP.under_places = 4
     tmpP.k_wave = 0.1
@@ -261,6 +267,7 @@ class testBIEsmall6(testBIE, unittest.TestCase):
 
 class testBIEmedium6(testBIE, unittest.TestCase):
     tmpP = params(1600)
+    tmpP.eps_matgen = 1e-7
     tmpP.integ_places = 7
     tmpP.under_places = 7
     tmpP.k_wave = 0.1
@@ -316,28 +323,42 @@ class testBIEmedium(testBIE, unittest.TestCase):
     tmpP.slae_tol = 0.0002
     tmpP.slae_places = 4
 
+class testBIEmedium3(testBIE, unittest.TestCase):
+    tmpP = params(3200)
+    tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.integ_places = 6
+    tmpP.test_seconds = 30
+    tmpP.slae_tol = 0.0004
+    tmpP.slae_places = 4
+
 class testBIEbig(testBIE, unittest.TestCase):
     tmpP = params(12800)
     tmpP.integ_places = 7
+    tmpP.eps_matgen = 1e-6
     tmpP.slae_tol = 0.00008
     tmpP.slae_places = 5
 
 class testBIEhuge3(testBIE, unittest.TestCase):
     tmpP = params(25600)
     tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.eps_matgen = 1e-6
     tmpP.integ_places = 6
+    tmpP.test_seconds = 450
     tmpP.slae_tol = 0.00007
     tmpP.slae_places = 5
 
 class testBIEhuge(testBIE, unittest.TestCase):
     tmpP = params(25600)
     tmpP.integ_places = 6
+    tmpP.eps_matgen = 1e-6
     tmpP.slae_tol = 0.00006
     tmpP.slae_places = 5
 
 class testBIEgig(testBIE, unittest.TestCase):
     tmpP = params(51200)
+    tmpP.name_matrixa = 'integ.matrixa3'
     tmpP.integ_places = 6
+    tmpP.eps_matgen = 1e-6
     tmpP.slae_tol = 0.00004
     tmpP.slae_places = 5
 
