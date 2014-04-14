@@ -23,6 +23,7 @@ from memo import memoize
 
 import logging
 from common import common
+import savearrays
 
 class params(common):
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
@@ -43,9 +44,11 @@ class params(common):
         self.orderquad = 20
         self.eps_matgen = 1e-5
         self.steps_gmres = 20*self.numpoints
+        self.eps_gmres_ = self.eps_gmres()
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
+        self.flagAHMED = True
         self.flagMemo = False
         self.flagTestUnder = False
         self.flagNeedQBX = False
@@ -139,7 +142,16 @@ class testBIE(object):
         self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()
-        self.P.initAHMED()
+        if self.P.flagAHMED:
+            self.P.initAHMED()
+        else:
+            te = savearrays.TaskElement()
+            te.initcover(self.P)
+            te.save(te.name_savearrays)
+            os.system("make -s solve")
+            te = te.load(te.name_savearrays)
+            self.P.q_density[:] = te.q[:]
+
         logging.debug("counter = " + str(self.P.counter))
         tock = datetime.now()
         self.diff = tock - tick
@@ -311,6 +323,7 @@ class testBIEsmall3(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.name_matrixa = 'integ.matrixa3'
     tmpP.orderquad = 20
+    tmpP.flagAHMED = False
     tmpP.integ_places = 5
     tmpP.slae_tol = 0.006
     tmpP.slae_places = 3
@@ -341,6 +354,7 @@ class testBIEbig(testBIE, unittest.TestCase):
 class testBIEhuge3(testBIE, unittest.TestCase):
     tmpP = params(25600)
     tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.flagAHMED = False
     tmpP.eps_matgen = 1e-6
     tmpP.integ_places = 6
     tmpP.test_seconds = 450
@@ -357,6 +371,7 @@ class testBIEhuge(testBIE, unittest.TestCase):
 class testBIEgig(testBIE, unittest.TestCase):
     tmpP = params(51200)
     tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.flagAHMED = False
     tmpP.integ_places = 6
     tmpP.eps_matgen = 1e-6
     tmpP.slae_tol = 0.00004

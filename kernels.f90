@@ -33,6 +33,20 @@ double complex function vectorb2(i)
 
 end function vectorb2
 
+double complex function dotA3(x,i)
+  integer, intent(in) :: i
+  double complex, intent(in), dimension(:) :: x
+  integer :: j
+  double complex :: s
+
+  s = DCMPLX(0,0)
+  do j=1,numnodes
+     s = s + x(j)*matrixA3(i+1,j)
+  end do
+  dotA3 = s
+end function dotA3
+
+
 !       __  __       _        _          _
 !      |  \/  | __ _| |_ _ __(_)_  __   / \
 !      | |\/| |/ _` | __| '__| \ \/ /  / _ \

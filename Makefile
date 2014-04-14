@@ -1,13 +1,17 @@
 dbsym_dir = $(shell python defaults.py dbsym_dir)
 ahmed_dir = $(shell python defaults.py ahmed_dir)
 sql_dir   = $(shell python defaults.py sql_dir)
+petsc4py_dir = $(shell python defaults.py petsc4py_dir)
 
-export PYTHONPATH := $(sql_dir):$(ahmed_dir):$(dbsym_dir):$(PYTHONPATH)
+export PYTHONPATH := ${petsc4py_dir}:$(sql_dir):$(ahmed_dir):$(dbsym_dir):$(PYTHONPATH)
 
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
 
 export LD_LIBRARY_PATH=/home/eab/git/difwave/bie/
+
+solve:
+	mpiexec.mpich2 -n 4 python mpislae.py -ksp_monitor
 
 params.f90: common.py
 	python -c "from common import common; c = common(); c.write_module()"
