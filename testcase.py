@@ -44,7 +44,6 @@ class params(common):
         self.orderquad = 20
         self.eps_matgen = 1e-5
         self.steps_gmres = 20*self.numpoints
-        self.eps_gmres_ = self.eps_gmres()
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
@@ -138,6 +137,7 @@ class testBIE(object):
         logging.basicConfig(level=logging.DEBUG)
         self.P = self.tmpP
         self.P.data.k = self.P.k_wave # TODO cleanup
+        self.P.eps_gmres_ = self.P.eps_gmres()
         self.P.initQuad(self.P.orderquad)
         self.P.initEllipsoid()
         self.P.initPhi()
@@ -371,9 +371,10 @@ class testBIEhuge(testBIE, unittest.TestCase):
 class testBIEgig(testBIE, unittest.TestCase):
     tmpP = params(51200)
     tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.orderquad = 30
     tmpP.flagAHMED = False
     tmpP.integ_places = 6
-    tmpP.eps_matgen = 1e-6
+    tmpP.eps_matgen = 1e-7
     tmpP.slae_tol = 0.00004
     tmpP.slae_places = 5
 
