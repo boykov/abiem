@@ -10,6 +10,14 @@ double precision function sigmaij(i,j)
   sigmaij = dsqrt(sigma(i)**2 + sigma(j)**2)
 end function sigmaij
 
+double complex function exactu(x)
+  use dbsym
+  double precision, intent(in), dimension(:) :: x
+
+  exactu = cdexp((0,1)*k_wave*x(3))
+
+end function exactu
+
 !                      _             _
 !      __   _____  ___| |_ ___  _ __| |__
 !      \ \ / / _ \/ __| __/ _ \| '__| '_ \

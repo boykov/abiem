@@ -184,7 +184,7 @@ class testBIE(object):
         self.assertAlmostEqual(
             self.P.data.criteria(self.P.axes,
                                  eval(self.P.name_approximateu),
-                                 self.P.data.exactu),
+                                 integ.exactu),
             self.P.slae_tol, places = self.P.slae_places)
 
     def testUnder(self):
