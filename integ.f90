@@ -131,24 +131,32 @@ contains
   end subroutine setup_calcomp
 
   double complex function foldingG(N,y,j,k)
+    use omp_lib
     use fast_dbsym
     double complex, intent(in) :: k
     double precision, intent(in), dimension(:) :: y
     integer, intent(in) :: j,N
-    integer :: l,m
+    integer :: l,m, nt
     double precision, dimension(3) :: x
     double complex, dimension(N+1) :: tmp
-    double complex :: s
+    double complex, dimension(4) :: s
 
     x(:) = y(:) - node_coordinates(j,:)
     tmp = aspherical_hankel_n(N,realpart(k_wave)*norm(x))
-    s = 0.0
+
+    call OMP_SET_NUM_THREADS(4)
+
+    s(:) = 0.0
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do l = 0,N
+       nt = OMP_GET_THREAD_NUM() + 1
        do m = -l, l
-          s = s + tmp(l+1) * G_harmonic_y(x(:),k,l,m) * intG_x(j,l+1,dim_intG+1+m)
+          s(nt) = s(nt) + tmp(l+1) * G_harmonic_y(x(:),k,l,m) * intG_x(j,l+1,dim_intG+1+m)
        end do
     end do
-    foldingG = s
+    !$OMP END PARALLEL DO
+    foldingG = sum(s(:))
   end function foldingG
 
   subroutine calcomp()
