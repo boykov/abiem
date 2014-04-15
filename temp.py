@@ -50,3 +50,39 @@ def withWrapMemo(self,largs, body, larrs, flagMemo):
         logging.info(body + ' does not use memo')
         eval(body)
         return larrs
+
+    def norm(self,x):
+        return (x[0])**2 + (x[1])**2 + (x[2])**2
+
+    def delta_numbers(self):
+        x0 = zeros((3))
+
+        smp = set()
+        sbp = set()
+        lm = 0
+        lb = 0
+        s = 0
+        for j in range(0, self.numnodes,1):
+            x0[:] = self.node_coordinates[j,:]
+            sb = set()
+            sm = set()
+            def trav(i):
+                if self.norm(x0) > self.norm(self.node_coordinates[i,:]):
+                    sb.add(i)
+                else:
+                    sm.add(i)
+
+            map(trav, range(0,self.numnodes,1))
+            if j>0:
+                s = s + len(sm - smp)
+                lm = max(lm,len(sm - smp))
+                lb = max(lb,len(sb - sbp))
+            smp = sm
+            sbp = sb
+        print lm, lb, 1.0*self.numnodes**2/s
+        return lm, lb
+
+        # self.P.delta_numbers()
+        # tock = datetime.now()
+        # self.diff = tock - tick - self.diff
+        # print "seconds: ", self.diff.seconds
