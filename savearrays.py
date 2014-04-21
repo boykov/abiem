@@ -52,7 +52,7 @@ class TaskElement(CoverElement):
         self.k.set_i_ptr("numnodes", self.numnodes)
         self.k.set_i_ptr("dim_3d", self.dim_3d)
         self.k.set_dp_ptr("h", self.h)
-        self.k.set_dp_ptr("k_wave", self.k_wave)
+        self.k.set_dc_ptr("k_wave", self.k_wave)
         self.k.set_dc2d_ptr("gauss", self.gauss)
         self.k.set_dp2d_ptr("node_coordinates", self.node_coordinates)
         self.k.set_dp1d_ptr("intphi_over", self.intphi_over)
