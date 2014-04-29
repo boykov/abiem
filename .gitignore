@@ -5,6 +5,7 @@
 *.o
 *.dat
 *.db
+*.db-journal
 
 /TAGS
 /jacobian.out

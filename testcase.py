@@ -43,7 +43,7 @@ class params(common):
         self.qbx_places = 5
         self.orderquad = 20
         self.eps_matgen = 1e-5
-        self.steps_gmres = 20*self.numpoints
+        self.steps_gmres = 2000
         self.eta = 0.8
         self.bmin = 15
         self.rankmax = 1000
@@ -153,7 +153,7 @@ class testBIE(object):
             self.P.q_density[:] = te.q[:]
             os.system("rm -f " + te.name_savearrays)
 
-        logging.debug("counter = " + str(self.P.counter))
+        logging.debug("counter = " + str(self.P.counter/(self.P.numnodes**2)))
         tock = datetime.now()
         self.diff = tock - tick
         print "seconds: ", self.diff.seconds
@@ -278,6 +278,22 @@ class testBIEsmall6(testBIE, unittest.TestCase):
     tmpP.slae_tol = 0.00005
     tmpP.slae_places = 5
 
+class testBIEsmall6k(testBIE, unittest.TestCase):
+    tmpP = params(200)
+    tmpP.eps_matgen = 1e-4
+    tmpP.test_seconds = 35
+    tmpP.integ_places = 5
+    tmpP.under_places = 4
+    tmpP.k_wave = 8
+    tmpP.name_approximateu = 'integ.approximateu4'
+    tmpP.name_matrixa = 'integ.matrixa6'
+    tmpP.qbx_places = 6
+    tmpP.flagNeedQBX = True
+    tmpP.flagTestUnder = True
+    tmpP.flagTestQBX_gauss6 = True
+    tmpP.slae_tol = 0.02
+    tmpP.slae_places = 2
+
 class testBIEmiddle6(testBIE, unittest.TestCase):
     tmpP = params(1600)
     tmpP.eps_matgen = 1e-8
@@ -293,6 +309,60 @@ class testBIEmiddle6(testBIE, unittest.TestCase):
     tmpP.flagTestUnder = True
     tmpP.flagTestQBX_gauss6 = True
     tmpP.slae_tol = 2e-6
+    tmpP.slae_places = 6
+
+class testBIEmiddle6k(testBIE, unittest.TestCase):
+    tmpP = params(1600)
+    tmpP.eps_matgen = 1e-5
+    tmpP.test_seconds = 1600
+    tmpP.integ_places = 7
+    tmpP.under_places = 6
+    tmpP.k_wave = 20
+    tmpP.orderquad = 30
+    tmpP.dim_intG = 7
+    tmpP.name_approximateu = 'integ.approximateu4'
+    tmpP.name_matrixa = 'integ.matrixa6'
+    tmpP.qbx_places = 7
+    tmpP.flagNeedQBX = True
+    tmpP.flagTestUnder = True
+    tmpP.flagTestQBX_gauss6 = True
+    tmpP.slae_tol = 2e-2
+    tmpP.slae_places = 2
+
+class testBIEmedium6k(testBIE, unittest.TestCase):
+    tmpP = params(3200)
+    tmpP.eps_matgen = 1e-5
+    tmpP.test_seconds = 3200
+    tmpP.integ_places = 7
+    tmpP.under_places = 6
+    tmpP.k_wave = 28
+    tmpP.orderquad = 30
+    tmpP.dim_intG = 7
+    tmpP.name_approximateu = 'integ.approximateu4'
+    tmpP.name_matrixa = 'integ.matrixa6'
+    tmpP.qbx_places = 7
+    tmpP.flagNeedQBX = True
+    tmpP.flagTestUnder = True
+    tmpP.flagTestQBX_gauss6 = True
+    tmpP.slae_tol = 2e-2
+    tmpP.slae_places = 2
+
+class testBIEbig6k(testBIE, unittest.TestCase):
+    tmpP = params(12800)
+    tmpP.eps_matgen = 1e-5
+    tmpP.test_seconds = 22000
+    tmpP.integ_places = 7
+    tmpP.under_places = 7
+    tmpP.k_wave = 56
+    tmpP.orderquad = 30
+    tmpP.dim_intG = 7
+    tmpP.name_approximateu = 'integ.approximateu4'
+    tmpP.name_matrixa = 'integ.matrixa6'
+    tmpP.qbx_places = 7
+    tmpP.flagNeedQBX = True
+    tmpP.flagTestUnder = True
+    tmpP.flagTestQBX_gauss6 = True
+    tmpP.slae_tol = 2e-2
     tmpP.slae_places = 6
 
 class testBIEmedium6(testBIE, unittest.TestCase):
@@ -360,6 +430,7 @@ class testBIEsmall3(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.name_matrixa = 'integ.matrixa3'
     tmpP.orderquad = 20
+    tmpP.flagMemo = True
     tmpP.flagAHMED = False
     tmpP.integ_places = 5
     tmpP.slae_tol = 0.006
@@ -381,12 +452,42 @@ class testBIEmedium3(testBIE, unittest.TestCase):
     tmpP.slae_tol = 0.0004
     tmpP.slae_places = 4
 
+class testBIEmedium3k(testBIE, unittest.TestCase):
+    tmpP = params(3200)
+    tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.flagMemo = True
+    tmpP.k_wave = 7
+    tmpP.integ_places = 6
+    tmpP.test_seconds = 30
+    tmpP.slae_tol = 0.007
+    tmpP.slae_places = 3
+
 class testBIEbig(testBIE, unittest.TestCase):
     tmpP = params(12800)
     tmpP.integ_places = 7
     tmpP.eps_matgen = 1e-6
     tmpP.slae_tol = 0.00008
     tmpP.slae_places = 5
+
+class testBIEbig3k(testBIE, unittest.TestCase):
+    tmpP = params(12800)
+    tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.flagMemo = True
+    tmpP.k_wave = 14
+    tmpP.integ_places = 7
+    tmpP.slae_tol = 0.01
+    tmpP.slae_places = 2
+
+class testBIEhuge3k(testBIE, unittest.TestCase):
+    tmpP = params(25600)
+    tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.flagMemo = True
+    tmpP.k_wave = 21
+    tmpP.eps_matgen = 1e-5
+    tmpP.integ_places = 6
+    tmpP.test_seconds = 450
+    tmpP.slae_tol = 0.02
+    tmpP.slae_places = 2
 
 class testBIEhuge3(testBIE, unittest.TestCase):
     tmpP = params(25600)
