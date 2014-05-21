@@ -76,14 +76,15 @@ contains
     integer :: l,j
     double precision :: sigm, nstar, s
     double precision, dimension(3) :: x,y
-    double complex :: s2, s3
+    double complex :: s2, s3, s8
 
     !$OMP PARALLEL DO &
-    !$OMP DEFAULT(SHARED) PRIVATE(s,s3,x,y)
+    !$OMP DEFAULT(SHARED) PRIVATE(s,s3,s8,x,y)
     do j=1,numnodes
        s = 0.0
        s2 = 0.0
        s3 = 0.0
+       s8 = 0.0
        do l=1,numnodes
           if (l .ne. j) then
              sigm = sigmaij(l,j)
@@ -92,10 +93,24 @@ contains
              nstar = sum(normal_coordinates(l,:)*(x-y)*intphi_over(l))
              s = s + nstar*(-Bmn(x,y,DCMPLX(0,0)))
              s3 = s3 + intphi_over(l)*Amn(x,y,k_wave)
+             do jj=1, max_neighbors
+                kj = node_neighbors2(j,jj)
+                if (kj .eq. l) exit
+                kj = 0
+             end do
+             if (kj > 0) then
+                s8 = s8 + int_neighbors2(j,jj)/(4*PI)
+                ! matrixA3 = intphi_over(i)*int_neighbors2(i,jj)/(4*PI)
+                ! matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+             else
+                s8 = s8 + intphi_over(l)*Amn(x,y,k_wave)
+                ! matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+             end if
           end if
        end do
        gauss(j,1) = s
        gauss(j,3) = s3
+       gauss(j,8) = s8
     end do
     !$OMP END PARALLEL DO
   end subroutine setgauss

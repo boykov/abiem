@@ -150,9 +150,19 @@ double complex function matrixA3(i,j)
   y = node_coordinates(j,:)
 
   if (i .eq. j) then
-     matrixA3 = intphi_over(i)*(gauss(i,4) - gauss(i,3))
+     matrixA3 = intphi_over(i)*(gauss(i,4) - gauss(i,8))
   else
-     matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+     do jj=1, max_neighbors
+        kj = node_neighbors2(i,jj)
+        if (kj .eq. j) exit
+        kj = 0
+     end do
+     if (kj > 0) then
+        matrixA3 = intphi_over(i)*int_neighbors2(i,jj)/(4*PI)
+        ! matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+     else
+        matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
+      end if
   end if
 end function matrixA3
 

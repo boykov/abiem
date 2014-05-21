@@ -271,8 +271,8 @@ else:
         else:
             integ.calcomp()
             self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
-            integ.setgauss()
             integ.calcsing()
+            integ.setgauss()
 
 class testBIE(object):
     @classmethod
@@ -574,8 +574,9 @@ class testBIEsmall3(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.name_matrixa = 'integ.matrixa3'
     tmpP.orderquad = 20
-    tmpP.flagMemo = True
-    tmpP.flagAHMED = False
+    tmpP.flagTestUnder = True
+    # tmpP.flagMemo = True
+    # tmpP.flagAHMED = False
     tmpP.integ_places = 5
     tmpP.slae_tol = 0.006
     tmpP.slae_places = 3
