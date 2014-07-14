@@ -54,6 +54,19 @@ double complex function dotA3(x,i)
   dotA3 = s
 end function dotA3
 
+double complex function dotA(x,i)
+  integer, intent(in) :: i
+  double complex, intent(in), dimension(:) :: x
+  integer :: j
+  double complex :: s
+
+  s = DCMPLX(0,0)
+  do j=1,numnodes
+     s = s + x(j)*matrixA(i+1,j)
+  end do
+  dotA = s
+end function dotA
+
 
 !       __  __       _        _          _
 !      |  \/  | __ _| |_ _ __(_)_  __   / \
@@ -79,7 +92,7 @@ double complex function matrixA6(i,j)
      if (use_int_neighbors_p) then
         do jj=1, max_neighbors
            kj = node_neighbors2(i,jj)
-           if (kj .eq. i) matrixA6 = intphi_over(i) * int_neighbors2(i,jj)/(4*PI)
+           if (kj .eq. i) matrixA6 = intphi_over(i) * int_neighbors2(i,jj)/(4*PI) !* intphi_over2(i)/intphi_over(i)
         end do
      else
         matrixA6 = intphi_over(i) * (gauss(i,4) + gauss(i,7))
@@ -91,9 +104,9 @@ double complex function matrixA6(i,j)
         kj = 0
      end do
      if (kj > 0) then
-        matrixA6 = intphi_over(i)*int_neighbors2(i,jj)/(4*PI)
+        matrixA6 = intphi_over(i)*int_neighbors2(i,jj)/(4*PI) !* intphi_over2(i)/intphi_over(i)
      else
-        matrixA6 = intphi_over(i)*foldingG(dim_intG,node_coordinates(i,:),j,k_wave)
+        matrixA6 = intphi_over(i)*foldingG(dim_intG,node_coordinates(i,:),j,k_wave) !* intphi_over2(i)/intphi_over(i)
       end if
   end if
 end function matrixA6
@@ -109,7 +122,7 @@ double complex function matrixA(i,j)
   x = node_coordinates(i,:)
   y = node_coordinates(j,:)
 
-  counter = counter + 1
+  ! counter = counter + 1
   if (i .eq. j) then
      matrixA = (intphi_over(i)**2)*limA(sigm,k_wave)
   else
@@ -208,9 +221,9 @@ double complex function approximateu4(x)
           quadphi_over(:,1),        &
           quadphi_over(:,2),        &
           nt)
-     s(i) = q_density(i) * folding(i,i,fAmn,dim_quad,nt)
+     s(i) = q_density(i) * folding(i,i,fAmn,dim_quad,nt) !* intphi_over2(i)/intphi_over(i)
      else
-        s(i) = q_density(i) * foldingG(dim_intG,x,i,k_wave)
+        s(i) = q_density(i) * foldingG(dim_intG,x,i,k_wave) !* intphi_over2(i)/intphi_over(i)
      end if
   end do
   !$OMP END PARALLEL DO

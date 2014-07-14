@@ -120,10 +120,34 @@ contains
             quadsingular(:,1),     &
             quadsingular(:,2),     &
             nt)
-       gauss(i,4) = folding(i,i,one,dim_quad,nt)
+       gauss(i,4) = folding_sing(i,i,one,dim_sing,nt)
     end do
     !$OMP END PARALLEL DO
   end function calcsing
+
+  double precision function calcover2()
+    use omp_lib
+    use dbsym
+    integer i, nt,iz,ik
+
+    call OMP_SET_NUM_THREADS(4)
+
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
+    do i=1,numnodes
+       nt = OMP_GET_THREAD_NUM()
+       call integrate2(                &
+            fjacobian,                &
+            nstroke_coordinates(i,:), &
+            node_coordinates(i,:),    &
+            i,                     &
+            quadover2(:,1),     &
+            quadover2(:,2),     &
+            nt)
+       intphi_over2(i) = folding_sing(i,i,f,dim_sing,nt)
+    end do
+    !$OMP END PARALLEL DO
+  end function calcover2
 
   subroutine setup_calcomp ()
     use dbsym
@@ -275,6 +299,7 @@ contains
                    exit
                 end if
              end do
+             ! gauss(i,6) = gauss(i,6) * intphi_over2(i)/intphi_over(i)
           end do
 
           gauss(j_tmp,7) = - (sum(gauss(1:j_tmp-1,6)) + sum(gauss(j_tmp+1:numnodes,6)))/(4*PI)
@@ -345,7 +370,7 @@ contains
           ! end do
 
           jac =  f(axes,p,rh,ph,ispole,k_wave)
-          jacobian(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
+          jacobian_sing(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
        end do
     end do
 
@@ -407,6 +432,90 @@ contains
     end do
     return
   end subroutine integrate
+
+  subroutine integrate2(f,n,z,ip,centres,weights,nt)
+    use dbsym
+    interface
+       function f (bt,axes,h2,rh,ph,z)
+         double precision :: f
+         double precision, intent(in) :: bt(:,:)
+         double precision, intent(in) :: z(:), axes(:)
+         double precision, intent(in) :: h2, rh, ph
+       end function f
+    end interface
+
+    integer, intent(in) :: ip,nt
+    double precision, intent(in), dimension(:) :: n
+    double precision, intent(in), dimension(:) :: z
+    double precision, intent(in), dimension(:) :: centres
+    double precision, intent(in), dimension(:) :: weights
+
+    double precision rh,ph
+
+    double precision, dimension(dim_3d) :: x, y
+    double precision, dimension(dim_3d,dim_3d) :: bt
+
+    integer m,l,k_ind,i,nthread
+
+    integer Nk, iz, ik, dim_quad
+    double precision jac
+    nthread = nt + 1
+    dim_quad = size(centres,1)
+    Nk = 4*dim_quad
+
+    k_ind = MINLOC(n,dim=1)
+
+    do m=1,dim_3d
+       do l=1,dim_3d
+          bt(m,l) = beta(m,k_ind,l,n,axes)
+       end do
+    end do
+
+    do iz=1,dim_quad
+       rh = centres(iz)
+
+       do ik=1,Nk
+          ph = (2.D0*PI/Nk)*ik
+          do i=1,3
+             x(i) = fx(i,bt,axes,hval2,rh,ph,z)
+             nodes_sing(nthread,iz,ik,i) = x(i)
+          end do
+
+          jac = dsqrt(f(bt,axes,hval2,rh,ph,z))
+          jacobian_sing(nthread,iz,ik) = 2*(PI/Nk)*weights(iz) * jac
+
+       end do
+    end do
+    return
+  end subroutine integrate2
+  
+  double complex function folding_sing(ip,jp,f,dim_quad,nt)
+    use dbsym
+    integer, intent(in) :: ip,jp,nt, dim_quad
+    interface
+       function f(x,i,j)
+         integer, intent(in) :: i,j
+         double precision, intent(in), dimension(:) :: x
+         double complex :: f
+       end function f
+    end interface
+
+    integer Nk, iz, ik,nthread
+    double complex gtmp, tmp
+
+    Nk = 4*dim_quad
+    nthread = nt + 1
+
+    gtmp = 0
+    do iz=1,dim_quad
+       do ik=1,Nk
+          tmp = f(nodes_sing(nthread,iz,ik,:),ip,jp)
+          gtmp = gtmp + (jacobian_sing(nthread,iz,ik))*tmp
+       end do
+    end do
+    folding_sing = gtmp
+
+  end function folding_sing
 
   double complex function folding(ip,jp,f,dim_quad,nt)
     use dbsym

@@ -40,6 +40,7 @@ common_names = {
                                                dtype = int32, order = 'Fortran')  , 11, "i2d", "phi"],
     "nstroke_coordinates" : [lambda (s): zeros((s.numnodes,3), order = 'Fortran') , 11, "dp2d", "phi"],
     "intphi_over"         : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
+    "intphi_over2"        : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
     "intphi_under"        : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
     "area"                : [lambda (s): zeros((1))                               , 11, "dp1d", "integ"],
     "counter"             : [lambda (s): zeros((1))                               , 11, "dp1d", "integ"],
@@ -54,21 +55,27 @@ common_names = {
     "valG_y"              : [lambda (s): zeros((s.numnodes,s.dim_intG + 1,2*s.dim_intG + 1),
                                                dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
 
-    "dim_quad"            : [lambda (s): s.q, 20, "i", "integ"],
+    "dim_quad"            : [lambda (s): s.q,  20, "i", "integ"],
+    "dim_sing"            : [lambda (s): s.qs, 20, "i", "integ"],
 
 
     "quadphi_over"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
     "quadphi_under"       : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
-    "quadsingular"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
+    "quadsingular"        : [lambda (s): zeros((s.dim_sing,2),order = 'Fortran')  , 21, "dp2d", "integ"],
+    "quadover2"           : [lambda (s): zeros((s.dim_sing,2),order = 'Fortran')  , 21, "dp2d", "integ"],
     "centres"             : [lambda (s): zeros((s.dim_quad))                      , 21, "dp1d", "integ"],
     "weights"             : [lambda (s): zeros((s.dim_quad))                      , 21, "dp1d", "integ"],
     "jacobian"            : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
+                                               dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
+    "jacobian_sing"       : [lambda (s): zeros((4,s.dim_sing,4*s.dim_sing),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
     "farr"                : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
     "cache_phi"           : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
     "cache_bessel_jn"     : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad,s.dim_intG + 1),
+                                               order = 'Fortran')                 , 21, "dp4d", "integ"],
+    "nodes_sing"          : [lambda (s) :zeros((4,s.dim_sing,4*s.dim_sing,3),
                                                order = 'Fortran')                 , 21, "dp4d", "integ"],
     "nodes"               : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad,3),
                                                order = 'Fortran')                 , 21, "dp4d", "integ"]}
@@ -137,8 +144,9 @@ class common():
             if common_names[n][1]==11:
                 setattr(self, n, common_names[n][0](self))
 
-    def level2(self, q):
+    def level2(self, q, qs):
         self.q = q
+        self.qs = qs
         for n in common_names.keys():
             if common_names[n][1]==20:
                 setattr(self, n, common_names[n][0](self))

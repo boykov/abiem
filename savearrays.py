@@ -18,7 +18,7 @@ from integ import modinteg as integ
 class CoverElement(object):
     def initcover(self, c):
         self.numnodes = c.numnodes
-        self.h = c.h
+        self.hval = c.hval
         self.node_coordinates = c.node_coordinates
         self.intphi_over = c.intphi_over
         self.name_matrixa = c.name_matrixa
@@ -51,7 +51,7 @@ class TaskElement(CoverElement):
 
         self.k.set_i_ptr("numnodes", self.numnodes)
         self.k.set_i_ptr("dim_3d", self.dim_3d)
-        self.k.set_dp_ptr("h", self.h)
+        self.k.set_dp_ptr("hval", self.hval)
         self.k.set_dc_ptr("k_wave", self.k_wave)
         self.k.set_dc2d_ptr("gauss", self.gauss)
         self.k.set_dp2d_ptr("node_coordinates", self.node_coordinates)

@@ -10,6 +10,7 @@ class DataBase:
     def __init__(self,numpoints,axes):
         self.numpoints = numpoints
         self.orderquad = 4
+        self.ordersing = 4
         self.slaetol = 1.e-6
         self.matshell = False
         self.memoCalcArea = False
@@ -26,16 +27,16 @@ class DataBase:
     def setupquad(self):
         import scipy.special.orthogonal as op
         self.quadphi_over = zeros((self.orderquad,2),order = 'Fortran')
-        self.quadsingular = zeros((self.orderquad,2),order = 'Fortran')
+        self.quadsingular = zeros((self.ordersing,2),order = 'Fortran')
         self.quadphi_under = zeros((self.orderquad,2),order = 'Fortran')
         self.centres03 = op.j_roots(self.orderquad,0,1)[0]
         self.C03 = op.j_roots(self.orderquad,0,1)[1]
 
-        self.centres2q1 = op.j_roots(self.orderquad,2,-0.5)[0]
+        self.centres2q1 = op.j_roots(self.ordersing,2,-0.5)[0]
         self.C2q1 = map(lambda y: y,
-                        op.j_roots(self.orderquad,2,-0.5)[1]/
+                        op.j_roots(self.ordersing,2,-0.5)[1]/
                         map(lambda x: (1-x)**2*(1+x)**(-0.5),
-                            op.j_roots(self.orderquad,2,-0.5)[0]))
+                            op.j_roots(self.ordersing,2,-0.5)[0]))
 
         self.quadsingular[:,0] = self.centres2q1
         self.quadsingular[:,1] = self.C2q1

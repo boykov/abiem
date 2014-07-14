@@ -46,10 +46,12 @@ class params(common):
         self.test_seconds = 10
         self.integ_places = 4
         self.slae_tol = 0.0
+        self.koef_hat = 1.0
         self.slae_places = 0
         self.under_places = 3
         self.qbx_places = 5
         self.orderquad = 20
+        self.ordersing = 20
         self.eps_matgen = 1e-5
         self.steps_gmres = 2000
         self.eta = 0.8
@@ -87,14 +89,17 @@ class params(common):
         slaeahmed.solve_slae()
         slaeahmed.get_q(self.q_density)
 
-    def initQuad(self, orderquad):
+    def initQuad(self, orderquad, ordersing):
         import scipy.special.orthogonal as op
         self.data.orderquad = orderquad
+        self.data.ordersing = ordersing
         self.data.setupquad()
-        self.level2(self.data.orderquad)
+        self.level2(self.data.orderquad, self.data.ordersing)
 
         self.quadphi_over[:,0] = op.j_roots(self.orderquad,0,1)[0]
         self.quadphi_over[:,1] = op.j_roots(self.orderquad,0,1)[1]
+        self.quadover2[:,0] = op.j_roots(self.ordersing,0,1)[0]
+        self.quadover2[:,1] = op.j_roots(self.ordersing,0,1)[1]
         self.quadphi_under[:,0] = op.j_roots(self.orderquad,0,0)[0]
         self.quadphi_under[:,1] = op.j_roots(self.orderquad,0,0)[1]
         self.quadsingular[:,:] = self.data.quadsingular[:,:] # TODO extract
@@ -123,7 +128,7 @@ class params(common):
                           "node_coordinates" : "self.e.points[:,:]",
                           "normal_coordinates" : "self.e.normalvectors[:,:]"})
 
-        self.level1(self.pnts_sql.numnodes, self.pnts_sql.hval)
+        self.level1(self.pnts_sql.numnodes, self.koef_hat * float(self.pnts_sql.hval))
 
         self.node_coordinates[:,:] = self.pnts_sql.node_coordinates[:,:]
         self.normal_coordinates[:,:] = self.pnts_sql.normal_coordinates[:,:]
@@ -257,10 +262,10 @@ else:
                              "SingularWITH",
                              SingularWITH,
                              "integ.calcsing()",
-                             """dim_quad = self.dim_quad,
+                             """dim_sing = self.dim_sing,
                                 k_wave = self.k_wave,
                                 points_id = self.pnts_sql.id""",
-                             {"dim_quad" : "self.dim_quad",
+                             {"dim_sing" : "self.dim_sing",
                               "k_wave" : "self.k_wave",
                               "points_id" : "self.pnts_sql.id",
                               "fsingular3" : "self.gauss[:,3]"})
@@ -269,6 +274,7 @@ else:
             # integ.setgauss()
             # integ.calcsing()
         else:
+            # integ.calcover2()
             integ.calcomp()
             self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
             integ.setgauss()
@@ -282,7 +288,7 @@ class testBIE(object):
         self.P = self.tmpP
         self.P.data.k = self.P.k_wave # TODO cleanup
         self.P.eps_gmres_ = self.P.eps_gmres()
-        self.P.initQuad(self.P.orderquad)
+        self.P.initQuad(self.P.orderquad, self.P.ordersing)
         self.P.initEllipsoid()
         self.P.initPhi()
         self.P.initInteg()
@@ -320,6 +326,13 @@ class testBIE(object):
 
     def testInteg(self):
         self.P.area[0] = sum(self.P.intphi_over)
+        print "φ = ", self.P.intphi_over[0]
+        print "φ2 = ", self.P.intphi_over2[0]
+        print "neigh1 ", sum(map(lambda i: sum(map(lambda x: 1 if x!=0 else 0,self.P.node_neighbors1[i])) - 1,range(0,self.P.numnodes)))*100.0/(self.P.numnodes**2)
+        print "neigh2 ", sum(map(lambda i: sum(map(lambda x: 1 if x!=0 else 0,self.P.node_neighbors2[i])) - 1,range(0,self.P.numnodes)))*100.0/(self.P.numnodes**2)
+        # print "int neigh2 ", self.P.int_neighbors2[0][1]
+        print "% ", sum(map(lambda i: round((abs(self.P.intphi_over[self.P.numnodes - 1]*(1.0/linalg.norm(self.P.node_coordinates[self.P.numnodes - 1][:] - self.P.node_coordinates[i][:])) - self.P.gauss[i,5])/self.P.gauss[i,5]*100).real), range(0,self.P.numnodes-1)))/(self.P.numnodes-1)
+        print sum(map(lambda x: 1 if x!=0 else 0,self.P.node_neighbors2[0]))
         self.assertAlmostEqual(
             self.P.area[0],
             6.971610618375645,
@@ -401,6 +414,10 @@ class testBIEsmall(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.integ_places = 5
     tmpP.under_places = 5
+    tmpP.koef_hat = 0.75/2
+    tmpP.data.magic = 0.4148
+    # tmpP.orderquad = 5
+    # tmpP.flagAHMED = False
     tmpP.flagTestUnder = True
     tmpP.test_seconds = 15
     tmpP.slae_tol = 0.003
@@ -408,8 +425,12 @@ class testBIEsmall(testBIE, unittest.TestCase):
 
 class testBIEsmall6(testBIE, unittest.TestCase):
     tmpP = params(200)
-    tmpP.eps_matgen = 1e-7
+    tmpP.eps_matgen = 1e-6
     tmpP.test_seconds = 35
+    # tmpP.orderquad = 30
+    # tmpP.ordersing = 30
+    # tmpP.use_int_neighbors_p = True
+    # tmpP.koef_hat = 0.75/2
     tmpP.integ_places = 5
     tmpP.under_places = 4
     tmpP.k_wave = 0.1
@@ -428,6 +449,8 @@ class testBIEsmall6k(testBIE, unittest.TestCase):
     tmpP.test_seconds = 35
     tmpP.integ_places = 5
     tmpP.under_places = 4
+    tmpP.orderquad = 5
+    tmpP.use_int_neighbors_p = True
     tmpP.k_wave = 8
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
@@ -439,12 +462,14 @@ class testBIEsmall6k(testBIE, unittest.TestCase):
     tmpP.slae_places = 2
 
 class testBIEmiddle6(testBIE, unittest.TestCase):
-    tmpP = params(1600)
+    tmpP = params(3200)
     tmpP.eps_matgen = 1e-8
     tmpP.integ_places = 7
     tmpP.under_places = 7
     tmpP.k_wave = 0.1
     tmpP.orderquad = 30
+    tmpP.koef_hat = 0.75/2
+    # tmpP.use_int_neighbors_p = True
     tmpP.dim_intG = 7
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
@@ -461,9 +486,11 @@ class testBIEmiddle6k(testBIE, unittest.TestCase):
     tmpP.test_seconds = 1600
     tmpP.integ_places = 7
     tmpP.under_places = 6
+    tmpP.orderquad = 5
+    tmpP.use_int_neighbors_p = True
     tmpP.k_wave = 20
-    tmpP.orderquad = 30
-    tmpP.dim_intG = 7
+    # tmpP.orderquad = 30
+    # tmpP.dim_intG = 7
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
     tmpP.qbx_places = 7
@@ -511,20 +538,21 @@ class testBIEbig6k(testBIE, unittest.TestCase):
 
 class testBIEmedium6(testBIE, unittest.TestCase):
     tmpP = params(3200)
-    tmpP.eps_matgen = 1e-8
+    tmpP.eps_matgen = 1e-7
     tmpP.test_seconds = 3000
     tmpP.integ_places = 7
     tmpP.under_places = 7
     tmpP.k_wave = 0.1
-    tmpP.orderquad = 30
-    tmpP.dim_intG = 7
+    tmpP.orderquad = 7
+    # tmpP.use_int_neighbors_p = True
+    # tmpP.dim_intG = 7
     tmpP.name_approximateu = 'integ.approximateu4'
     tmpP.name_matrixa = 'integ.matrixa6'
     tmpP.qbx_places = 7
     tmpP.flagNeedQBX = True
     tmpP.flagTestUnder = True
     tmpP.flagTestQBX_gauss6 = True
-    tmpP.slae_tol = 8e-7
+    tmpP.slae_tol = 1e-5
     tmpP.slae_places = 6
 
 class testBIEbig6(testBIE, unittest.TestCase):
@@ -534,6 +562,7 @@ class testBIEbig6(testBIE, unittest.TestCase):
     tmpP.integ_places = 7
     tmpP.under_places = 7
     tmpP.k_wave = 0.1
+    tmpP.koef_hat = 0.75/2
     tmpP.orderquad = 30
     tmpP.dim_intG = 7
     tmpP.name_approximateu = 'integ.approximateu4'
@@ -571,11 +600,13 @@ class testBIEsmallQBX(testBIE, unittest.TestCase):
     tmpP.slae_places = 3
 
 class testBIEsmall3(testBIE, unittest.TestCase):
-    tmpP = params(200)
+    tmpP = params(400)
     tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.eps_matgen = 1e-7
     tmpP.orderquad = 20
-    tmpP.flagMemo = True
-    tmpP.flagAHMED = False
+    tmpP.koef_hat = 0.75/2
+    # tmpP.flagMemo = True
+    # tmpP.flagAHMED = False
     tmpP.integ_places = 5
     tmpP.slae_tol = 0.006
     tmpP.slae_places = 3
@@ -599,7 +630,8 @@ class testBIEmedium3(testBIE, unittest.TestCase):
 class testBIEmedium3k(testBIE, unittest.TestCase):
     tmpP = params(3200)
     tmpP.name_matrixa = 'integ.matrixa3'
-    tmpP.flagMemo = True
+    tmpP.koef_hat = 0.75/2
+    # tmpP.flagMemo = True
     tmpP.k_wave = 7
     tmpP.integ_places = 6
     tmpP.test_seconds = 30

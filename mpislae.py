@@ -27,7 +27,7 @@ class Del2Mat:
             ind = y.getOwnershipRange()[0]
             if te.name_matrixa == "integ.matrixa3":
                 y[...][m] = te.k.dota3(x0,ind+m)
-            if te.name_matrixa == "matrixa":
+            if te.name_matrixa == "integ.matrixa":
                 y[...][m] = te.k.dota(x0,ind+m)
 
     def multTranspose(self, A, x, y):

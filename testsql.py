@@ -55,7 +55,7 @@ class SingularWITH(Base):
     __tablename__ = 'singular'
     id = Column(types.Integer, primary_key = True)
     points_id = Column(types.Integer, ForeignKey('points.id'))
-    dim_quad = Column(types.Integer)
+    dim_sing = Column(types.Integer)
     k_wave = Column(Numeric(36,16))
     fsingular3 = Column(SqliteArray)
 
