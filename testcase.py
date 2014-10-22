@@ -16,13 +16,6 @@ import math
 from utilities import *
 from phi import modphi as phi
 from integ import modinteg as integ
-from testsql import Base
-from testsql import create_session
-from testsql import EllipsoidWITH
-from testsql import PointsWITH
-from testsql import IntegWITH
-from testsql import GaussWITH
-from testsql import SingularWITH
 
 import sys,os
 import slaeahmed
@@ -35,7 +28,6 @@ import savearrays
 class params(common):
     def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
         common.__init__(self)
-        self.session = create_session(Base)
         self.numpoints = numpoints
         self.axes[:] = axes[:]
         self.data = DataElement(numpoints)
@@ -101,108 +93,17 @@ class params(common):
 
 
     def initEllipsoid(self):
-        self.withWrapSql("self.ell_sql",
-                         "EllipsoidWITH",
-                         EllipsoidWITH,
-                         "",
-                         "axes = self.axes",
-                         {"axe1" : "self.axes[0]",
-                          "axe2" : "self.axes[1]",
-                          "axe3" : "self.axes[2]",
-                          "axes" : "self.axes"})
-
-        self.withWrapSql("self.pnts_sql",
-                         "PointsWITH",
-                         PointsWITH,
-                         "self.e = ellipsoid(self.axes, self.numpoints)",
-                         "numpoints = self.numpoints",
-                         {"numpoints" : "self.numpoints",
-                          "surface_id" : "self.ell_sql.id",
-                          "hval" : "self.e.get_h()",
-                          "numnodes" : "self.e.points.shape[0]",
-                          "node_coordinates" : "self.e.points[:,:]",
-                          "normal_coordinates" : "self.e.normalvectors[:,:]"})
-
-        self.level1(self.pnts_sql.numnodes, self.pnts_sql.hval)
-
-        self.node_coordinates[:,:] = self.pnts_sql.node_coordinates[:,:]
-        self.normal_coordinates[:,:] = self.pnts_sql.normal_coordinates[:,:]
-
-        # self.e = ellipsoid(self.axes, self.numpoints)
-        # self.level1(self.e.points.shape[0], self.e.get_h())
-        # self.node_coordinates[:,:] = self.e.points[:,:]
-        # self.normal_coordinates[:,:] = self.e.normalvectors[:,:]
-
-    def mergeLargs(self, largs_class):
-        s = ""
-        for k in largs_class:
-            s = s + k + "=" + largs_class[k] + ","
-        return s
-
-    def mergeLargs_dic(self, largs_class):
-        s = "{"
-        for k in largs_class:
-            s = s + "'" + k + "'" + ":" + largs_class[k] + ","
-        s = s + "}"
-        return s
-
-    def withWrapSql(self, tblname, classname, classval, body, largs_search, largs_class):
-        expr = '%s = self.session.query(%s).filter_by(%s).first()' % (tblname,
-                                                                      classname,
-                                                                      largs_search)
-        exec(expr, {'self' : self,
-                    classname : classval})
-        expr = """if not %s:
-                      %s
-                      %s = %s(%s)
-                      self.session.add(%s)
-                      self.session.commit()
-                      logging.info('%s' + ' is writed to record')
-else:
-    if not %s:
-        %s
-        self.session.delete(%s)
-        self.session.commit()
-        %s = %s(%s)
-        self.session.add(%s)
-        self.session.commit()
-        logging.info('%s' + ' is writed in new record, old record is deleted')
-    else:
-        logging.info('%s' + ' is loaded from record')""" % (tblname,
-                                                            body,
-                                                            tblname,
-                                                            classname,
-                                                            self.mergeLargs(largs_class),
-                                                            tblname,
-                                                            classname,
-                                                            self.flagMemo,
-                                                            body,
-                                                            tblname,
-                                                            tblname,
-                                                            classname,
-                                                            self.mergeLargs(largs_class),
-                                                            tblname,
-                                                            classname,
-                                                            classname)
-
-        exec(expr, {'self' : self,
-                    'integ' : integ,
-                    'ellipsoid' : ellipsoid,
-                    'logging' : logging,
-                    classname : classval})
+        self.e = ellipsoid(self.axes, self.numpoints)
+        self.level1(self.e.points.shape[0], self.e.get_h())
+        self.node_coordinates[:,:] = self.e.points[:,:]
+        self.normal_coordinates[:,:] = self.e.normalvectors[:,:]
 
     def initPhi(self):
         self.setObjPhi(phi)
 
         phi.filter_neighbors(2*self.hval, self.node_neighbors2, self.numnodes)
         phi.filter_neighbors(  self.hval, self.node_neighbors1, self.numnodes)
-        if not (type(self.pnts_sql.nstroke_coordinates) is 'NoneType'):
-            phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
-            self.pnts_sql.nstroke_coordinates = self.nstroke_coordinates[:,:]
-
-        self.nstroke_coordinates[:,:] = self.pnts_sql.nstroke_coordinates[:,:]
-
-        # phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
+        phi.normal_vector_stroke(self.numnodes, self.node_neighbors1)
 
     def calcomp(self):
         integ.setup_calcomp()
@@ -223,56 +124,11 @@ else:
         integ.set_l_ptr("matrixa6_p", (self.name_matrixa == 'integ.matrixa6'))
         integ.set_l_ptr("use_int_neighbors_p", self.use_int_neighbors_p)
 
-        if ((not self.name_matrixa == 'integ.matrixa6') or (not self.flagTestUnder)):
-            self.withWrapSql("self.integ_sql",
-                             "IntegWITH",
-                             IntegWITH,
-                             "integ.calcomp()",
-                             """dim_quad = self.dim_quad,
-                                points_id = self.pnts_sql.id""",
-                             {"dim_quad" : "self.dim_quad",
-                              "points_id" : "self.pnts_sql.id",
-                              "intphi_over" : "self.intphi_over[:]",
-                              "intphi_under" : "self.intphi_under[:]"})
-            self.intphi_over[:] = self.integ_sql.intphi_over[:]
-            self.intphi_under[:] = self.integ_sql.intphi_under[:]
+        integ.calcomp()
+        self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
 
-            # integ.calcomp()
-            self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
-
-            self.withWrapSql("self.gauss_sql",
-                             "GaussWITH",
-                             GaussWITH,
-                             "integ.setgauss()",
-                             """k_wave = self.k_wave,
-                                integ_id = self.integ_sql.id""",
-                             {"k_wave" : "self.k_wave",
-                              "integ_id" : "self.integ_sql.id",
-                              "gauss1" : "self.gauss[:,0]",
-                              "gauss3" : "self.gauss[:,2]"})
-            self.gauss[:,0] = self.gauss_sql.gauss1
-            self.gauss[:,2] = self.gauss_sql.gauss3
-
-            self.withWrapSql("self.snglr_sql",
-                             "SingularWITH",
-                             SingularWITH,
-                             "integ.calcsing()",
-                             """dim_quad = self.dim_quad,
-                                k_wave = self.k_wave,
-                                points_id = self.pnts_sql.id""",
-                             {"dim_quad" : "self.dim_quad",
-                              "k_wave" : "self.k_wave",
-                              "points_id" : "self.pnts_sql.id",
-                              "fsingular3" : "self.gauss[:,3]"})
-            self.gauss[:,3] = self.snglr_sql.fsingular3[:]
-
-            # integ.setgauss()
-            # integ.calcsing()
-        else:
-            integ.calcomp()
-            self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
-            integ.setgauss()
-            integ.calcsing()
+        integ.setgauss()
+        integ.calcsing()
 
 class testBIE(object):
     @classmethod
