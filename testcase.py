@@ -9,7 +9,6 @@ __author__ = "Evgeny Boykov. <artscan@list.ru>"
 import unittest
 from datetime import datetime
 from ellipsoid import ellipsoid
-from dataelement import *
 from numpy import *
 import cmath
 import math
@@ -30,8 +29,7 @@ class params(common):
         common.__init__(self)
         self.numpoints = numpoints
         self.axes[:] = axes[:]
-        self.data = DataElement(numpoints)
-        self.data.magic = 0.410
+        self.magic = 0.410
 
     def eps_aggl(self):
         return self.eps_matgen
@@ -61,16 +59,17 @@ class params(common):
 
     def initQuad(self, orderquad):
         import scipy.special.orthogonal as op
-        self.data.orderquad = orderquad
-        self.data.setupquad()
-        self.level2(self.data.orderquad)
+        self.level2(orderquad)
 
         self.quadphi_over[:,0] = op.j_roots(self.orderquad,0,1)[0]
         self.quadphi_over[:,1] = op.j_roots(self.orderquad,0,1)[1]
         self.quadphi_under[:,0] = op.j_roots(self.orderquad,0,0)[0]
         self.quadphi_under[:,1] = op.j_roots(self.orderquad,0,0)[1]
-        self.quadsingular[:,:] = self.data.quadsingular[:,:] # TODO extract
-
+        self.quadsingular[:,0] = op.j_roots(self.orderquad,2,-0.5)[0]
+        self.quadsingular[:,1] = map(lambda y: y,
+                                     op.j_roots(self.orderquad,2,-0.5)[1]/
+                                     map(lambda x: (1-x)**2*(1+x)**(-0.5),
+                                         op.j_roots(self.orderquad,2,-0.5)[0]))
 
     def initEllipsoid(self):
         self.e = ellipsoid(self.axes, self.numpoints)
@@ -105,18 +104,35 @@ class params(common):
         integ.set_l_ptr("use_int_neighbors_p", self.use_int_neighbors_p)
 
         integ.calcomp()
-        self.sigma[:] = map(self.data.fsigma,self.intphi_over)[:]
+        self.sigma[:] = map(self.fsigma,self.intphi_over)[:]
 
         integ.setgauss()
         integ.calcsing()
 
+    def fsigma(self,x):
+        return math.sqrt(self.magic*x/(math.pi**2))
+
+    def criteria(self,axes,f,g):
+        koef = 0.8
+        self.edata = ellipsoid(koef*axes,self.numpoints)
+        shp = self.edata.points.shape
+        adata = zeros(shp[0],dtype = complex)
+        adata[:] = map(lambda(i):
+                       self.epsilon(f,g,self.edata.points[i,:]),
+                       range(0,shp[0],1))
+        tmp = max(abs(adata[:]))
+        return tmp
+
+    def epsilon(self,f,g,x):
+        # print "eps, ",g(x),f(x)
+        return (g(x)-f(x))/abs(g(x))
+    
 class testBIE(object):
     @classmethod
     def setUpClass(self):
         tick = datetime.now()
         logging.basicConfig(level=logging.DEBUG)
         self.P = self.tmpP
-        self.P.data.k = self.P.k_wave # TODO cleanup
         self.P.eps_gmres_ = self.P.eps_gmres()
         self.P.initQuad(self.P.orderquad)
         self.P.initEllipsoid()
@@ -163,7 +179,7 @@ class testBIE(object):
 
     def testSLAE(self):
         self.assertAlmostEqual(
-            self.P.data.criteria(self.P.axes,
+            self.P.criteria(self.P.axes,
                                  eval(self.P.name_approximateu),
                                  integ.exactu),
             self.P.slae_tol, places = self.P.slae_places)
