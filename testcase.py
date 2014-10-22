@@ -25,11 +25,10 @@ from common import common
 import savearrays
 
 class params(common):
-    def __init__(self, numpoints = 400, axes = [float(0.75),float(1.),float(0.5)]):
+    def __init__(self, numpoints = 400):
         common.__init__(self)
         self.numpoints = numpoints
-        self.axes[:] = axes[:]
-        self.magic = 0.410
+        self.axes[:] = self.listaxes[:]
 
     def eps_aggl(self):
         return self.eps_matgen
