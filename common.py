@@ -12,6 +12,26 @@ import sys,os
 import logging
 
 common_names = {
+    "name_matrixa"        : [lambda (s): 'integ.matrixa'     , 0, "None", "params"],
+    "name_vectorb"        : [lambda (s): 'integ.vectorb'     , 0, "None", "params"],
+    "name_approximateu"   : [lambda (s): 'integ.approximateu', 0, "None", "params"],
+    "slae_tol"            : [lambda (s): 0.0                 , 0, "dp", "params"],
+    "test_seconds"        : [lambda (s): 10                  , 0, "i", "params"],
+    "integ_places"        : [lambda (s): 4                   , 0, "i", "params"],
+    "slae_places"         : [lambda (s): 0                   , 0, "i", "params"],
+    "under_places"        : [lambda (s): 3                   , 0, "i", "params"],
+    "qbx_places"          : [lambda (s): 5                   , 0, "i", "params"],
+    "flagAHMED"           : [lambda (s): True                , 0, "l", "params"],
+    "flagMemo"            : [lambda (s): False               , 0, "l", "params"],
+    "flagTestUnder"       : [lambda (s): False               , 0, "l", "params"],
+    "flagNeedQBX"         : [lambda (s): False               , 0, "l", "params"],
+    "flagTestQBX_gauss6"  : [lambda (s): False               , 0, "l", "params"],
+    "bmin"                : [lambda (s): 15                  , 0, "i", "params"],
+    "rankmax"             : [lambda (s): 1000                , 0, "i", "params"],
+    "orderquad"           : [lambda (s): 20                  , 0, "i", "params"],
+    "steps_gmres"         : [lambda (s): 2000                , 0, "i", "params"],
+    "eps_matgen"          : [lambda (s): 1e-5                , 0, "dp", "params"],
+    "eta"                 : [lambda (s): 0.8                 , 0, "dp", "params"],
     "PI"                  : [lambda (s): 3.14159265358979324 , 0, "dp", "phi"],
     "max_neighbors"       : [lambda (s): 100                 , 0, "i", "phi"],
     "dim_3d"              : [lambda (s): 3                   , 0, "i", "phi"],
@@ -95,7 +115,7 @@ class common():
             s = s + "  character(128) :: name\n"
             s = s + "  " + self.types[t][0] + ", intent(in), target :: val" + self.types[t][1] + "\n"
             for n in common_names.keys():
-                if common_names[n][2]==t:
+                if common_names[n][2]==t and common_names[n][3]<>"params":
                     s = s + "  if (name .eq. \"" + n + "\") " + n + " " + self.types[t][2] + " val\n"
             s = s + "end subroutine set_" + t + "_ptr\n"
         return s
@@ -103,14 +123,15 @@ class common():
     def create_module(self):
         s = "module params\n"
         for n in common_names.keys():
-            s = s + (
-                "  " +
-                self.types[common_names[n][2]][0] +
-                self.types[common_names[n][2]][3] +
-                " :: " +
-                n +
-                self.types[common_names[n][2]][1] +
-                "\n")
+            if common_names[n][3]<>"params":
+                s = s + (
+                    "  " +
+                    self.types[common_names[n][2]][0] +
+                    self.types[common_names[n][2]][3] +
+                    " :: " +
+                    n +
+                    self.types[common_names[n][2]][1] +
+                    "\n")
         s = s + "end module params"
         return s
 

@@ -32,26 +32,6 @@ class params(common):
         self.axes[:] = axes[:]
         self.data = DataElement(numpoints)
         self.data.magic = 0.410
-        self.name_matrixa = 'integ.matrixa'
-        self.name_vectorb = 'integ.vectorb'
-        self.name_approximateu = 'integ.approximateu'
-        self.test_seconds = 10
-        self.integ_places = 4
-        self.slae_tol = 0.0
-        self.slae_places = 0
-        self.under_places = 3
-        self.qbx_places = 5
-        self.orderquad = 20
-        self.eps_matgen = 1e-5
-        self.steps_gmres = 2000
-        self.eta = 0.8
-        self.bmin = 15
-        self.rankmax = 1000
-        self.flagAHMED = True
-        self.flagMemo = False
-        self.flagTestUnder = False
-        self.flagNeedQBX = False
-        self.flagTestQBX_gauss6 = False
 
     def eps_aggl(self):
         return self.eps_matgen
