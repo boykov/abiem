@@ -31,7 +31,7 @@ contains
     norm = dsqrt(norm2(v))
   end function norm
 
-  double complex function wmod(z)
+  pure double complex function wmod(z)
     use toms
     real(dp) x,y,u,v
     double complex, intent(in) :: z
@@ -57,7 +57,7 @@ contains
     end if
   end function wmod
 
-  double complex function w(z)
+  pure double complex function w(z)
     use toms
     double precision x,y,u,v
     double complex, intent(in) :: z
@@ -157,7 +157,7 @@ contains
          include 'jacobian2.f90'
   end function fjacobian2
 
-  double complex function Amn(x,y,k)
+  pure double complex function Amn(x,y,k)
     double precision, intent(in) :: x(:),y(:)
     double complex, intent(in) :: k
     double precision :: v,rh
@@ -166,7 +166,7 @@ contains
          include 'Amn.f90'
   end function Amn
 
-  double complex function Bmn(x,y,k)
+  pure double complex function Bmn(x,y,k)
     double precision, intent(in) :: x(:),y(:)
     double complex, intent(in) :: k
     double precision :: v,rh
@@ -175,14 +175,14 @@ contains
          include 'Bmn.f90'
   end function Bmn
 
-  double complex function limdA(sigm,k)
+  pure double complex function limdA(sigm,k)
     double precision, intent(in) :: sigm
     double complex, intent(in) :: k
     limdA = &
          include 'limdA.f90'
   end function limdA
 
-  double complex function dA(x,y,sigm,k)
+  pure double complex function dA(x,y,sigm,k)
     double precision, intent(in) :: x(:),y(:)
     double precision, intent(in) :: sigm
     double complex, intent(in) :: k
@@ -192,14 +192,14 @@ contains
          include 'dA.f90'
   end function dA
 
-  double complex function limA(sigm,k)
+  pure double complex function limA(sigm,k)
     double precision, intent(in) :: sigm
     double complex, intent(in) :: k
     limA = &
          include 'limA.f90'
   end function limA
 
-  double complex function A(x,y,sigm,k)
+  pure double complex function A(x,y,sigm,k)
     double precision, intent(in) :: x(:),y(:)
     double precision, intent(in) :: sigm
     double complex, intent(in) :: k

@@ -1,11 +1,12 @@
 module toms
   integer, parameter :: dp=kind(16.0d0)  !density-type precision
 contains
-  SUBROUTINE WOFZ (XI, YI, U, V, FLAG)
-
+  pure SUBROUTINE WOFZ (XI, YI, U, V, FLAG)
     IMPLICIT DOUBLE PRECISION (A-H, O-Z)
 
     LOGICAL A, B, FLAG
+    intent(in) :: XI, YI
+    intent(out) :: U, V, FLAG
     PARAMETER (FACTOR   = 1.12837916709551257388D0,&
          RMAXREAL = 0.5D+154,RMAXEXP  = 708.503061461606D0,&
          RMAXGONI = 3.53711887601422D+15)
@@ -164,7 +165,7 @@ contains
 
 
   !the same function as above multiplied by exp(-yi**2), to protect against overflows
-  subroutine wofz_mod(alpha,m,q,jm,u,v,flag)
+  pure subroutine wofz_mod(alpha,m,q,jm,u,v,flag)
     implicit none
     real(dp), intent(in) :: alpha
     integer(kind=16), intent(in) :: q,m,jm
