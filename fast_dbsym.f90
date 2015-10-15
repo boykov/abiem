@@ -3,7 +3,7 @@ module fast_dbsym
   double precision, parameter :: PI = 3.14159265358979324D0
 contains
   include 'msphj.for'
-  include 'yml.f90'
+  include 'ylm.f90'
 
   pure double precision function asqrt(x)
     double precision, intent(in) :: x
