@@ -43,7 +43,7 @@ dbsym.o: dbsym.f90 beta.f90 beta2.f90 singular.f90 Amn.f90 xx_rho1.f90 toms_mod.
 dbsym.so: dbsym.f90 beta.f90
 	$(f2) -m dbsym -c toms_mod.f90 dbsym.f90
 
-test: beta.f90 dbsym.so dbsym.o
+test: beta.f90 dbsym.o
 	cd .. && make test
 
 clear:
