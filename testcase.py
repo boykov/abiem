@@ -209,13 +209,13 @@ class testBIEtest_sigm(testBIE, unittest.TestCase):
     tmpP.k_wave = 6
     tmpP.name_approximateu = 'integ.approximateu_sigm'
     tmpP.name_matrixa = 'integ.matrixa_sigm'
-    tmpP.slae_tol = 0.02
+    tmpP.slae_tol = 0.0036
     tmpP.slae_places = 3
 
 class testBIEtest(testBIE, unittest.TestCase):
     tmpP = params(800)
     tmpP.k_wave = 6
-    tmpP.slae_tol = 0.02
+    tmpP.slae_tol = 0.0036
     tmpP.slae_places = 3
 
 class testBIEinteg(testBIE, unittest.TestCase):
