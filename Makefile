@@ -31,9 +31,6 @@ dbsym/dbsym.o: dbsym/dbsym.f90
 dbsym/fast_dbsym.o: dbsym/fast_dbsym.f90
 	cd dbsym && make fast_dbsym.o
 
-dbsym/dbsym.so: dbsym/dbsym.f90
-	cd dbsym && make dbsym.so
-
 libphi.so: phi.f90 params.o set_params.f90
 	$(gf) -shared params.o phi.f90 -o libphi.so
 
