@@ -142,7 +142,7 @@ contains
     double complex, dimension(4) :: s
 
     x(:) = y(:) - node_coordinates(j,:)
-    tmp = aspherical_hankel_n(N,realpart(k_wave)*norm(x))
+    tmp = aspherical_hankel_n(N,realpart(k)*norm(x))
 
     call OMP_SET_NUM_THREADS(4)
 
