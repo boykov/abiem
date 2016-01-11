@@ -22,9 +22,9 @@ z(l,p,x) := μ(l)+((-1)^(p))*%i*γ(x);
 
 w_(z) := exp(-z^2)*(1+erf(%i*z));
 
-A(l,p,x) := β*(-1)^(p+1)*exp(-γ(x)^2)*w_(z(l,p,x))/(8*%pi*r(x));
-Aout(l,p,x) := β(l)*(-1)^(p+1)*wmod(z(l,p,x))/(8*%pi*r(x));
-dAout(l,p,x) := β(l)*2*ρ^(-3)*(pxe(-(ρ/σ)^2)*(ρ/σ)/%pi^(1/2) + wmod(z(l,p,x))*((-1)^p*(ρ/σ)^2 + %i*z(l,p,x)*(ρ/σ)+((-1)^p)/2))/(8*%pi);
+A(l,p,x) := (-1)^(p+1)*exp(-γ(x)^2)*w_(z(l,p,x))/(8*%pi*r(x));
+Aout(l,p,x) := (-1)^(p+1)*wmod(z(l,p,x))/(8*%pi*r(x));
+dAout(l,p,x) := 2*ρ^(-3)*(pxe(-(ρ/σ)^2)*(ρ/σ)/%pi^(1/2) + wmod(z(l,p,x))*((-1)^p*(ρ/σ)^2 + %i*z(l,p,x)*(ρ/σ)+((-1)^p)/2))/(8*%pi);
 
 limA(l,x) := β* 1/(4*%pi)*(2/%pi^(1/2)/σ+%i*k(l)*w(1/2*k(l)*σ));
 limA_(l,x) := β* 1/(4*%pi)*(2/%pi^(1/2)/σ+%i*k(l)*w_(1/2*k(l)*σ));
@@ -42,10 +42,10 @@ with_stdout("dirichlet-helmholtz.out",
   f90((limdAout(1,xv))),
   f90(Bmnout(1,xv)),
   f90(Amnout(1,xv)),
-  f90(ratsimp((taytorat(taylor(subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], A(1,1,xv)+A(1,2,xv)),ρ,0,2)) - subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], limA_(1,xv)))/ρ^2)),
+  f90(ratsimp((taytorat(taylor(subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], β*A(1,1,xv)+β*A(1,2,xv)),ρ,0,2)) - subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], limA_(1,xv)))/ρ^2)),
   f90(taytorat(taylor(erf(z),z,0,10))));
 
-subst(k=0,ratsimp((taytorat(taylor(subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], A(1,1,xv)+A(1,2,xv)),ρ,0,2)) - subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], limA_(1,xv)))/ρ^2));
+subst(k=0,ratsimp((taytorat(taylor(subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], β*A(1,1,xv)+β*A(1,2,xv)),ρ,0,2)) - subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], limA_(1,xv)))/ρ^2));
 
 subst(k=0,limA_(1,xv));
 
@@ -54,20 +54,20 @@ expr0 : taytorat(taylor(erf(z),z,0,10));
 float(ev(subst(z=0.1*%i,expr0),numer));
 float(ev(erf(0.1*%i)));
 
-expr : taytorat(taylor(subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], A(1,1,xv)+A(1,2,xv)),ρ,0,2));
+expr : taytorat(taylor(subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], β*A(1,1,xv)+β*A(1,2,xv)),ρ,0,2));
 
 expand(ev(subst([k=0,σ=0.01,ρ=0.01],expr),numer));
 
-expr2 : subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], A(1,1,xv)+A(1,2,xv));
+expr2 : subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], β*A(1,1,xv)+β*A(1,2,xv));
 
 expand(ev(ratsimp(subst([k=0,σ=0.01,ρ=0.01],expr2)),numer));
 
 
 assume(x[3]>0);
 
-ratsimp(taytorat(taylor(subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], A(1,1,xv)+A(1,2,xv)),ρ,0,0)) - subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], limA_(1,xv)));
+ratsimp(taytorat(taylor(subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], β*A(1,1,xv)+β*A(1,2,xv)),ρ,0,0)) - subst([r(xv)=ρ,r(xv)^2=ρ^2,β=β(1)], limA_(1,xv)));
 
-limAc : limit(limit(limit(A(1,1,xv)+A(1,2,xv),x[1],0),x[2],0),x[3],0);
+limAc : limit(limit(limit(β*A(1,1,xv)+β*A(1,2,xv),x[1],0),x[2],0),x[3],0);
 
 ratsimp(limAc - limA(1,xv));
 
