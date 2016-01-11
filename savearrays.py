@@ -27,6 +27,7 @@ class CoverElement(object):
         self.gauss = c.gauss
         self.sigma = c.sigma
         self.dim_3d = c.dim_3d
+        self.counter = c.counter
 
 class TaskElement(CoverElement):
     name_savearrays = 'savearrays.dat'
@@ -57,6 +58,7 @@ class TaskElement(CoverElement):
         self.k.set_dp2d_ptr("node_coordinates", self.node_coordinates)
         self.k.set_dp1d_ptr("intphi_over", self.intphi_over)
         self.k.set_dp1d_ptr("sigma", self.sigma)
+        self.k.set_dp1d_ptr("counter", self.counter)
 
     def killfortran(self):
         if (hasattr(self,'k')):
