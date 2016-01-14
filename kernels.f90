@@ -54,6 +54,19 @@ double complex function dotA3(x,i)
   dotA3 = s
 end function dotA3
 
+double complex function dotA(x,i)
+  integer, intent(in) :: i
+  double complex, intent(in), dimension(:) :: x
+  integer :: j
+  double complex :: s
+
+  s = DCMPLX(0,0)
+  do j=1,numnodes
+     s = s + x(j)*matrixA(i+1,j)
+  end do
+  dotA = s
+end function dotA
+
 
 !       __  __       _        _          _
 !      |  \/  | __ _| |_ _ __(_)_  __   / \
@@ -142,7 +155,7 @@ double complex function matrixA3(i,j)
   use omp_lib
   use dbsym
   integer, intent(in) :: i,j
-  double precision :: sigm
+  double precision :: sigm, are, aim
   double precision, dimension(dim_3d) :: x,y
 
   sigm = sigmaij(i,j)
@@ -150,6 +163,9 @@ double complex function matrixA3(i,j)
   y = node_coordinates(j,:)
 
   if (i .eq. j) then
+     are = intphi_over(i)*REAL(gauss(i,4) - gauss(i,3))
+     aim = (intphi_over(i)**2)*AIMAG(limA(sigm,k_wave))
+     matrixA3 = cmplx(are, aim)
      matrixA3 = intphi_over(i)*(gauss(i,4) - gauss(i,3))
   else
      matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
