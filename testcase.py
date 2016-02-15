@@ -135,6 +135,7 @@ class testBIE(object):
         self.P.eps_gmres_ = self.P.eps_gmres()
         self.P.initQuad(self.P.orderquad)
         self.P.initEllipsoid()
+        print "numnodes: ", self.P.numnodes
         self.P.initPhi()
         self.P.initInteg()
         if self.P.flagAHMED:
