@@ -71,4 +71,4 @@ testsql: testsql.py
 	python -m unittest testsql
 
 clear:
-	rm -f *.o *.so *.pyc *.tem *.mod *.pyf
+	git clean -xf
