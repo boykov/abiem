@@ -1,14 +1,22 @@
 dbsym_dir = $(shell python defaults.py dbsym_dir)
-ahmed_dir = $(shell python defaults.py ahmed_dir)
+# ahmed_dir = $(shell python defaults.py ahmed_dir)
 sql_dir   = $(shell python defaults.py sql_dir)
 petsc4py_dir = $(shell python defaults.py petsc4py_dir)
 
-export PYTHONPATH := ${petsc4py_dir}:$(sql_dir):$(ahmed_dir):$(dbsym_dir):$(PYTHONPATH)
+export PYTHONPATH := ${petsc4py_dir}:$(sql_dir):$(dbsym_dir):$(PYTHONPATH)
 
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
 
 export LD_LIBRARY_PATH=/home/eab/git/difwave/bie/
+
+include ahmed.mk
+
+slaeahmed.cpp.o: slaeahmed.cpp bemmatrix.h
+	/usr/bin/g++ -I. ${CXX_FLAGS} ${CXX_DIST_FLAGS} -o slaeahmed.cpp.o -c slaeahmed.cpp
+
+slaeahmed.so: slaeahmed.cpp.o
+	/usr/bin/g++   -fopenmp -DMETIS_VERSION=5  -std=c++0x -I/usr/local/include -pthread  -O3 -DNDEBUG slaeahmed.cpp.o  -o slaeahmed.so ${LINK_FLAGS} ${LINK_DIST_FLAGS}
 
 solve:
 	mpiexec.mpich -n 4 python mpislae.py -ksp_monitor
@@ -56,7 +64,7 @@ test3:
 	rm -f libinteg.so
 	@make testcase tn=.testBIEmedium
 
-testcase: testcase.py phi.so integ.so
+testcase: testcase.py phi.so integ.so slaeahmed.so
 	python -m unittest testcase$(tn)
 
 testsql: testsql.py
