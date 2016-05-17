@@ -45,8 +45,6 @@ f90replace =    {
 
 if __name__ == "__main__":
     sys.path.append(os.getcwd())
-    sys.path.append("$HOME/git/difwave/namelib/")
-    sys.path.append("$HOME/git/difwave/draftgsie/")    
     usage = 'Usage: %prog [options] <maxima_form.mpl> <fortran_form.f90>'
     parser =  optparse.OptionParser(usage)
     parser.add_option("-o", "--output", action="store", dest="filename", 
