@@ -1,0 +1,200 @@
+/* singular.max */
+
+load("vect");
+load("f90");
+
+setcoord(cartesian(x,y,z));
+
+Q : [x,y,z];
+
+eq : ξ^2 + η^2 + ζ^2 = 1;
+
+/* получение формулы JM(_Q) := sqrt((b*c*ξ)^2 + (a*c*η)^2 + (a*b*ζ)^2); */
+
+_Q : [ξ, η, ζ];
+
+x(ξ, η, ζ) := a*_Q[1];
+y(ξ, η, ζ) := b*_Q[2];
+z(ξ, η, ζ) := c*_Q[3];
+
+x1 : diff(x(ξ, η, ζ),ξ);
+x2 : diff(x(ξ, η, ζ),η);
+x3 : diff(x(ξ, η, ζ),ζ);
+
+y1 : diff(y(ξ, η, ζ),ξ);
+y2 : diff(y(ξ, η, ζ),η);
+y3 : diff(y(ξ, η, ζ),ζ);
+
+z1 : diff(z(ξ, η, ζ),ξ);
+z2 : diff(z(ξ, η, ζ),η);
+z3 : diff(z(ξ, η, ζ),ζ);
+
+JM(_Q) := sqrt(
+determinant(matrix(
+[ξ, η, ζ],
+[y1,y2,y3],
+[z1,z2,z3]
+))^2 +
+determinant(matrix(
+[x1,x2,x3],
+[ξ, η, ζ],
+[z1,z2,z3]
+))^2 +
+determinant(matrix(
+[x1,x2,x3],
+[y1,y2,y3],
+[ξ, η, ζ]
+))^2);
+
+r(xv) := sqrt((xv . xv));
+
+G : [
+(y1*z2 - y2*z1)*ζ + (y3*z1 - y1*z3)*η + (y2*z3 - y3*z2)*ξ,
+(z1*x2 - z2*x1)*ζ + (z3*x1 - z1*x3)*η + (z2*x3 - z3*x2)*ξ,
+(x1*y2 - x2*y1)*ζ + (x3*y1 - x1*y3)*η + (x2*y3 - x3*y2)*ξ
+];
+
+N : G / (r(G));
+
+
+L(φ,Θ) := [cos(φ)*sin(Θ)^q,
+           sin(φ)*sin(Θ)^q,
+           cos(Θ)]
+                  /sqrt(cos(Θ)^2 + sin(Θ)^(2*q));
+
+/* вектор ω автоматически имеет длину 1 т.к. справедливо уравнение eq */
+/* p : [p1,p2,p3]; */
+/* p : [0,b,0]; */
+ω[3] : sqrt((1 - p[3]/c)/2.0);
+ω[2] : - (p[2]/(2.0*b))/ω[3];
+ω[1] : - (p[1]/(2.0*a))/ω[3];
+
+/* http://en.wikipedia.org/wiki/Householder_transformation */
+/* ispole = 0.0, тогда p = [0,0,c] - так и работает */
+Q(ξ, η, ζ) := express([ξ,η,ζ] - ispole*2.0*([ω[1],ω[2],ω[3]] . [ξ,η,ζ])*[ω[1],ω[2],ω[3]]);
+
+HL(φ,Θ) := ratsimp(Q(L(φ,Θ)[1],L(φ,Θ)[2],L(φ,Θ)[3]));
+HL1(φ,Θ) := ratsimp(Q(L(φ,Θ)[1],L(φ,Θ)[2],L(φ,Θ)[3]-1));
+
+/* ratsimp( */
+/* trigsimp(ratsimp(r(L(φ,Θ)+[0,0,1]))^2)/sin(Θ)^(2*q) - */
+/* ratsimp(Ω^2*(1/(cos(Θ) - sqrt(cos(Θ)^2 + sin(Θ)^(2*q)))^2))); */
+ΩL(φ,Θ) := [L(φ,Θ)[1],L(φ,Θ)[2],L(φ,Θ)[3]+1]*(cos(Θ) - sqrt(cos(Θ)^2 + sin(Θ)^(2*q)))/sin(Θ)^(q);
+
+/* trigsimp( (r(ΩL(φ,Θ)))^2 - Ω^2); */
+
+JL(φ,Θ) := sin(Θ)^(2*q-1)*(q*cos(Θ)^2 + sin(Θ)^2)/(sin(Θ)^(2*q) + cos(Θ)^2)^(3/2);
+
+/* проверка формулы для JL */
+
+trigsimp(ratsimp(JL(φ,Θ)*JL(φ,Θ) - (r(express(diff(L(φ,Θ),φ) ~ diff(L(φ,Θ),Θ))))^2));
+
+Ω : (sin(Θ)^q/sqrt(cos(Θ)^2 + sin(Θ)^(2*q)))*sqrt(1 + sin(Θ)^(2*q)/(cos(Θ) + sqrt(cos(Θ)^2 + sin(Θ)^(2*q)))^2);
+
+/* HLΩ(φ,Θ) := Q(L(φ,Θ)[1]/Ω,L(φ,Θ)[2]/Ω,L(φ,Θ)[3]/Ω); */
+
+HΩ : r(Q(ΩL(φ,Θ)[1],ΩL(φ,Θ)[2],ΩL(φ,Θ)[3]));
+
+/* Ω : HΩ; */
+
+xv(φ,Θ) :=  [
+a*HL1(φ,Θ)[1],
+b*HL1(φ,Θ)[2],
+/* c*(L(φ,Θ)[3] - 1) */
+c*(HL1(φ,Θ)[3])
+];
+
+/* xv(φ,Θ) := (sin(Θ)^q/sqrt(cos(Θ)^2 + sin(Θ)^(2*q)))*[ */
+/*            a*cos(φ), */
+/*            b*sin(φ), */
+/*            - c*sin(Θ)^(q)/(cos(Θ) + sqrt(cos(Θ)^2 + sin(Θ)^(2*q)))]; */
+
+xv2(φ,Θ) := [
+            a*HL1(φ,Θ)[1],
+            b*HL1(φ,Θ)[2],
+            c*(HL1(φ,Θ)[3])];
+            /* c*(L(φ,Θ)[3]-1)]; */
+
+NφΘ : subst([
+  ξ = HL(φ,Θ)[1],
+  η = HL(φ,Θ)[2],
+  ζ = HL(φ,Θ)[3]],
+  N
+  /* JM(_Q) */
+  );
+
+/* subst(Θ=0,ratsimp(express(NφΘ . xv(φ,Θ)/Ω)/Ω)); */
+
+/* subst(Θ=0,xv(φ,Θ)/sin(Θ)^(q)); */
+/* subst(Θ=0,ratsimp(express(NφΘ . xv(φ,Θ))/sin(Θ)^(2*q))); */
+
+/* subst([Θ=%pi],r(xv2(φ,Θ))); */
+/* subst([Θ=%pi],ratsimp(express(NφΘ . xv2(φ,Θ)))); */
+
+/* for area of ellipsoidal surface ρ(ξ,η,ζ) = 1 */
+/* xv : [x(ξ, η, ζ),y(ξ, η, ζ),z(ξ, η, ζ)]; */
+
+/* /sin(Θ)^(q) */
+expr1(φ,Θ) := map(lambda([x], (JL(φ,Θ)/Ω)* subst([
+  ξ = HL(φ,Θ)[1],
+  η = HL(φ,Θ)[2],
+  ζ = HL(φ,Θ)[3]],
+  x
+  )),
+   [
+   JM(_Q)*exp(%i*k*r(xv2(φ,Θ)))*(%i*k*r(xv2(φ,Θ)) - 1)*ratsimp(express(NφΘ . xv(φ,Θ)/Ω)/Ω) / (4*%pi*(r(xv(φ,Θ)/Ω)^3)),
+   - JM(_Q)*ratsimp(express(NφΘ . xv(φ,Θ)/Ω)/Ω) / (4*%pi*(r(xv(φ,Θ)/Ω)^3)),
+   JM(_Q)*ratsimp(express(NφΘ . xv(φ,Θ)/Ω)/Ω) / (4*%pi*(r(xv(φ,Θ)/Ω))),
+   JM(_Q)*(ratsimp(express(NφΘ . xv(φ,Θ)/Ω)/Ω) / (4*%pi)),
+   JM(_Q)*Ω,
+   - JM(_Q)*cos(k*r(xv2(φ,Θ)))^2*ratsimp(express(NφΘ . xv(φ,Θ)/Ω)/Ω) / (4*%pi*(r(xv(φ,Θ)/Ω)^3)),
+   JM(_Q)*exp(%i*k*r(xv2(φ,Θ))) / (4*%pi*(r(xv(φ,Θ)/Ω))),
+   JM(_Q)*(cos(k*r(xv2(φ,Θ))) / (4*%pi*(r(xv(φ,Θ)/Ω))) + Ω*%i*((sin(k*r(xv2(φ,Θ)))-k*r(xv2(φ,Θ)))/r(xv2(φ,Θ)) + k)/(4*%pi))
+   ]);
+
+expr2(φ,Θ) := map(lambda([x], (JL(φ,Θ))* subst([
+  ξ = HL(φ,Θ)[1],
+  η = HL(φ,Θ)[2],
+  ζ = HL(φ,Θ)[3]],
+  x)),
+   [
+   JM(_Q)*exp(%i*k*r(xv2(φ,Θ)))*(%i*k*r(xv2(φ,Θ)) - 1)*(express(NφΘ . xv2(φ,Θ))/(4*%pi*r(xv2(φ,Θ))^3)),
+   - JM(_Q)*express(NφΘ . xv2(φ,Θ)) / (4*%pi*(r(xv2(φ,Θ))^3)),
+   JM(_Q)*(express(NφΘ . xv2(φ,Θ))/(4*%pi*r(xv2(φ,Θ)))),
+   JM(_Q)*(express(NφΘ . xv2(φ,Θ)) / (4*%pi)),
+   JM(_Q),
+   - JM(_Q)*cos(k*r(xv2(φ,Θ)))^2*express(NφΘ . xv2(φ,Θ)) / (4*%pi*(r(xv2(φ,Θ))^3)),
+   JM(_Q)*exp(%i*k*r(xv2(φ,Θ))) / (4*%pi*r(xv2(φ,Θ))),
+   JM(_Q)*(cos(k*r(xv2(φ,Θ))) / (4*%pi*r(xv2(φ,Θ))) + %i*((sin(k*r(xv2(φ,Θ)))-k*r(xv2(φ,Θ)))/r(xv2(φ,Θ)) + k)/(4*%pi))
+   ]);
+
+/* φ in (0,2*%pi) */
+
+Jacobian(i) :=
+subst([
+  a = axes[1],
+  b = axes[2],
+  c = axes[3],
+  q = 3,
+  dρ = 1
+  ],
+subst([
+  cos(Θ) = sqrt(1 - sin(Θ)^2),
+  sin(Θ) = (1-ρ)/2.0, /* ρ in (1,-1) => Θ in (0,%pi/2) */
+  dΘ =  diff(asin((1-ρ)/2.0),ρ)*dρ
+  ],
+  - expr1(φ,Θ)[i]*dΘ) +  /* т.к. ρ \in (1,-1), поэтому здесь множитель -1 */
+/* ρ in (-1,1) => Θ in (%pi/2,%pi) */
+subst([
+  cos(Θ) = -sqrt(1 - sin(Θ)^2),
+  sin(Θ) = (1-ρ)/2.0,
+  dΘ = diff(%pi - asin((1-ρ)/2.0),ρ)*dρ
+  ],
+  expr2(φ,Θ)[i]*dΘ));
+
+res : [Jacobian(1), Jacobian(2), Jacobian(7)];
+
+with_stdout("singular.out",
+  f90(res[1]),
+  f90(res[2]),
+  f90(res[3]));

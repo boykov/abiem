@@ -1,0 +1,30 @@
+load("f90");
+
+δ(m,n) := kron_delta(m,n);
+
+hs(x) := sin(x)/x;
+hc(x) := cos(x)/x;
+
+sD(f,x,i):= if i=0 then hs(x) else ratsimp('(1/x)*diff(f(x,i),x));
+cD(f,x,i):= if i=0 then hc(x) else ratsimp('(1/x)*diff(f(x,i),x));
+
+gs(x,i) := sD(gs,x,i-1);
+gc(x,i) := cD(gc,x,i-1);
+
+j(x,i) := (-x)^i*gs(x,i+1);
+y(x,i) := -(-x)^i*gc(x,i+1);
+
+P(l,m,x) := if m<0 then P(l,-m,x)*(-1)^(-m)*(l+m)!/(l-m)! else (-1)^m/2^l/l!*(1-x^2)^(m/2)*subst(y=x,diff((y^2-1)^l,y,l+m));
+
+Y(l,m,θ,φ) := sqrt((2*l+1)*(l-m)!/(4*%pi)/(l+m)!)*P(l,m,cos(θ))*subst(%e=EE,exp(%i*m*φ));
+
+res(l,m,θ,φ) := sum(sum(δ(l,i)*δ(m,j)*float(ratsimp(Y(i,j,θ,φ))),j,-i,i),i,0,20);
+
+res_j : sum(δ(n,i)*((j(x,i))),i,0,20);
+res_y : sum(δ(n,i)*((y(x,i))),i,0,20);
+res_sh : subst(EE=%e,subst("^",f,subst(1/2=0.5,subst(f,"^",res(l,m,theta,phi)))));
+
+with_stdout("specfun.out",
+  f90(res_j),
+  f90(res_y),
+  f90(res_sh));
