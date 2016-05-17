@@ -2,13 +2,14 @@ dbsym_dir = $(shell python defaults.py dbsym_dir)
 # ahmed_dir = $(shell python defaults.py ahmed_dir)
 sql_dir   = $(shell python defaults.py sql_dir)
 petsc4py_dir = $(shell python defaults.py petsc4py_dir)
+bie_dir = $(shell python defaults.py bie_dir)
 
 export PYTHONPATH := ${petsc4py_dir}:$(sql_dir):$(dbsym_dir):$(PYTHONPATH)
 
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
 
-export LD_LIBRARY_PATH=/home/eab/git/difwave/bie/
+export LD_LIBRARY_PATH=${bie_dir}
 
 include ahmed.mk
 
