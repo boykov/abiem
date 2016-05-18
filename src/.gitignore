@@ -7,6 +7,5 @@
 *.db
 *.db-journal
 
-/TAGS
-src/params.f90
-src/set_params.f90
+params.f90
+set_params.f90
