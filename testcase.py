@@ -18,7 +18,6 @@ from integ import modinteg as integ
 
 import sys,os
 import slaeahmed
-from memo import memoize
 
 import logging
 from common import common
@@ -426,7 +425,6 @@ class testBIEsmall3(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.name_matrixa = 'integ.matrixa3'
     tmpP.orderquad = 20
-    tmpP.flagMemo = True
     tmpP.flagAHMED = False
     tmpP.integ_places = 5
     tmpP.slae_tol = 0.006
@@ -451,7 +449,6 @@ class testBIEmedium3(testBIE, unittest.TestCase):
 class testBIEmedium3k(testBIE, unittest.TestCase):
     tmpP = params(3200)
     tmpP.name_matrixa = 'integ.matrixa3'
-    tmpP.flagMemo = True
     tmpP.k_wave = 7
     tmpP.integ_places = 6
     tmpP.test_seconds = 30
@@ -468,7 +465,6 @@ class testBIEbig(testBIE, unittest.TestCase):
 class testBIEbig3k(testBIE, unittest.TestCase):
     tmpP = params(12800)
     tmpP.name_matrixa = 'integ.matrixa3'
-    tmpP.flagMemo = True
     tmpP.k_wave = 14
     tmpP.integ_places = 7
     tmpP.slae_tol = 0.01
@@ -477,7 +473,6 @@ class testBIEbig3k(testBIE, unittest.TestCase):
 class testBIEhuge3k(testBIE, unittest.TestCase):
     tmpP = params(25600)
     tmpP.name_matrixa = 'integ.matrixa3'
-    tmpP.flagMemo = True
     tmpP.k_wave = 21
     tmpP.eps_matgen = 1e-5
     tmpP.integ_places = 6

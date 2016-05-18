@@ -24,7 +24,6 @@ common_names = {
     "under_places"        : [lambda (s): 3                   , 0, "i", "params"],
     "qbx_places"          : [lambda (s): 5                   , 0, "i", "params"],
     "flagAHMED"           : [lambda (s): True                , 0, "l", "params"],
-    "flagMemo"            : [lambda (s): False               , 0, "l", "params"],
     "flagTestUnder"       : [lambda (s): False               , 0, "l", "params"],
     "flagNeedQBX"         : [lambda (s): False               , 0, "l", "params"],
     "flagTestQBX_gauss6"  : [lambda (s): False               , 0, "l", "params"],

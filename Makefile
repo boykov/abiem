@@ -58,18 +58,12 @@ test:
 	rm -f libinteg.so
 	make testcase tn=.testBIEsmall
 
-test2:
-	make testsql
-
 test3:
 	rm -f libinteg.so
 	@make testcase tn=.testBIEmedium
 
 testcase: testcase.py phi.so integ.so slaeahmed.so
 	python -m unittest testcase$(tn)
-
-testsql: testsql.py
-	python -m unittest testsql
 
 clear:
 	git clean -xf
