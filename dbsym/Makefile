@@ -1,9 +1,6 @@
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
 
-specfun.out: specfun.max
-	maxima -b specfun.max > /dev/null
-
 dirichlet-helmholtz.out: dirichlet-helmholtz.max
 	maxima -b dirichlet-helmholtz.max > /dev/null
 
@@ -12,9 +9,6 @@ jacobian.out: jacobian.max
 
 singular.out: singular.max
 	maxima -b singular.max > /dev/null
-
-spherical_bessel_j.f90: specfun.out
-	python dbsym.py spec
 
 xx_rho1.f90: jacobian.out
 	python dbsym.py xx_rhopy
