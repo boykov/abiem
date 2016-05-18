@@ -66,4 +66,4 @@ testcase: testcase.py phi.so integ.so slaeahmed.so
 	python -m unittest testcase$(tn)
 
 clear:
-	git clean -xf
+	rm -f `git ls-files -o`

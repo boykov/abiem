@@ -3,3 +3,6 @@ test:
 
 testcase:
 	make -C src testcase
+
+clear:
+	git clean -xf
