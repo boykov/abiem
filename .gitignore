@@ -8,6 +8,5 @@
 *.db-journal
 
 /TAGS
-/jacobian.out
-/params.f90
-/set_params.f90
+src/params.f90
+src/set_params.f90
