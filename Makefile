@@ -1,5 +1,5 @@
 dbsym_dir = $(shell python defaults.py dbsym_dir)
-# ahmed_dir = $(shell python defaults.py ahmed_dir)
+ahmed_dir = $(shell python defaults.py ahmed_dir)
 sql_dir   = $(shell python defaults.py sql_dir)
 petsc4py_dir = $(shell python defaults.py petsc4py_dir)
 bie_dir = $(shell python defaults.py bie_dir)
