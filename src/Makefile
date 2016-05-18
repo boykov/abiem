@@ -9,7 +9,7 @@ export PYTHONPATH := ${petsc4py_dir}:$(sql_dir):$(dbsym_dir):$(PYTHONPATH)
 gf = gfortran -fopenmp -ffree-line-length-none -fPIC -O3 -funroll-loops
 f2 = f2py --f90flags="-ffree-line-length-none -fopenmp"
 
-export LD_LIBRARY_PATH=${bie_dir}
+export LD_LIBRARY_PATH=${bie_dir}/src
 
 include ahmed.mk
 
