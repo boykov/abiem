@@ -55,6 +55,17 @@ class params(common):
         slaeahmed.solve_slae()
         slaeahmed.get_q(self.q_density)
 
+    def initPETSC(self):
+        """
+        """
+        te = savearrays.TaskElement()
+        te.initcover(self)
+        te.save(te.name_savearrays)
+        os.system("make -s solve")
+        te = te.load(te.name_savearrays)
+        self.q_density[:] = te.q[:]
+        os.system("rm -f " + te.name_savearrays)
+
     def initQuad(self, orderquad):
         import scipy.special.orthogonal as op
         self.level2(orderquad)
@@ -137,17 +148,8 @@ class testBIE(object):
         print "numnodes: ", self.P.numnodes
         self.P.initPhi()
         self.P.initInteg()
-        if self.P.flagAHMED:
-            self.P.initAHMED()
-        else:
-            te = savearrays.TaskElement()
-            te.initcover(self.P)
-            te.save(te.name_savearrays)
-            os.system("make -s solve")
-            te = te.load(te.name_savearrays)
-            self.P.q_density[:] = te.q[:]
-            os.system("rm -f " + te.name_savearrays)
-
+        if self.P.flagAHMED: self.P.initAHMED()
+        if not self.P.flagAHMED: self.P.initPETSC()
         logging.debug("counter = " + str(self.P.counter/(self.P.numnodes**2)))
         tock = datetime.now()
         self.diff = tock - tick
