@@ -20,7 +20,7 @@ slaeahmed.so: slaeahmed.cpp.o
 	/usr/bin/g++   -fopenmp -DMETIS_VERSION=5  -std=c++0x -I/usr/local/include -pthread  -O3 -DNDEBUG slaeahmed.cpp.o  -o slaeahmed.so ${LINK_FLAGS} ${LINK_DIST_FLAGS}
 
 solve:
-	mpiexec.mpich -n 4 python mpislae.py -ksp_monitor
+	mpiexec.mpich -n 4 python slaepetsc.py -ksp_monitor
 
 params.f90: common.py
 	python -c "from common import common; c = common(); c.write_module()"
