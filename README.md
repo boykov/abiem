@@ -4,7 +4,7 @@ Introduction
 ABIEM (Another Boundary Integral Equations Method) is a prototype
 program built for the two methods of the solution of 3-D Helmholtz BIE
 on smooth sufaces. These methods are described in
-[kashirin2010](ftp://ftp.dvo.ru/pub/NonSoft/RPC_2010/rpc2010_docs/papers/04-ru-Kashirin.pdf)
+[kashirin2010](http://www.icita.org/2010/papers/04-ru-Kashirin.pdf)
 and [ying2006](http://mrl.nyu.edu/~dzorin/papers/ying2006h3b.pdf).
 
 Installation Instructions
@@ -26,4 +26,5 @@ Usage
 =====
 
     cd /home/eab/git/difwave/abiem
+    git pull
     make all
