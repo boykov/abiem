@@ -14,6 +14,7 @@ import logging
 common_names = {
     "listaxes"            : [lambda (s): [float(0.75),float(1.),float(0.5)] , 0, "None", "params"],
     "magic"               : [lambda (s): 0.410               , 0, "dp", "params"],
+    "radius_hat"          : [lambda (s): 2.0                 , 0, "dp", "params"],
     "name_matrixa"        : [lambda (s): 'integ.matrixa'     , 0, "None", "params"],
     "name_vectorb"        : [lambda (s): 'integ.vectorb'     , 0, "None", "params"],
     "name_approximateu"   : [lambda (s): 'integ.approximateu', 0, "None", "params"],

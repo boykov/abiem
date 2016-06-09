@@ -82,7 +82,7 @@ class params(common):
 
     def initEllipsoid(self):
         self.e = ellipsoid(self.axes, self.numpoints)
-        self.level1(self.e.points.shape[0], self.e.get_h())
+        self.level1(self.e.points.shape[0], self.e.get_h(self.radius_hat))
         self.node_coordinates[:,:] = self.e.points[:,:]
         self.normal_coordinates[:,:] = self.e.normalvectors[:,:]
 

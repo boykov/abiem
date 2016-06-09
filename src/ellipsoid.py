@@ -32,7 +32,6 @@ class ellipsoid(object):
         self.parts = parts
         self.numpoints = self.samplingEllipsoid()
         self.normalVectors()
-        self.radius_hat = 2.0
         
         
     def normalVectors(self):
@@ -48,9 +47,9 @@ class ellipsoid(object):
         return
 
 
-    def get_h(self):
+    def get_h(self, rh = 2.0):
         sqrt_np = self.ellipseParts()
-        return self.radius_hat * 2.*self.axes[1]*self.ep2p(1.-(self.axes[0]/self.axes[1])**2)/sqrt_np
+        return rh * 2.*self.axes[1]*self.ep2p(1.-(self.axes[0]/self.axes[1])**2)/sqrt_np
 
 
     def ellipseParts(self):
