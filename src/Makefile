@@ -65,5 +65,8 @@ test3:
 testcase: testcase.py phi.so integ.so slaeahmed.so
 	python -m unittest testcase$(tn)
 
+scen:
+	python scen.py
+
 clear:
 	rm -f `git ls-files -o`

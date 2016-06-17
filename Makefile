@@ -11,5 +11,8 @@ test:
 testcase:
 	make -C src testcase
 
+scen:
+	make -C src scen
+
 clear:
 	git clean -xf
