@@ -132,7 +132,7 @@ class ellipsoid(object):
             currentaxes[1] = self.axes[2] * angle
             currentaxes[0] = self.axes[0] * angle
 
-            currentEllipseParts = float(int(0.5 + 2.* mainparts * angle * self.axes[0] * self.ep2p(1.- (self.axes[2] / self.axes[0]) ** 2) / (self.axes[1] * self.ep2p(1.- (self.axes[0] / self.axes[1]) ** 2))))
+            currentEllipseParts = int(0.5 + 2.* mainparts * angle * self.axes[0] * self.ep2p(1.- (self.axes[2] / self.axes[0]) ** 2) / (self.axes[1] * self.ep2p(1.- (self.axes[0] / self.axes[1]) ** 2)))
 
             if int(currentEllipseParts) % 2 <> 0: currentEllipseParts = currentEllipseParts - 1
 
