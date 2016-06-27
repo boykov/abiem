@@ -175,7 +175,7 @@ class testBIE(object):
         self.P.area[0] = sum(self.P.intphi_over)
         self.assertAlmostEqual(
             self.P.area[0],
-            6.971610618375645,
+            self.P.area_surface,
             places = self.P.integ_places)
 
     def testSLAE(self):

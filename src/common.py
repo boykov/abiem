@@ -13,6 +13,7 @@ import logging
 
 common_names = {
     "listaxes"            : [lambda (s): [float(0.75),float(1.),float(0.5)] , 0, "None", "params"],
+    "area_surface"        : [lambda (s): 6.971610618375645   , 0, "dp", "params"],
     "magic"               : [lambda (s): 0.410               , 0, "dp", "params"],
     "radius_hat"          : [lambda (s): 2.0                 , 0, "dp", "params"],
     "name_matrixa"        : [lambda (s): 'integ.matrixa'     , 0, "None", "params"],
