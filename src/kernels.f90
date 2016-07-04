@@ -155,7 +155,7 @@ double complex function matrixA3(i,j)
   use omp_lib
   use dbsym
   integer, intent(in) :: i,j
-  double precision :: sigm, are, aim
+  double precision :: sigm
   double precision, dimension(dim_3d) :: x,y
 
   sigm = sigmaij(i,j)
@@ -163,9 +163,6 @@ double complex function matrixA3(i,j)
   y = node_coordinates(j,:)
 
   if (i .eq. j) then
-     are = intphi_over(i)*REAL(gauss(i,4) - gauss(i,3))
-     aim = (intphi_over(i)**2)*AIMAG(limA(sigm,k_wave))
-     matrixA3 = cmplx(are, aim)
      matrixA3 = intphi_over(i)*(gauss(i,4) - gauss(i,3))
   else
      matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
