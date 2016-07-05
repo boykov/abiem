@@ -66,6 +66,7 @@ common_names = {
     "intphi_under"        : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
     "area"                : [lambda (s): zeros((1))                               , 11, "dp1d", "integ"],
     "counter"             : [lambda (s): zeros((1))                               , 11, "dp1d", "integ"],
+    "findmagic"           : [lambda (s): zeros((2))                               , 11, "dp1d", "integ"],
 
     "sigma"               : [lambda (s): zeros((s.numnodes))                      , 11, "dp1d", "integ"],
     "gauss"               : [lambda (s): zeros((s.numnodes,10),

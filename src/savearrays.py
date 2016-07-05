@@ -28,6 +28,7 @@ class CoverElement(object):
         self.sigma = c.sigma
         self.dim_3d = c.dim_3d
         self.counter = c.counter
+        self.findmagic = c.findmagic
 
 class TaskElement(CoverElement):
     name_savearrays = 'savearrays.dat'
@@ -59,6 +60,7 @@ class TaskElement(CoverElement):
         self.k.set_dp1d_ptr("intphi_over", self.intphi_over)
         self.k.set_dp1d_ptr("sigma", self.sigma)
         self.k.set_dp1d_ptr("counter", self.counter)
+        self.k.set_dp1d_ptr("findmagic", self.findmagic)
 
     def killfortran(self):
         if (hasattr(self,'k')):

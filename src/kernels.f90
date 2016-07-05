@@ -155,7 +155,7 @@ double complex function matrixA3(i,j)
   use omp_lib
   use dbsym
   integer, intent(in) :: i,j
-  double precision :: sigm
+  double precision :: sigm, tmp
   double precision, dimension(dim_3d) :: x,y
 
   sigm = sigmaij(i,j)
@@ -164,6 +164,11 @@ double complex function matrixA3(i,j)
 
   if (i .eq. j) then
      matrixA3 = intphi_over(i)*(gauss(i,4) - gauss(i,3))
+     tmp = matrixA3/(intphi_over(j)*dsqrt(intphi_over(j)))
+     ! print *, findmagic
+     if (findmagic(1) < tmp) findmagic(1) = tmp
+     if (findmagic(2) > tmp) findmagic(2) = tmp
+     ! print *, tmp
   else
      matrixA3 = intphi_over(i)*intphi_over(j)*Amn(x,y,k_wave)
   end if

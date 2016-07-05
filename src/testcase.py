@@ -146,10 +146,12 @@ class testBIE(object):
         self.P.initQuad(self.P.orderquad)
         self.P.initEllipsoid()
         print "numnodes: ", self.P.numnodes
+        self.P.findmagic[:] = [0.0, 1.0]
         self.P.initPhi()
         self.P.initInteg()
         if self.P.flagAHMED: self.P.initAHMED()
         if not self.P.flagAHMED: self.P.initPETSC()
+        logging.debug("findmagic = " + str(self.P.findmagic))
         logging.debug("counter = " + str(self.P.counter/(self.P.numnodes**2)))
         tock = datetime.now()
         self.diff = tock - tick
@@ -427,7 +429,6 @@ class testBIEsmall3(testBIE, unittest.TestCase):
     tmpP = params(200)
     tmpP.name_matrixa = 'integ.matrixa3'
     tmpP.orderquad = 20
-    tmpP.flagAHMED = False
     tmpP.integ_places = 5
     tmpP.slae_tol = 0.006
     tmpP.slae_places = 3
