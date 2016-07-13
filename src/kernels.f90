@@ -205,7 +205,7 @@ double complex function approximateu4(x)
 
   allocate(s(numnodes))
 
-  call OMP_SET_NUM_THREADS(4)
+  call OMP_SET_NUM_THREADS(omp_threads)
 
   y_tmp(:) = x(:)
   !$OMP PARALLEL DO &
@@ -243,7 +243,7 @@ double complex function approximateu5(x)
 
   allocate(s(numnodes))
 
-  call OMP_SET_NUM_THREADS(4)
+  call OMP_SET_NUM_THREADS(omp_threads)
   do i=1,numnodes
      if (norm(node_coordinates(i,:) - x(:)) .le. 1.0E-8) j=i
   end do
@@ -292,7 +292,7 @@ double complex function approximateu(x)
 
   allocate(s(numnodes))
 
-  call OMP_SET_NUM_THREADS(4)
+  call OMP_SET_NUM_THREADS(omp_threads)
 
   !$OMP PARALLEL DO &
   !$OMP DEFAULT(SHARED) PRIVATE(v)
@@ -316,7 +316,7 @@ double complex function approximateu_sigm(x)
 
   allocate(s(numnodes))
 
-  call OMP_SET_NUM_THREADS(4)
+  call OMP_SET_NUM_THREADS(omp_threads)
 
   !$OMP PARALLEL DO &
   !$OMP DEFAULT(SHARED) PRIVATE(v)

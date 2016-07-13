@@ -105,7 +105,7 @@ contains
     use dbsym
     integer i, nt,iz,ik
 
-    call OMP_SET_NUM_THREADS(4)
+    call OMP_SET_NUM_THREADS(omp_threads)
 
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
@@ -139,12 +139,12 @@ contains
     integer :: l,m, nt
     double precision, dimension(3) :: x
     double complex, dimension(N+1) :: tmp
-    double complex, dimension(4) :: s
+    double complex, dimension(omp_threads) :: s
 
     x(:) = y(:) - node_coordinates(j,:)
     tmp = aspherical_hankel_n(N,realpart(k)*norm(x))
 
-    call OMP_SET_NUM_THREADS(4)
+    call OMP_SET_NUM_THREADS(omp_threads)
 
     s(:) = 0.0
     !$OMP PARALLEL DO &
@@ -174,7 +174,7 @@ contains
 
     if (matrixa6_p) j_init=1
 
-    call OMP_SET_NUM_THREADS(4)
+    call OMP_SET_NUM_THREADS(omp_threads)
 
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt, k1, hval2, x)
