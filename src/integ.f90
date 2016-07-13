@@ -78,6 +78,8 @@ contains
     double precision, dimension(3) :: x,y
     double complex :: s2, s3
 
+    call OMP_SET_NUM_THREADS(omp_threads)
+
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(s,s3,x,y)
     do j=1,numnodes
