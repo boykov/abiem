@@ -20,7 +20,11 @@ We offer the following installation options:
  * Start the virtual machine on the main screen using the `Show` button. By holding `Shift` while clicking it the image will be started without an extra window appearing.
  * Once the machine is fully booted use the port `2222` in your ssh client to access the command line in the virtual image. The username is `eab` and the password is `eab`.
 
-## Building ABIEM from scratch (coming soon)
+## Building ABIEM from scratch
+
+ * All necessary commands for building the environment are
+   [here](https://github.com/boykov/vagrant-box/blob/abeim/late_command.sh)
+ * Requirements: [Maxima](maxima.sourceforge.net/), M. Bebendorf’s AHMED library,  [PETSc](https://www.mcs.anl.gov/petsc/) (optional)
 
 Usage
 =====
