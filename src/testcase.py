@@ -100,8 +100,8 @@ class params(common):
             integ.integrate(self.nstroke_coordinates[i,:],
                             self.node_coordinates[i,:],
                             i+1,
-                            self.centres,self.weights,1)
-            self.intphi_over[i] = integ.folding(i+1,i+1,self.dim_quad,1)
+                            self.centres,self.weights,0)
+            self.intphi_over[i] = integ.folding(i+1,i+1,self.dim_quad,0)
 
     def initInteg(self):
         self.setObjInteg(integ)

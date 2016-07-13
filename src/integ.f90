@@ -269,8 +269,8 @@ contains
                            i,                        &
                            quadphi_over(:,1),        &
                            quadphi_over(:,2),        &
-                           1)
-                      gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,1)
+                           0)
+                      gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,0)
                    end if
                    exit
                 end if
