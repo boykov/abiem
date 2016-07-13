@@ -79,6 +79,7 @@ common_names = {
                                                dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
 
     "dim_quad"            : [lambda (s): s.q, 20, "i", "integ"],
+    "omp_threads"         : [lambda (s): 4,   20, "i", "integ"],
 
 
     "quadphi_over"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
@@ -86,15 +87,15 @@ common_names = {
     "quadsingular"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],
     "centres"             : [lambda (s): zeros((s.dim_quad))                      , 21, "dp1d", "integ"],
     "weights"             : [lambda (s): zeros((s.dim_quad))                      , 21, "dp1d", "integ"],
-    "jacobian"            : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
+    "jacobian"            : [lambda (s): zeros((s.omp_threads,s.dim_quad,4*s.dim_quad),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
-    "farr"                : [lambda (s): zeros((4,s.dim_quad,4*s.dim_quad),
+    "farr"                : [lambda (s): zeros((s.omp_threads,s.dim_quad,4*s.dim_quad),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
-    "cache_phi"           : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad),
+    "cache_phi"           : [lambda (s) :zeros((s.omp_threads,s.dim_quad,4*s.dim_quad),
                                                dtype = complex, order = 'Fortran'), 21, "dc3d", "integ"],
-    "cache_bessel_jn"     : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad,s.dim_intG + 1),
+    "cache_bessel_jn"     : [lambda (s) :zeros((s.omp_threads,s.dim_quad,4*s.dim_quad,s.dim_intG + 1),
                                                order = 'Fortran')                 , 21, "dp4d", "integ"],
-    "nodes"               : [lambda (s) :zeros((4,s.dim_quad,4*s.dim_quad,3),
+    "nodes"               : [lambda (s) :zeros((s.omp_threads,s.dim_quad,4*s.dim_quad,3),
                                                order = 'Fortran')                 , 21, "dp4d", "integ"]}
 
 class common():

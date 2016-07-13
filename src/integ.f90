@@ -78,6 +78,8 @@ contains
     double precision, dimension(3) :: x,y
     double complex :: s2, s3
 
+    call OMP_SET_NUM_THREADS(omp_threads)
+
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(s,s3,x,y)
     do j=1,numnodes
@@ -105,7 +107,7 @@ contains
     use dbsym
     integer i, nt,iz,ik
 
-    call OMP_SET_NUM_THREADS(4)
+    call OMP_SET_NUM_THREADS(omp_threads)
 
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt)
@@ -139,12 +141,12 @@ contains
     integer :: l,m, nt
     double precision, dimension(3) :: x
     double complex, dimension(N+1) :: tmp
-    double complex, dimension(4) :: s
+    double complex, dimension(omp_threads) :: s
 
     x(:) = y(:) - node_coordinates(j,:)
     tmp = aspherical_hankel_n(N,realpart(k)*norm(x))
 
-    call OMP_SET_NUM_THREADS(4)
+    call OMP_SET_NUM_THREADS(omp_threads)
 
     s(:) = 0.0
     !$OMP PARALLEL DO &
@@ -174,7 +176,7 @@ contains
 
     if (matrixa6_p) j_init=1
 
-    call OMP_SET_NUM_THREADS(4)
+    call OMP_SET_NUM_THREADS(omp_threads)
 
     !$OMP PARALLEL DO &
     !$OMP DEFAULT(SHARED) PRIVATE(nt, k1, hval2, x)
@@ -269,8 +271,8 @@ contains
                            i,                        &
                            quadphi_over(:,1),        &
                            quadphi_over(:,2),        &
-                           1)
-                      gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,1)
+                           0)
+                      gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,0)
                    end if
                    exit
                 end if
