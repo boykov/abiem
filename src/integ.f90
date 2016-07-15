@@ -341,7 +341,7 @@ contains
        do ik=1,Nk
           ph = (2.D0*PI/Nk)*ik
           ! TODO formula (x,y,z)(rh,ph)
-          ! do i=1,3
+          ! do i=1,dim_3d
           !    x(i) = (x)s
           !    nodes(nthread,iz,ik,i) = x(i)
           ! end do
@@ -397,7 +397,7 @@ contains
 
        do ik=1,Nk
           ph = (2.D0*PI/Nk)*ik
-          do i=1,3
+          do i=1,dim_3d
              x(i) = fx(i,bt,axes,hval2,rh,ph,z)
              nodes(nthread,iz,ik,i) = x(i)
           end do
