@@ -95,6 +95,10 @@ contains
 
     tmpVector(:) = 0.
 
+    call OMP_SET_NUM_THREADS(omp_threads)
+
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(tmpVector,ind,mask,VSa)
     do i=1, numnodesi
        ind = minloc(neighbors(i,:),dim=1) - 1
        allocate (mask(ind))
@@ -136,6 +140,7 @@ contains
        DEALLOCATE(VSa)
        DEALLOCATE(mask)
     end do
+    !$OMP END PARALLEL DO
   end subroutine normal_vector_stroke
 
   double precision function dpair(i,j)
@@ -158,6 +163,10 @@ contains
 
     neighbors(:,:) = 0
 
+    call OMP_SET_NUM_THREADS(omp_threads)
+
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(ki)
     do i=1,numnodesi
        ki = 0
        do j=1,numnodesi
@@ -168,6 +177,7 @@ contains
           end if
        end do
     end do
+    !$OMP END PARALLEL DO
   end subroutine filter_neighbors
 
 end module modphi
