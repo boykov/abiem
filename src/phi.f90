@@ -65,20 +65,27 @@ contains
   end function phi
 
   double precision function test_phi(a)
+    use omp_lib
     double precision, intent(in), target :: a(:,:)
-    integer i,j
-    double precision s,si, hval2i
+    integer i,j,nt
+    double precision si, hval2i
+    double precision, dimension(omp_threads) :: s
+
     hval2i = hval ** 2
 
-    s = 0.
+    s(:) = 0.
+    call OMP_SET_NUM_THREADS(omp_threads)
+
+    !$OMP PARALLEL DO &
+    !$OMP DEFAULT(SHARED) PRIVATE(nt)
     do j=1,numnodes
-       si = 0.
+       nt = OMP_GET_THREAD_NUM() + 1
        do i=1,numnodes
-          si = si + phi(a(j,:)-node_coordinates(i,:),i,hval2i)
+          s(nt) = s(nt) + phi(a(j,:)-node_coordinates(i,:),i,hval2i)
        end do
-       s = s + si
     end do
-    test_phi = s
+    !$OMP END PARALLEL DO
+    test_phi = sum(s(:))
   end function test_phi
 
   subroutine normal_vector_stroke(numnodesi,neighbors)
