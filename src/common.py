@@ -78,7 +78,7 @@ common_names = {
                                                dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
 
     "dim_quad"            : [lambda (s): s.q, 20, "i", "integ"],
-    "omp_threads"         : [lambda (s): 4,   20, "i", "integ"],
+    "omp_threads"         : [lambda (s): 4,   20, "i", "phi"],
 
 
     "quadphi_over"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],

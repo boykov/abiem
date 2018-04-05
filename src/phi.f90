@@ -82,6 +82,7 @@ contains
   end function test_phi
 
   subroutine normal_vector_stroke(numnodesi,neighbors)
+    use omp_lib
     integer, intent(in),dimension(:,:) :: neighbors
     double precision, dimension(size(normal_coordinates,2)) :: tmpVector
     double precision, dimension(:), allocatable :: VSa
@@ -154,6 +155,7 @@ contains
   end function dpair
 
   subroutine filter_neighbors(hvalue,neighbors,numnodesi)
+    use omp_lib
     double precision, intent(in) :: hvalue
     integer, intent(in) :: numnodesi
     integer, intent(inout),dimension(:,:) :: neighbors
