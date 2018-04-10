@@ -506,6 +506,28 @@ class testBIEgig(testBIE, unittest.TestCase):
     tmpP.slae_tol = 0.00004
     tmpP.slae_places = 5
 
+class testBIEenorm(testBIE, unittest.TestCase):
+    tmpP = params(102400)
+    tmpP.integ_places = 6
+    tmpP.eps_matgen = 1e-6
+    tmpP.slae_tol = 0.00003
+    tmpP.slae_places = 5
+
+class testBIEgb(testBIE, unittest.TestCase):
+    tmpP = params(204800)
+    tmpP.integ_places = 6
+    tmpP.eps_matgen = 1e-6
+    tmpP.slae_tol = 0.00002
+    tmpP.slae_places = 5
+
+class testBIEenorm3(testBIE, unittest.TestCase):
+    tmpP = params(102400)
+    tmpP.name_matrixa = 'integ.matrixa3'
+    tmpP.integ_places = 6
+    tmpP.eps_matgen = 1e-6
+    tmpP.slae_tol = 0.00001
+    tmpP.slae_places = 5
+
 class testBIEgig3(testBIE, unittest.TestCase):
     tmpP = params(51200)
     tmpP.name_matrixa = 'integ.matrixa3'
