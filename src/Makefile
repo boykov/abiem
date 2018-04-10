@@ -3,6 +3,8 @@ ahmed_dir = $(shell python defaults.py ahmed_dir)
 sql_dir   = $(shell python defaults.py sql_dir)
 petsc4py_dir = $(shell python defaults.py petsc4py_dir)
 bie_dir = $(shell python defaults.py bie_dir)
+lmpi_dir = $(shell python defaults.py lmpi_dir)
+usr_dir = $(shell python defaults.py usr_dir)
 
 export PYTHONPATH := ${petsc4py_dir}:$(sql_dir):$(dbsym_dir):$(PYTHONPATH)
 
@@ -17,7 +19,7 @@ slaeahmed.cpp.o: slaeahmed.cpp bemmatrix.h
 	/usr/bin/g++ -I. ${CXX_FLAGS} ${CXX_DIST_FLAGS} -o slaeahmed.cpp.o -c slaeahmed.cpp
 
 slaeahmed.so: slaeahmed.cpp.o
-	/usr/bin/g++   -fopenmp -DMETIS_VERSION=5  -std=c++0x -I/usr/local/include -pthread  -O3 -DNDEBUG slaeahmed.cpp.o  -o slaeahmed.so ${LINK_FLAGS} ${LINK_DIST_FLAGS}
+	/usr/bin/g++   -fopenmp -DMETIS_VERSION=5  -std=c++0x -I${usr_dir} -pthread  -O3 -DNDEBUG slaeahmed.cpp.o  -o slaeahmed.so ${LINK_FLAGS} ${LINK_DIST_FLAGS}
 
 solve:
 	mpiexec.mpich -n 4 python slaepetsc.py -ksp_monitor

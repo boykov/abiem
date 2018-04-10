@@ -1,6 +1,6 @@
 CXX_FLAGS = -I/usr/include/python2.7 \
             -fopenmp -DMETIS_VERSION=5  -std=c++0x \
-            -I/usr/local/include \
+            -I${usr_dir} \
             -pthread  -O3 -DNDEBUG \
             -I${ahmed_dir}/libsH/Include \
             -I${ahmed_dir}/basmod/Include \
@@ -16,6 +16,6 @@ LINK_FLAGS = -rdynamic \
              ${ahmed_dir}/libsH/build/Basmod/libBASMOD.so \
              ${ahmed_dir}/libsH/build/Matrix/libMATRIX.so \
              -lblas -llapack -pthread \
-             -L/usr/local/lib -lmpi_cxx -lmpi \
+             -L${lmpi_dir} -lmpi_cxx -lmpi \
              -ldl -lm -Wl,--export-dynamic -lrt -lnsl -lutil -lm -ldl \
-             -Wl,-rpath,/usr/local/lib:${ahmed_dir}/libsH/build:${ahmed_dir}/libsH/build/Basmod:${ahmed_dir}/libsH/build/Matrix
+             -Wl,-rpath,${lmpi_dir}:${ahmed_dir}/libsH/build:${ahmed_dir}/libsH/build/Basmod:${ahmed_dir}/libsH/build/Matrix
