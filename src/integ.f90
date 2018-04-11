@@ -253,7 +253,10 @@ contains
     if (gauss6) then
        do j_tmp=j_init,numnodes
           gauss(:,6) = 0
+          !$OMP PARALLEL DO &
+          !$OMP DEFAULT(SHARED) PRIVATE(kl, nt)
           do i=1,numnodes
+             nt = OMP_GET_THREAD_NUM()
              do j=1,max_neighbors
                 k1 = node_neighbors2(j_tmp,j)
                 if (k1 .eq. i) then
@@ -271,13 +274,14 @@ contains
                            i,                        &
                            quadphi_over(:,1),        &
                            quadphi_over(:,2),        &
-                           0)
-                      gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,0)
+                           nt)
+                      gauss(i,6) = gauss(i, 6) + folding(i,j_tmp,f2,dim_quad,nt)
                    end if
                    exit
                 end if
              end do
           end do
+          !$OMP END PARALLEL DO
 
           gauss(j_tmp,7) = - (sum(gauss(1:j_tmp-1,6)) + sum(gauss(j_tmp+1:numnodes,6)))/(4*PI)
        end do
