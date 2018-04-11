@@ -1,9 +1,11 @@
 import ConfigParser, os, sys
 
-hostname = os.popen("hostname -s").read().rstrip()
+def get_option(name):
+    hostname = os.popen("hostname -s").read().rstrip()
 
-config = ConfigParser.ConfigParser()
-config.readfp(open('../defaults.cfg'))
+    config = ConfigParser.ConfigParser()
+    config.readfp(open('../defaults.cfg'))
+    return config.get(hostname, name)
 
-print config.get(hostname, sys.argv[1])
-
+if __name__ == "__main__":
+    print get_option(sys.argv[1])

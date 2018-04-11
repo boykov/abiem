@@ -46,6 +46,7 @@ common_names = {
     "qbx_gauss6"          : [lambda (s): False               , 0, "l", "phi"],
     "matrixa6_p"          : [lambda (s): False               , 0, "l", "phi"],
     "use_int_neighbors_p" : [lambda (s): False               , 0, "l", "phi"],
+    "omp_threads"         : [lambda (s): 4                   , 0, "i", "phi"],
 
     "numnodes"            : [lambda (s): s.N    , 10, "i", "phi"],
     "hval"                : [lambda (s): s.h    , 10, "dp", "phi"],
@@ -78,7 +79,6 @@ common_names = {
                                                dtype = complex, order = 'Fortran'), 11, "dc3d", "integ"],
 
     "dim_quad"            : [lambda (s): s.q, 20, "i", "integ"],
-    "omp_threads"         : [lambda (s): 4,   20, "i", "phi"],
 
 
     "quadphi_over"        : [lambda (s): zeros((s.dim_quad,2),order = 'Fortran')  , 21, "dp2d", "integ"],

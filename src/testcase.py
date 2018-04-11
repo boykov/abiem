@@ -22,10 +22,14 @@ import slaeahmed
 import logging
 from common import common
 import savearrays
+import defaults
+
+omp_threads = defaults.get_option("omp_threads")
 
 class params(common):
     def __init__(self, numpoints = 400):
         common.__init__(self)
+        self.omp_threads = int(omp_threads)
         self.numpoints = numpoints
         self.axes[:] = self.listaxes[:]
 
@@ -146,6 +150,7 @@ class testBIE(object):
         self.P.initQuad(self.P.orderquad)
         self.P.initEllipsoid()
         print "numnodes: ", self.P.numnodes
+        print "omp_threads: ", self.P.omp_threads
         self.P.initPhi()
         self.P.initInteg()
         if self.P.flagAHMED: self.P.initAHMED()
