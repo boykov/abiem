@@ -2,6 +2,7 @@ import ConfigParser, os, sys
 
 def get_option(name):
     hostname = os.popen("hostname -s").read().rstrip()
+    if hostname[:7]=="jupiter": hostname = "jupiter"
 
     config = ConfigParser.ConfigParser()
     config.readfp(open('../defaults.cfg'))
